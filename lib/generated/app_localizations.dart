@@ -1070,6 +1070,12 @@ abstract class AppLocalizations {
   /// **'Name'**
   String get search_sort_name;
 
+  /// No description provided for @search_sort_last_seen.
+  ///
+  /// In en, this message translates to:
+  /// **'Last Seen'**
+  String get search_sort_last_seen;
+
   /// No description provided for @search_filter_location.
   ///
   /// In en, this message translates to:

@@ -308,6 +308,8 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
         return t.search_sort_age;
       case 'name':
         return t.search_sort_name;
+      case 'last_seen':
+        return t.search_sort_last_seen;
       default:
         return t.search_sort_recent;
     }
@@ -813,6 +815,15 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
                         primaryColor: primaryColor,
                         onTap: () {
                           provider.setSortBy('name');
+                          Navigator.pop(ctx);
+                        },
+                      ),
+                      _buildChoiceChip(
+                        label: t.search_sort_last_seen,
+                        selected: provider.sortBy == 'last_seen',
+                        primaryColor: primaryColor,
+                        onTap: () {
+                          provider.setSortBy('last_seen');
                           Navigator.pop(ctx);
                         },
                       ),

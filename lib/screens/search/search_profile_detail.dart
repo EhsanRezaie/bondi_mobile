@@ -119,9 +119,9 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
             SizedBox(
               height: MediaQuery.of(context).size.height * 0.42,
               width: double.infinity,
-              child: photos.isNotEmpty
+                child: photos.isNotEmpty
                   ? CachedNetworkImage(
-                      imageUrl: _getDisplayUrl(photos[_currentPhotoIndex]),
+                      imageUrl: photos[_currentPhotoIndex],
                       fit: BoxFit.cover,
                       placeholder: (context, url) => const ShimmerAvatar(),
                       errorWidget: (context, url, error) => Container(
@@ -328,7 +328,7 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
                       child: CachedNetworkImage(
-                        imageUrl: _getDisplayUrl(photos[index]),
+                        imageUrl: photos[index],
                         fit: BoxFit.cover,
                         placeholder: (context, url) => Container(
                           color: isDark ? AppTheme.darkSecondary : Colors.grey.shade200,
@@ -687,6 +687,7 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
   Widget _buildBottomActionBar(AppLocalizations t, bool isDark) {
     final isLikeBlocked = !widget.isPremium && (widget.likesRemaining ?? 0) <= 0;
     final isChatBlocked = !widget.isPremium && (widget.chatsRemaining ?? 0) <= 0;
+    final alreadyLiked = profile.currentUserAction == 'liked' || profile.currentUserAction == 'matched';
 
     return Container(
       decoration: BoxDecoration(
@@ -705,7 +706,6 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Chat button
           DiscoverActionButton(
             icon: Icons.chat_bubble_rounded,
             backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
@@ -715,15 +715,16 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
             badgeCount: widget.isPremium ? null : widget.chatsRemaining,
             onPressed: isChatBlocked ? null : () => _handleChat(),
           ),
-          const SizedBox(width: 24),
-          // Like button
-          DiscoverActionButton(
-            icon: Icons.favorite_rounded,
-            gradient: AppTheme.likeGradient(isDark: isDark),
-            size: 58,
-            badgeCount: widget.isPremium ? null : widget.likesRemaining,
-            onPressed: isLikeBlocked ? null : () => _handleLike(),
-          ),
+          if (!alreadyLiked) ...[
+            const SizedBox(width: 24),
+            DiscoverActionButton(
+              icon: Icons.favorite_rounded,
+              gradient: AppTheme.likeGradient(isDark: isDark),
+              size: 58,
+              badgeCount: widget.isPremium ? null : widget.likesRemaining,
+              onPressed: isLikeBlocked ? null : () => _handleLike(),
+            ),
+          ],
         ],
       ),
     );
@@ -986,14 +987,6 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
         ),
       ),
     );
-  }
-
-  String _getDisplayUrl(String url) {
-    if (url.isEmpty) return '';
-    if (url.contains('localhost')) {
-      return url.replaceAll('localhost', '10.0.2.2');
-    }
-    return url;
   }
 
   String _capitalize(String s) {

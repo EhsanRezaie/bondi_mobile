@@ -10,7 +10,7 @@ Flutter mobile client for an Iranian dating app (Badoo-style). Package name: `da
 flutter pub get                    # install dependencies
 flutter gen-l10n                   # regenerate localization (after editing ARB files)
 flutter run                        # debug run on connected device
-flutter run -d chrome              # web preview (not production target)
+flutter run -d chrome              # web preview (connected to deployed backend)
 flutter analyze                    # static analysis (uses flutter_lints)
 flutter build apk --release        # Android APK
 flutter build appbundle --release  # Android App Bundle

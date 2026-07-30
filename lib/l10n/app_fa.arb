@@ -172,6 +172,7 @@
   "search_sort_distance": "فاصله",
   "search_sort_age": "سن",
   "search_sort_name": "نام",
+  "search_sort_last_seen": "آخرین بازدید",
   "search_filter_location": "مکان",
   "search_filter_country": "کشور",
   "search_filter_province": "استان",

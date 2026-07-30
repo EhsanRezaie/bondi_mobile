@@ -406,24 +406,39 @@ class _UserCardState extends State<UserCard>
             Positioned(
               top: 12,
               left: 12,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.4),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.touch_app, size: 12, color: Colors.white70),
-                    SizedBox(width: 4),
-                    Text('Tap for more',
-                        style: TextStyle(
-                            fontSize: 10,
-                            color: Colors.white70,
-                            fontFamily: 'Inter')),
-                  ],
-                ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (profile.isOnline)
+                    Container(
+                      width: 12,
+                      height: 12,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF22C55E),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  if (profile.isOnline) const SizedBox(width: 6),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.4),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.touch_app, size: 12, color: Colors.white70),
+                        SizedBox(width: 4),
+                        Text('Tap for more',
+                            style: TextStyle(
+                                fontSize: 10,
+                                color: Colors.white70,
+                                fontFamily: 'Inter')),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ),
           ],

@@ -1,5 +1,6 @@
 // lib/services/api_service.dart
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:dio_cache_interceptor/dio_cache_interceptor.dart';
@@ -12,8 +13,12 @@ class ApiService {
   static const FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
   static Future<void> init() async {
-    final dir = await getApplicationDocumentsDirectory();
-    _cacheStore = HiveCacheStore('${dir.path}/dio_cache');
+    if (kIsWeb) {
+      _cacheStore = HiveCacheStore('dio_cache');
+    } else {
+      final dir = await getApplicationDocumentsDirectory();
+      _cacheStore = HiveCacheStore('${dir.path}/dio_cache');
+    }
 
     _dio = Dio(BaseOptions(
       baseUrl: AppConstants.apiBaseUrl,

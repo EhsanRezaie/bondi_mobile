@@ -520,6 +520,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get search_sort_name => 'Name';
 
   @override
+  String get search_sort_last_seen => 'Last Seen';
+
+  @override
   String get search_filter_location => 'Location';
 
   @override

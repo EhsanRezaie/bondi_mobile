@@ -1,5 +1,3 @@
-import 'dart:io';
-
 class DiscoverProfile {
   final String id;
   final String name;
@@ -31,6 +29,9 @@ class DiscoverProfile {
   final List<Map<String, dynamic>> prompts;
   final bool isPremium;
   final bool isVerified;
+  final String? lastSeenAt;
+  final bool isOnline;
+  final String? currentUserAction;
 
   DiscoverProfile({
     required this.id,
@@ -63,13 +64,13 @@ class DiscoverProfile {
     this.prompts = const [],
     this.isPremium = false,
     this.isVerified = false,
+    this.lastSeenAt,
+    this.isOnline = false,
+    this.currentUserAction,
   });
 
   String get displayPhotoUrl {
     if (mainPhotoUrl == null || mainPhotoUrl!.isEmpty) return '';
-    if (Platform.isAndroid) {
-      return mainPhotoUrl!.replaceAll('localhost', '10.0.2.2');
-    }
     return mainPhotoUrl!;
   }
 
@@ -111,6 +112,9 @@ class DiscoverProfile {
       prompts: json['prompts'] != null ? List<Map<String, dynamic>>.from(json['prompts']) : [],
       isPremium: json['is_premium'] ?? false,
       isVerified: json['is_verified'] ?? false,
+      lastSeenAt: json['last_seen_at'],
+      isOnline: json['is_online'] ?? false,
+      currentUserAction: json['current_user_action'],
     );
   }
 }

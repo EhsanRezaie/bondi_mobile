@@ -209,8 +209,9 @@ The app connects to a FastAPI backend with the following endpoints:
 | 24 | Discover & Swiping (Swipe Stamps, Interest Icons from Backend) | ✅ |
 | 25 | Discover Polish, Limits, Filters, Logout | ✅ |
 | 26 | Search Screen (Grid, Filters, Detail, Infinite Scroll) | ✅ |
-| 27 | Chat System (Messages + WebSocket) | ⬜ |
-| 28 | Likes, Matches & Production | ⬜ |
+| 27 | Web Setup — Chrome browser + deployed backend | ✅ |
+| 28 | Chat System (Messages + WebSocket) | ⬜ |
+| 29 | Likes, Matches & Production | ⬜ |
 
 ## Session 25 - Discover Polish, Limits, Filters, Logout
 
@@ -310,6 +311,30 @@ The app connects to a FastAPI backend with the following endpoints:
 - 48 new search keys in `app_en.arb` and `app_fa.arb`
 - Filter values in English (location names from API)
 - UI labels localized for both languages
+
+## Session 27 — Web Setup (Chrome Browser)
+
+### Changes Made
+- **`.env`** — `API_BASE_URL` and `WS_BASE_URL` updated from localhost to deployed server (`87.107.5.88`)
+- **`flutter config --enable-web`** — Enabled Flutter web platform support
+- **CORS** — Backend configured with `*` (all origins) for development
+
+### Running in Chrome
+```bash
+flutter run -d chrome
+```
+App uses email/password auth (Google Sign-In not configured for web yet).
+
+### Requirements for Web Deployment
+- Backend CORS must allow the web app's origin (currently `*`)
+- Google Sign-In needs a Web OAuth client ID + authorized JS origins in Google Cloud Console
+- `flutter_secure_storage` v9+ has web support (Web Crypto API)
+- GPS location on web requires HTTPS (works on `localhost` for dev)
+
+### Notes
+- Google Sign-In intentionally skipped — login via email/password only
+- All packages support web: `flutter_secure_storage_web`, `google_sign_in_web`, `geolocator_web`, `hive`
+- Backend health check confirmed: `{"status":"healthy","redis":"connected"}`
 
 ## Color Rules (strict)
 

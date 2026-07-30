@@ -172,6 +172,7 @@
   "search_sort_distance": "Distance",
   "search_sort_age": "Age",
   "search_sort_name": "Name",
+  "search_sort_last_seen": "Last Seen",
   "search_filter_location": "Location",
   "search_filter_country": "Country",
   "search_filter_province": "Province",

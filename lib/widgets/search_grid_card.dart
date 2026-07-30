@@ -14,21 +14,11 @@ class SearchGridCard extends StatelessWidget {
     this.onTap,
   });
 
-  String _getDisplayUrl(String url) {
-    if (url.isEmpty) return '';
-    if (url.contains('localhost')) {
-      return url.replaceAll('localhost', '10.0.2.2');
-    }
-    return url;
-  }
-
   @override
   Widget build(BuildContext context) {
     final isDark = context.isDarkMode;
     final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
-    final photoUrl = profile.mainPhotoUrl != null
-        ? _getDisplayUrl(profile.mainPhotoUrl!)
-        : '';
+    final photoUrl = profile.mainPhotoUrl;
 
     return GestureDetector(
       onTap: onTap,
@@ -49,7 +39,7 @@ class SearchGridCard extends StatelessWidget {
             fit: StackFit.expand,
             children: [
               // Photo
-              if (photoUrl.isNotEmpty)
+              if (photoUrl != null && photoUrl.isNotEmpty)
                 CachedNetworkImage(
                   imageUrl: photoUrl,
                   fit: BoxFit.cover,
@@ -104,20 +94,35 @@ class SearchGridCard extends StatelessWidget {
                   ),
                 ),
 
-              // Premium badge
-              if (profile.isPremium)
-                Positioned(
-                  top: 4,
-                  left: 4,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
-                    decoration: BoxDecoration(
-                      color: isDark ? AppTheme.darkError : AppTheme.lightError,
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: const Icon(Icons.workspace_premium, size: 8, color: Colors.white),
-                  ),
+              // Top-left badges
+              Positioned(
+                top: 4,
+                left: 4,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (profile.isOnline)
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF22C55E),
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    if (profile.isOnline && profile.isPremium) const SizedBox(width: 3),
+                    if (profile.isPremium)
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                        decoration: BoxDecoration(
+                          color: isDark ? AppTheme.darkError : AppTheme.lightError,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Icon(Icons.workspace_premium, size: 8, color: Colors.white),
+                      ),
+                  ],
                 ),
+              ),
 
               // Bottom info
               Positioned(

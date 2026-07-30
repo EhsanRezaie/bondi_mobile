@@ -522,6 +522,9 @@ class AppLocalizationsFa extends AppLocalizations {
   String get search_sort_name => 'نام';
 
   @override
+  String get search_sort_last_seen => 'آخرین بازدید';
+
+  @override
   String get search_filter_location => 'مکان';
 
   @override
