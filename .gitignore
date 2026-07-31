@@ -85,6 +85,9 @@ app.*.map.json
 # Version file
 .flutter-version
 
+# Plan
+plan/
+
 # Coverage reports
 coverage/
 lcov.info
