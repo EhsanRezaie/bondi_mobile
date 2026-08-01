@@ -646,4 +646,134 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get search_verified => 'Verified';
+
+  @override
+  String get chat_liked_me => 'Liked Me';
+
+  @override
+  String get chat_i_liked => 'I Liked';
+
+  @override
+  String get chat_chats => 'Chats';
+
+  @override
+  String get chat_empty_matches => 'No matches yet. Start swiping!';
+
+  @override
+  String get chat_empty_liked_me => 'No one has liked you yet';
+
+  @override
+  String get chat_empty_i_liked => 'You haven\'t liked anyone yet';
+
+  @override
+  String get chat_empty_chats => 'No conversations yet';
+
+  @override
+  String get chat_online => 'Online';
+
+  @override
+  String chat_last_seen_minutes(Object minutes) {
+    return 'Last seen ${minutes}m ago';
+  }
+
+  @override
+  String chat_last_seen_hours(Object hours) {
+    return 'Last seen ${hours}h ago';
+  }
+
+  @override
+  String chat_last_seen_days(Object days) {
+    return 'Last seen ${days}d ago';
+  }
+
+  @override
+  String get chat_offline => 'Offline';
+
+  @override
+  String get chat_send => 'Send';
+
+  @override
+  String get chat_reply => 'Reply';
+
+  @override
+  String get chat_voice_message => 'Voice Message';
+
+  @override
+  String get chat_photo_message => 'Photo';
+
+  @override
+  String get chat_typing => 'Typing...';
+
+  @override
+  String get chat_edit => 'Edit';
+
+  @override
+  String get chat_delete => 'Delete';
+
+  @override
+  String get chat_delete_for_me => 'Delete for me';
+
+  @override
+  String get chat_delete_for_everyone => 'Delete for everyone';
+
+  @override
+  String get chat_edit_message => 'Edit message';
+
+  @override
+  String get chat_limit_reached => 'Daily chat limit reached';
+
+  @override
+  String get chat_limit_explanation =>
+      'You\'ve used all your chats today. Come back tomorrow!';
+
+  @override
+  String get chat_unmatched => 'Start a conversation';
+
+  @override
+  String get chat_initiation_limit => 'Message limit';
+
+  @override
+  String get chat_initiation_limit_explanation =>
+      'Send up to 2 messages. Wait for a reply to continue chatting.';
+
+  @override
+  String get chat_waiting_for_reply => 'Waiting for a reply...';
+
+  @override
+  String get chat_error_loading => 'Failed to load. Please try again.';
+
+  @override
+  String get chat_error_sending => 'Failed to send message';
+
+  @override
+  String get chat_error_retry => 'Retry';
+
+  @override
+  String get chat_voice_max_duration => 'Max 120 seconds';
+
+  @override
+  String get chat_voice_recording => 'Recording...';
+
+  @override
+  String get chat_voice_playing => 'Playing...';
+
+  @override
+  String get chat_image_preview => 'Photo';
+
+  @override
+  String get chat_loading => 'Loading...';
+
+  @override
+  String get chat_loading_more => 'Loading more...';
+
+  @override
+  String get chat_delete_message => 'Delete message';
+
+  @override
+  String get chat_forward => 'Forward';
+
+  @override
+  String chat_matched_at(Object time) {
+    return 'Matched $time';
+  }
 }

@@ -648,4 +648,134 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get search_verified => 'تأیید شده';
+
+  @override
+  String get chat_liked_me => 'منو لایک کردن';
+
+  @override
+  String get chat_i_liked => 'لایک کردم';
+
+  @override
+  String get chat_chats => 'چت‌ها';
+
+  @override
+  String get chat_empty_matches => 'هنوز تطابقی نداری. شروع به سوایپ کن!';
+
+  @override
+  String get chat_empty_liked_me => 'هنوز کسی شما را لایک نکرده';
+
+  @override
+  String get chat_empty_i_liked => 'هنوز کسی را لایک نکرده‌اید';
+
+  @override
+  String get chat_empty_chats => 'هنوز مکالمه‌ای ندارید';
+
+  @override
+  String get chat_online => 'آنلاین';
+
+  @override
+  String chat_last_seen_minutes(Object minutes) {
+    return '$minutes دقیقه پیش';
+  }
+
+  @override
+  String chat_last_seen_hours(Object hours) {
+    return '$hours ساعت پیش';
+  }
+
+  @override
+  String chat_last_seen_days(Object days) {
+    return '$days روز پیش';
+  }
+
+  @override
+  String get chat_offline => 'آفلاین';
+
+  @override
+  String get chat_send => 'ارسال';
+
+  @override
+  String get chat_reply => 'پاسخ';
+
+  @override
+  String get chat_voice_message => 'پیام صوتی';
+
+  @override
+  String get chat_photo_message => 'عکس';
+
+  @override
+  String get chat_typing => 'در حال تایپ...';
+
+  @override
+  String get chat_edit => 'ویرایش';
+
+  @override
+  String get chat_delete => 'حذف';
+
+  @override
+  String get chat_delete_for_me => 'حذف برای من';
+
+  @override
+  String get chat_delete_for_everyone => 'حذف برای همه';
+
+  @override
+  String get chat_edit_message => 'ویرایش پیام';
+
+  @override
+  String get chat_limit_reached => 'محدودیت چت روزانه';
+
+  @override
+  String get chat_limit_explanation =>
+      'همه چت‌های امروز تمام شد. فردا برگردید!';
+
+  @override
+  String get chat_unmatched => 'شروع مکالمه';
+
+  @override
+  String get chat_initiation_limit => 'محدودیت پیام';
+
+  @override
+  String get chat_initiation_limit_explanation =>
+      'حداکثر ۲ پیام ارسال کنید. منتظر پاسخ باشید تا ادامه دهید.';
+
+  @override
+  String get chat_waiting_for_reply => 'در انتظار پاسخ...';
+
+  @override
+  String get chat_error_loading => 'بارگذاری ناموفق. دوباره تلاش کنید.';
+
+  @override
+  String get chat_error_sending => 'ارسال پیام ناموفق بود';
+
+  @override
+  String get chat_error_retry => 'تلاش مجدد';
+
+  @override
+  String get chat_voice_max_duration => 'حداکثر ۱۲۰ ثانیه';
+
+  @override
+  String get chat_voice_recording => 'در حال ضبط...';
+
+  @override
+  String get chat_voice_playing => 'در حال پخش...';
+
+  @override
+  String get chat_image_preview => 'عکس';
+
+  @override
+  String get chat_loading => 'در حال بارگذاری...';
+
+  @override
+  String get chat_loading_more => 'بارگذاری بیشتر...';
+
+  @override
+  String get chat_delete_message => 'حذف پیام';
+
+  @override
+  String get chat_forward => 'ارسال به';
+
+  @override
+  String chat_matched_at(Object time) {
+    return 'تطابق $time';
+  }
 }

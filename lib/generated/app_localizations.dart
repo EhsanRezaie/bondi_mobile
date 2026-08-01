@@ -1309,6 +1309,246 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Verified'**
   String get search_verified;
+
+  /// No description provided for @chat_liked_me.
+  ///
+  /// In en, this message translates to:
+  /// **'Liked Me'**
+  String get chat_liked_me;
+
+  /// No description provided for @chat_i_liked.
+  ///
+  /// In en, this message translates to:
+  /// **'I Liked'**
+  String get chat_i_liked;
+
+  /// No description provided for @chat_chats.
+  ///
+  /// In en, this message translates to:
+  /// **'Chats'**
+  String get chat_chats;
+
+  /// No description provided for @chat_empty_matches.
+  ///
+  /// In en, this message translates to:
+  /// **'No matches yet. Start swiping!'**
+  String get chat_empty_matches;
+
+  /// No description provided for @chat_empty_liked_me.
+  ///
+  /// In en, this message translates to:
+  /// **'No one has liked you yet'**
+  String get chat_empty_liked_me;
+
+  /// No description provided for @chat_empty_i_liked.
+  ///
+  /// In en, this message translates to:
+  /// **'You haven\'t liked anyone yet'**
+  String get chat_empty_i_liked;
+
+  /// No description provided for @chat_empty_chats.
+  ///
+  /// In en, this message translates to:
+  /// **'No conversations yet'**
+  String get chat_empty_chats;
+
+  /// No description provided for @chat_online.
+  ///
+  /// In en, this message translates to:
+  /// **'Online'**
+  String get chat_online;
+
+  /// No description provided for @chat_last_seen_minutes.
+  ///
+  /// In en, this message translates to:
+  /// **'Last seen {minutes}m ago'**
+  String chat_last_seen_minutes(Object minutes);
+
+  /// No description provided for @chat_last_seen_hours.
+  ///
+  /// In en, this message translates to:
+  /// **'Last seen {hours}h ago'**
+  String chat_last_seen_hours(Object hours);
+
+  /// No description provided for @chat_last_seen_days.
+  ///
+  /// In en, this message translates to:
+  /// **'Last seen {days}d ago'**
+  String chat_last_seen_days(Object days);
+
+  /// No description provided for @chat_offline.
+  ///
+  /// In en, this message translates to:
+  /// **'Offline'**
+  String get chat_offline;
+
+  /// No description provided for @chat_send.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get chat_send;
+
+  /// No description provided for @chat_reply.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply'**
+  String get chat_reply;
+
+  /// No description provided for @chat_voice_message.
+  ///
+  /// In en, this message translates to:
+  /// **'Voice Message'**
+  String get chat_voice_message;
+
+  /// No description provided for @chat_photo_message.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo'**
+  String get chat_photo_message;
+
+  /// No description provided for @chat_typing.
+  ///
+  /// In en, this message translates to:
+  /// **'Typing...'**
+  String get chat_typing;
+
+  /// No description provided for @chat_edit.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get chat_edit;
+
+  /// No description provided for @chat_delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get chat_delete;
+
+  /// No description provided for @chat_delete_for_me.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete for me'**
+  String get chat_delete_for_me;
+
+  /// No description provided for @chat_delete_for_everyone.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete for everyone'**
+  String get chat_delete_for_everyone;
+
+  /// No description provided for @chat_edit_message.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit message'**
+  String get chat_edit_message;
+
+  /// No description provided for @chat_limit_reached.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily chat limit reached'**
+  String get chat_limit_reached;
+
+  /// No description provided for @chat_limit_explanation.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve used all your chats today. Come back tomorrow!'**
+  String get chat_limit_explanation;
+
+  /// No description provided for @chat_unmatched.
+  ///
+  /// In en, this message translates to:
+  /// **'Start a conversation'**
+  String get chat_unmatched;
+
+  /// No description provided for @chat_initiation_limit.
+  ///
+  /// In en, this message translates to:
+  /// **'Message limit'**
+  String get chat_initiation_limit;
+
+  /// No description provided for @chat_initiation_limit_explanation.
+  ///
+  /// In en, this message translates to:
+  /// **'Send up to 2 messages. Wait for a reply to continue chatting.'**
+  String get chat_initiation_limit_explanation;
+
+  /// No description provided for @chat_waiting_for_reply.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting for a reply...'**
+  String get chat_waiting_for_reply;
+
+  /// No description provided for @chat_error_loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load. Please try again.'**
+  String get chat_error_loading;
+
+  /// No description provided for @chat_error_sending.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to send message'**
+  String get chat_error_sending;
+
+  /// No description provided for @chat_error_retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get chat_error_retry;
+
+  /// No description provided for @chat_voice_max_duration.
+  ///
+  /// In en, this message translates to:
+  /// **'Max 120 seconds'**
+  String get chat_voice_max_duration;
+
+  /// No description provided for @chat_voice_recording.
+  ///
+  /// In en, this message translates to:
+  /// **'Recording...'**
+  String get chat_voice_recording;
+
+  /// No description provided for @chat_voice_playing.
+  ///
+  /// In en, this message translates to:
+  /// **'Playing...'**
+  String get chat_voice_playing;
+
+  /// No description provided for @chat_image_preview.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo'**
+  String get chat_image_preview;
+
+  /// No description provided for @chat_loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading...'**
+  String get chat_loading;
+
+  /// No description provided for @chat_loading_more.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading more...'**
+  String get chat_loading_more;
+
+  /// No description provided for @chat_delete_message.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete message'**
+  String get chat_delete_message;
+
+  /// No description provided for @chat_forward.
+  ///
+  /// In en, this message translates to:
+  /// **'Forward'**
+  String get chat_forward;
+
+  /// No description provided for @chat_matched_at.
+  ///
+  /// In en, this message translates to:
+  /// **'Matched {time}'**
+  String chat_matched_at(Object time);
 }
 
 class _AppLocalizationsDelegate

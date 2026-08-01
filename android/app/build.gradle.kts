@@ -1,6 +1,7 @@
 android {
     namespace = "ir.bondi.app"
     compileSdk = 36
+    buildToolsVersion = "35.0.1"
 
     defaultConfig {
         applicationId = "ir.bondi.app"
@@ -39,6 +40,7 @@ flutter {
 
 plugins {
     id("com.android.application")
+    id("org.jetbrains.kotlin.android")
     id("dev.flutter.flutter-gradle-plugin")
-    id("com.google.gms.google-services") 
+    id("com.google.gms.google-services")
 }

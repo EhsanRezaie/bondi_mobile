@@ -10,6 +10,7 @@ import 'providers/auth_provider.dart';
 import 'providers/onboarding_provider.dart';
 import 'providers/language_provider.dart';
 import 'providers/settings_provider.dart';
+import 'providers/chat_provider.dart';
 import 'screens/splash_screen.dart';
 
 void main() async {
@@ -48,6 +49,7 @@ class MyApp extends StatelessWidget {
           create: (_) => LanguageProvider()..setLanguage(initialLanguage),
         ),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
+        ChangeNotifierProvider(create: (_) => ChatProvider()),
       ],
       child: Consumer2<LanguageProvider, SettingsProvider>(
         builder: (context, langProv, settingsProv, _) {

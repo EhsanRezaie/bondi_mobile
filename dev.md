@@ -28,8 +28,11 @@ Flutter mobile client for Iranian dating app (Badoo-style).
 - ✅ Search profile detail with Like + Chat buttons
 - ✅ Filter persistence across app restarts (SharedPreferences)
 - 🔄 Localization & Translation (In Progress)
-- ⬜ Real-time chat with WebSocket (Coming in Session 26)
-- ⬜ Likes & matches system (Coming in Session 26)
+- ✅ Real-time chat with WebSocket (Session 28)
+- ✅ Likes & matches system (Session 28)
+- ✅ Edit & delete messages (Session 28)
+- ✅ Chat initiation limit — 2 messages until reply (Session 28)
+- ✅ Voice messages (hidden on web) (Session 28)
 
 ## Tech Stack
 
@@ -47,6 +50,9 @@ Flutter mobile client for Iranian dating app (Badoo-style).
 | Environment | flutter_dotenv |
 | Google Sign-In | google_sign_in |
 | Geolocator | geolocator |
+| Audio Recording | record |
+| Audio Playback | just_audio |
+| UUID | uuid |
 
 ## Requirements
 
@@ -101,12 +107,18 @@ lib/
 │   ├── interest.dart         # Interest model
 │   ├── prompt.dart           # Prompt model
 │   ├── photo.dart            # Photo model
-│   └── location_models.dart  # Location models
+│   ├── location_models.dart  # Location models
+│   ├── swipe_user.dart       # Swipe/like user model
+│   ├── match.dart            # Match model with last message
+│   └── message.dart          # Message model (text/photo/voice)
 ├── services/                 # API services
 │   ├── api_service.dart      # Dio HTTP client with interceptors + Hive cache
 │   ├── auth_service.dart     # Auth API calls
 │   ├── storage_service.dart  # Secure token storage
 │   ├── discover_service.dart # Discover/swipe/limits API
+│   ├── search_service.dart   # Search API with filters
+│   ├── chat_service.dart     # Chat/matches/messages API
+│   ├── chat_websocket_service.dart # WebSocket real-time events
 │   ├── google_auth_service.dart # Google Sign-In
 │   ├── location_service.dart # GPS & Location APIs
 │   ├── onboarding_service.dart # Onboarding API calls
@@ -114,6 +126,8 @@ lib/
 ├── providers/                # State management
 │   ├── auth_provider.dart    # Auth state
 │   ├── discover_provider.dart # Discover state (profiles, filters, limits)
+│   ├── search_provider.dart  # Search state (filters, pagination)
+│   ├── chat_provider.dart    # Chat state (matches, messages, WebSocket)
 │   ├── language_provider.dart # Language selection
 │   ├── onboarding_provider.dart # Onboarding state
 │   ├── profile_provider.dart # Profile state
@@ -134,6 +148,16 @@ lib/
 │   ├── discover/             # Discover/swiping screens
 │   │   ├── discover_screen.dart
 │   │   └── profile_detail_screen.dart
+│   ├── search/               # Search screens
+│   │   ├── search_screen.dart
+│   │   ├── search_filter_sheet.dart
+│   │   └── search_profile_detail.dart
+│   ├── chats/                # Chat screens
+│   │   ├── chats_screen.dart        # TabBar: Liked Me / I Liked / Chats
+│   │   ├── liked_me_screen.dart     # Users who liked you
+│   │   ├── i_liked_screen.dart      # Users you liked
+│   │   ├── chat_list_screen.dart    # Active conversations
+│   │   └── chat_detail_screen.dart  # Chat detail with WS
 │   └── profile/              # Profile screens
 │       ├── profile_screen.dart
 │       ├── avatar_crop_screen.dart
@@ -147,7 +171,15 @@ lib/
 │   ├── progress_bar.dart
 │   ├── shimmer_avatar.dart
 │   ├── user_card.dart        # Swipeable card with stamps
-│   └── discover_action_button.dart # Circular button with badge
+│   ├── discover_action_button.dart # Circular button with badge
+│   ├── search_grid_card.dart # Compact grid card for search
+│   ├── matched_avatar_strip.dart # Horizontal avatar strip (Instagram Stories)
+│   ├── chat_message_bubble.dart  # Text/photo/voice message bubble
+│   ├── chat_input_bar.dart       # Text/voice/photo input with edit mode
+│   ├── chat_app_bar.dart         # Chat detail AppBar
+│   ├── typing_indicator.dart     # Animated typing dots
+│   ├── online_indicator.dart     # Online/last seen indicator
+│   └── voice_message_player.dart # Voice playback with progress bar
 ├── l10n/                     # Localization
 │   ├── app_en.arb            # English translations
 │   └── app_fa.arb            # Persian translations
@@ -191,8 +223,21 @@ The app connects to a FastAPI backend with the following endpoints:
 | `/search` | GET | Search users with filters | ✅ |
 | `/swipes` | POST | Send like/pass | ✅ |
 | `/rewards/my-limits` | GET | Get daily limits | ✅ |
-| `/matches` | GET | Get matches | ⬜ |
-| `/messages` | GET/POST | Chat system | ⬜ |
+| `/matches` | GET | Get matches | ✅ |
+| `/matches/{id}` | GET | Match detail | ✅ |
+| `/swipes/likers` | GET | Users who liked you | ✅ |
+| `/swipes/liked` | GET | Users you liked | ✅ |
+| `/swipes/stats` | GET | Likes/chats remaining | ✅ |
+| `/messages/{id}` | GET | Chat history | ✅ |
+| `/messages/{id}/text` | POST | Send text message | ✅ |
+| `/messages/{id}` | PUT | Edit message | ✅ |
+| `/messages/{id}/photo` | POST | Send photo message | ✅ |
+| `/messages/{id}/voice` | POST | Send voice message | ✅ |
+| `/messages/{id}/accept` | POST | Accept unmatched chat | ✅ |
+| `/messages/{id}` | DELETE | Delete message | ✅ |
+| `/messages/delivered` | POST | Batch mark delivered | ✅ |
+| `/messages/read` | POST | Batch mark read | ✅ |
+| `/ws/chat/{id}` | WS | Real-time events | ✅ |
 
 ## Session Progress
 
@@ -210,7 +255,7 @@ The app connects to a FastAPI backend with the following endpoints:
 | 25 | Discover Polish, Limits, Filters, Logout | ✅ |
 | 26 | Search Screen (Grid, Filters, Detail, Infinite Scroll) | ✅ |
 | 27 | Web Setup — Chrome browser + deployed backend | ✅ |
-| 28 | Chat System (Messages + WebSocket) | ⬜ |
+| 28 | Chat System (Messages + WebSocket) | ✅ |
 | 29 | Likes, Matches & Production | ⬜ |
 
 ## Session 25 - Discover Polish, Limits, Filters, Logout
@@ -335,6 +380,88 @@ App uses email/password auth (Google Sign-In not configured for web yet).
 - Google Sign-In intentionally skipped — login via email/password only
 - All packages support web: `flutter_secure_storage_web`, `google_sign_in_web`, `geolocator_web`, `hive`
 - Backend health check confirmed: `{"status":"healthy","redis":"connected"}`
+
+## Session 28 — Chat System (Messages + WebSocket)
+
+### Architecture
+- **Global `ChatProvider`** in `main.dart` MultiProvider — WS connection persists across tab switches
+- **HTTP REST** for message persistence (send, edit, delete, read receipts)
+- **WebSocket** for real-time events (new messages, typing, online/offline, new matches)
+
+### Three-Tab Chats Screen
+- **Liked Me** — Users who liked you (`/swipes/likers`), tap opens unmatched chat
+- **I Liked** — Users you liked (`/swipes/liked`), tap opens unmatched chat
+- **Chats** — Active conversations with matches (`/matches`), shows last message preview
+
+### Matched Avatar Strip
+- Instagram Stories-style horizontal avatar strip at top of chats screen
+- Shows 5 newest matches with gradient ring + online dot
+- Auto-updates when `new_match` WebSocket event arrives
+
+### Messages
+- Text, photo (multipart upload), voice (record + just_audio playback) messages
+- Cursor pagination for chat history (load more on scroll to top)
+- Optimistic UI — messages appear instantly, replaced with server response
+
+### Edit & Delete Messages
+- **Long-press** on own message → bottom sheet with Edit / Delete / Reply
+- **Edit**: inline edit bar replaces input bar, HTTP `PUT /messages/{id}`
+- **Delete**: confirmation dialog → "Delete for me" or "Delete for everyone"
+
+### Chat Initiation Limit
+- In unmatched chats: max **2 messages** until receiver replies
+- `canSendMessage` getter blocks send when limit reached
+- Shows info banner: "Send up to 2 messages. Wait for a reply to continue chatting."
+- Counter resets when `isAccepted` becomes true (receiver replies or accepts)
+
+### Typing & Online Indicators
+- Animated 3-dot pulse typing indicator (auto-hides after 5s)
+- Green dot + "Online" text or "Last seen X ago"
+
+### Voice Messages
+- Hold-to-record button (max 120s countdown)
+- Playback widget with progress bar + play/pause
+- **Hidden on web** via `kIsWeb` check (record button + player both hidden)
+
+### WebSocket Service
+- Connect/disconnect with JWT auth
+- Heartbeat (ping every 30s)
+- Auto-reconnect with exponential backoff (1s→30s, max 6 attempts)
+- Close codes: 4001 (unauthorized), 4003 (access denied)
+
+### Files Created (16 new)
+- `lib/models/swipe_user.dart` — User in swipe/like context
+- `lib/models/match.dart` — Match with last message
+- `lib/models/message.dart` — Message with text/photo/voice, edit/delete, copyWith
+- `lib/services/chat_service.dart` — All HTTP endpoints (matches, messages, edit, delete, limits)
+- `lib/services/chat_websocket_service.dart` — WebSocket with heartbeat, reconnect, streams
+- `lib/providers/chat_provider.dart` — Global provider with all state, edit/delete, initiation limit
+- `lib/widgets/matched_avatar_strip.dart` — Horizontal avatar strip with gradient ring
+- `lib/widgets/chat_message_bubble.dart` — Text/photo/voice bubbles with long-press menu
+- `lib/widgets/typing_indicator.dart` — Animated 3-dot pulse
+- `lib/widgets/online_indicator.dart` — Green dot or "Last seen X ago"
+- `lib/widgets/voice_message_player.dart` — Play/pause with progress bar (hidden on web)
+- `lib/widgets/chat_input_bar.dart` — Text/voice/photo input, edit mode, reply preview
+- `lib/widgets/chat_app_bar.dart` — Avatar + name + online indicator
+- `lib/screens/chats/chats_screen.dart` — TabBar (Liked Me / I Liked / Chats) + avatar strip
+- `lib/screens/chats/liked_me_screen.dart` — Users who liked you, paginated
+- `lib/screens/chats/i_liked_screen.dart` — Users you liked, paginated
+- `lib/screens/chats/chat_list_screen.dart` — Active conversations
+- `lib/screens/chats/chat_detail_screen.dart` — Full chat with WS, edit/delete, reply, typing
+
+### Files Modified
+- `pubspec.yaml` — Added `record`, `just_audio`, `uuid`
+- `lib/main.dart` — Added `ChatProvider` to global MultiProvider
+- `lib/l10n/app_en.arb` — ~40 new chat keys (tabs, actions, limits, errors, media)
+- `lib/l10n/app_fa.arb` — ~40 new Persian chat keys
+
+### Localization Keys (~40 new)
+- Tabs: `chat_liked_me`, `chat_i_liked`, `chat_chats`
+- Empty states: `chat_empty_matches`, `chat_empty_liked_me`, `chat_empty_i_liked`, `chat_empty_chats`
+- Status: `chat_online`, `chat_last_seen_minutes/hours/days`, `chat_offline`
+- Actions: `chat_send`, `chat_reply`, `chat_edit`, `chat_delete`, `chat_delete_for_me`, `chat_delete_for_everyone`
+- Limits: `chat_limit_reached`, `chat_initiation_limit`, `chat_initiation_limit_explanation`
+- Errors: `chat_error_loading`, `chat_error_sending`
 
 ## Color Rules (strict)
 
