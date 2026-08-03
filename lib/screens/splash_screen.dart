@@ -111,10 +111,11 @@ class _SplashScreenState extends State<SplashScreen> {
       backgroundColor: context.backgroundColor,
       body: SafeArea(
         child: Center(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 40.0),
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.symmetric(horizontal: 40.0, vertical: 20.0),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
                   width: 100,

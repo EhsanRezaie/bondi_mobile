@@ -748,6 +748,9 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
         showActionToast(context, t.toast_like_sent);
         Navigator.pop(context);
       }
+    } else if (mounted) {
+      final t = AppLocalizations.of(context)!;
+      showActionToast(context, t.error_something_wrong);
     }
   }
 
@@ -769,6 +772,9 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
           showActionToast(context, t.toast_like_and_message_sent);
           Navigator.pop(context);
         }
+      } else if (mounted) {
+        final t = AppLocalizations.of(context)!;
+        showActionToast(context, t.error_something_wrong);
       }
     }
   }

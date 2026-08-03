@@ -448,14 +448,12 @@ class SearchProvider extends ChangeNotifier {
 
   // ── Actions ────────────────────────────────────────────────────
 
-  Future<Map<String, dynamic>?> likeUser(DiscoverProfile profile) async {
+Future<Map<String, dynamic>?> likeUser(DiscoverProfile profile) async {
     if (isLikeBlocked) return null;
 
     try {
       final response = await SearchService.swipeUser(profile.id, 'like');
       if (response.statusCode == 200) {
-        _users.removeWhere((p) => p.id == profile.id);
-        _total = (_total - 1).clamp(0, _total);
         final data = response.data as Map<String, dynamic>;
         await _refreshLimits();
         return data;
@@ -482,8 +480,6 @@ class SearchProvider extends ChangeNotifier {
         } catch (_) {}
       }
 
-      _users.removeWhere((p) => p.id == profile.id);
-      _total = (_total - 1).clamp(0, _total);
       await _refreshLimits();
 
       final data = response.data as Map<String, dynamic>;
