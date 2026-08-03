@@ -10,19 +10,24 @@ pluginManagement {
     includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
 
     repositories {
-        maven { url = uri("https://mirrors.cloud.tencent.com/nexus/repository/maven-public/") }
-        maven { url = uri("https://maven.aliyun.com/repository/google") }
-        maven { url = uri("https://maven.aliyun.com/repository/central") }
-        maven { url = uri("https://maven.aliyun.com/repository/gradle-plugin") }
+        maven { url = uri("https://repo.huaweicloud.com/repository/maven") }
         google()
         mavenCentral()
         gradlePluginPortal()
     }
 }
 
+dependencyResolutionManagement {
+    repositories {
+        maven { url = uri("https://repo.huaweicloud.com/repository/maven") }
+        google()
+        mavenCentral()
+    }
+}
+
 plugins {
     id("dev.flutter.flutter-plugin-loader") version "1.0.0"
-    id("com.android.application") version "8.11.1" apply false
+    id("com.android.application") version "9.0.1" apply false
     id("com.google.gms.google-services") version "4.4.1" apply false 
 }
 
