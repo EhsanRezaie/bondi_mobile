@@ -131,79 +131,82 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     );
   }
 
-  Future<String?> _showChatBottomSheet() async {
+Future<String?> _showChatBottomSheet() async {
     final t = AppLocalizations.of(context)!;
-    final controller = TextEditingController();
     final result = await showModalBottomSheet<String>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) {
         final isDark = ctx.isDarkMode;
-        return Container(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(ctx).viewInsets.bottom,
-          ),
-          child: Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: isDark ? AppTheme.darkSurface : Colors.white,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-            ),
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 40,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: isDark ? AppTheme.darkBorder : Colors.grey.shade300,
-                        borderRadius: BorderRadius.circular(2),
+        return StatefulBuilder(
+          builder: (ctx, setState) {
+            final controller = TextEditingController();
+            return Container(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(ctx).viewInsets.bottom,
+              ),
+              child: Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: isDark ? AppTheme.darkSurface : Colors.white,
+                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                ),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: isDark ? AppTheme.darkBorder : Colors.grey.shade300,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  Text(
-                    t.discover_say_something,
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: isDark ? AppTheme.darkText : AppTheme.lightText,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: controller,
-                    autofocus: true,
-                    maxLength: 200,
-                    maxLines: 3,
-                    decoration: InputDecoration(
-                      hintText: t.discover_send_message_hint,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(16),
+                      const SizedBox(height: 20),
+                      Text(
+                        t.discover_say_something,
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? AppTheme.darkText : AppTheme.lightText,
+                        ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(ctx, controller.text),
-                    child: Text(t.discover_send_and_like),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: controller,
+                        autofocus: true,
+                        maxLength: 200,
+                        maxLines: 3,
+                        decoration: InputDecoration(
+                          hintText: t.discover_send_message_hint,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pop(ctx, controller.text),
+                          child: Text(t.discover_send_and_like),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
               ),
-            ),
-          ),
+            );
+          },
         );
       },
     );
-    WidgetsBinding.instance.addPostFrameCallback((_) => controller.dispose());
     return result;
   }
 

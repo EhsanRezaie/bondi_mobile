@@ -812,7 +812,6 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
     final t = AppLocalizations.of(context)!;
     final isDark = context.isDarkMode;
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
-    final messageController = TextEditingController();
 
     final result = await showModalBottomSheet<String>(
       context: context,
@@ -821,90 +820,93 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) {
-        return Padding(
-          padding: EdgeInsets.only(
-            left: 20,
-            right: 20,
-            top: 20,
-            bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
-          ),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade400,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
+        return StatefulBuilder(
+          builder: (ctx, setState) {
+            final messageController = TextEditingController();
+            return Padding(
+              padding: EdgeInsets.only(
+                left: 20,
+                right: 20,
+                top: 20,
+                bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
               ),
-              const SizedBox(height: 16),
-              Text(
-                t.discover_say_something,
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: isDark ? AppTheme.darkText : AppTheme.lightText,
-                ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: messageController,
-                maxLines: 3,
-                maxLength: 200,
-                style: TextStyle(fontFamily: 'Inter', color: isDark ? AppTheme.darkText : AppTheme.lightText),
-                decoration: InputDecoration(
-                  hintText: t.discover_send_message_hint,
-                  hintStyle: TextStyle(
-                    color: isDark ? AppTheme.darkTextMuted : Colors.grey,
-                  ),
-                  filled: true,
-                  fillColor: isDark ? AppTheme.darkSecondary : Colors.grey.shade100,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: () {
-                    final msg = messageController.text.trim();
-                    Navigator.pop(ctx, msg.isNotEmpty ? msg : null);
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade400,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
                   ),
-                  child: Text(
-                    t.discover_send_and_like,
-                    style: const TextStyle(
+                  const SizedBox(height: 16),
+                  Text(
+                    t.discover_say_something,
+                    style: TextStyle(
                       fontFamily: 'Inter',
+                      fontSize: 16,
                       fontWeight: FontWeight.w600,
+                      color: isDark ? AppTheme.darkText : AppTheme.lightText,
                     ),
                   ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: messageController,
+                    maxLines: 3,
+                    maxLength: 200,
+                    style: TextStyle(fontFamily: 'Inter', color: isDark ? AppTheme.darkText : AppTheme.lightText),
+                    decoration: InputDecoration(
+                      hintText: t.discover_send_message_hint,
+                      hintStyle: TextStyle(
+                        color: isDark ? AppTheme.darkTextMuted : Colors.grey,
+                      ),
+                      filled: true,
+                      fillColor: isDark ? AppTheme.darkSecondary : Colors.grey.shade100,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        final msg = messageController.text.trim();
+                        Navigator.pop(ctx, msg.isNotEmpty ? msg : null);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Text(
+                        t.discover_send_and_like,
+                        style: const TextStyle(
+                          fontFamily: 'Inter',
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
                 ),
               ),
-            ],
-            ),
-          ),
+            );
+          },
         );
       },
     );
-
-    WidgetsBinding.instance.addPostFrameCallback((_) => messageController.dispose());
     return result;
   }
 

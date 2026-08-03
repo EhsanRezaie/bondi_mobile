@@ -43,6 +43,7 @@ class _ChatInputBarState extends State<ChatInputBar> {
   bool _isRecording = false;
   int _recordSeconds = 0;
   AudioRecorder? _recorder;
+  bool _disposed = false;
 
   @override
   void initState() {
@@ -55,6 +56,7 @@ class _ChatInputBarState extends State<ChatInputBar> {
   @override
   void didUpdateWidget(covariant ChatInputBar oldWidget) {
     super.didUpdateWidget(oldWidget);
+    if (_disposed) return;
     if (widget.isEditing && widget.editingContent != null) {
       _controller.text = widget.editingContent!;
     } else if (!widget.isEditing && oldWidget.isEditing) {
@@ -64,6 +66,7 @@ class _ChatInputBarState extends State<ChatInputBar> {
 
   @override
   void dispose() {
+    _disposed = true;
     _controller.dispose();
     _focusNode.dispose();
     _recorder?.dispose();
