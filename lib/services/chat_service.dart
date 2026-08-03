@@ -118,7 +118,7 @@ class ChatService {
           imagePath,
           filename: 'photo_${DateTime.now().millisecondsSinceEpoch}.jpg',
         ),
-        if (caption != null) 'caption': caption,
+        'caption': ?caption,
       });
       return await ApiService.upload('/messages/$identifier/photo', formData);
     } on DioException catch (e) {

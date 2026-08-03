@@ -85,7 +85,6 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
     final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
     final mutedColor = isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted;
-    final surfaceColor = isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
 
     return Scaffold(
@@ -272,7 +271,7 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
           color: isSelected
-              ? primaryColor.withOpacity(0.1)
+              ? primaryColor.withValues(alpha: 0.1)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
@@ -605,7 +604,7 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
                     max: 100,
                     divisions: 82,
                     activeColor: primaryColor,
-                    inactiveColor: primaryColor.withOpacity(0.2),
+                    inactiveColor: primaryColor.withValues(alpha: 0.2),
                     onChanged: (values) {
                       setSheetState(() {
                         minAge = values.start;
@@ -701,7 +700,7 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
                     max: 500,
                     divisions: 499,
                     activeColor: primaryColor,
-                    inactiveColor: primaryColor.withOpacity(0.2),
+                    inactiveColor: primaryColor.withValues(alpha: 0.2),
                     onChanged: (value) {
                       setSheetState(() {
                         distance = value;

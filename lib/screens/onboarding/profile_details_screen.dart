@@ -1,7 +1,6 @@
 // lib/screens/onboarding/profile_details_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:dating_app/generated/app_localizations.dart';
 import '../../config/app_theme.dart';
 import '../../providers/onboarding_provider.dart';
 import 'interests_screen.dart';
@@ -33,7 +32,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
   String? _ethnicity;
   List<String> _selectedLanguages = [];
 
-  bool _isLoading = false;
+  final bool _isLoading = false;
   String? _errorMessage;
 
   final List<String> _languageOptions = [
@@ -329,7 +328,6 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final t = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
@@ -421,9 +419,9 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                                 decoration: BoxDecoration(
-                                  color: errorColor.withOpacity(0.08),
+                                  color: errorColor.withValues(alpha: 0.08),
                                   borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: errorColor.withOpacity(0.2)),
+                                  border: Border.all(color: errorColor.withValues(alpha: 0.2)),
                                 ),
                                 child: Row(
                                   children: [
@@ -633,7 +631,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                                         duration: const Duration(milliseconds: 150),
                                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                                         decoration: BoxDecoration(
-                                          color: isSelected ? primaryColor.withOpacity(0.06) : surfaceColor,
+                                          color: isSelected ? primaryColor.withValues(alpha: 0.06) : surfaceColor,
                                           borderRadius: BorderRadius.circular(20),
                                           border: Border.all(
                                             color: isSelected ? primaryColor : borderColor,
@@ -646,7 +644,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                                             fontFamily: 'Inter',
                                             fontSize: 14,
                                             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                                            color: isSelected ? primaryColor : onSurfaceColor.withOpacity(0.8),
+                                            color: isSelected ? primaryColor : onSurfaceColor.withValues(alpha: 0.8),
                                           ),
                                         ),
                                       ),
@@ -779,7 +777,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                 duration: const Duration(milliseconds: 150),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
-                  color: isSelected ? primaryColor.withOpacity(0.06) : surfaceColor,
+                  color: isSelected ? primaryColor.withValues(alpha: 0.06) : surfaceColor,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: isSelected ? primaryColor : borderColor,
@@ -792,7 +790,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                     fontFamily: 'Inter',
                     fontSize: 14,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                    color: isSelected ? primaryColor : onSurfaceColor.withOpacity(0.8),
+                    color: isSelected ? primaryColor : onSurfaceColor.withValues(alpha: 0.8),
                   ),
                 ),
               ),

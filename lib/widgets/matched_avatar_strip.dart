@@ -58,7 +58,7 @@ class MatchedAvatarStrip extends StatelessWidget {
                               gradient: LinearGradient(
                                 colors: [
                                   primaryColor,
-                                  primaryColor.withOpacity(0.5),
+                                  primaryColor.withValues(alpha: 0.5),
                                 ],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,

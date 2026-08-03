@@ -1549,6 +1549,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Matched {time}'**
   String chat_matched_at(Object time);
+
+  /// No description provided for @toast_like_sent.
+  ///
+  /// In en, this message translates to:
+  /// **'Like sent!'**
+  String get toast_like_sent;
+
+  /// No description provided for @toast_like_and_message_sent.
+  ///
+  /// In en, this message translates to:
+  /// **'Like and message sent!'**
+  String get toast_like_and_message_sent;
 }
 
 class _AppLocalizationsDelegate

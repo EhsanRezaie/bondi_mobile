@@ -239,8 +239,8 @@ class _UserCardState extends State<UserCard>
                   colors: [
                     Colors.transparent,
                     Colors.transparent,
-                    Colors.black.withOpacity(0.3),
-                    Colors.black.withOpacity(0.75),
+                    Colors.black.withValues(alpha: 0.3),
+                    Colors.black.withValues(alpha: 0.75),
                   ],
                   stops: const [0.0, 0.4, 0.7, 1.0],
                 ),
@@ -365,14 +365,14 @@ class _UserCardState extends State<UserCard>
                     Row(
                       children: [
                         Icon(Icons.near_me, size: 13,
-                            color: Colors.white.withOpacity(0.8)),
+                            color: Colors.white.withValues(alpha: 0.8)),
                         const SizedBox(width: 4),
                         Text(
                           '${profile.distanceKm!.round()} km away',
                           style: TextStyle(
                             fontFamily: 'Inter',
                             fontSize: 13,
-                            color: Colors.white.withOpacity(0.8),
+                            color: Colors.white.withValues(alpha: 0.8),
                           ),
                         ),
                       ],
@@ -384,7 +384,7 @@ class _UserCardState extends State<UserCard>
                       child: Row(
                         children: [
                           Icon(Icons.location_on, size: 14,
-                              color: Colors.white.withOpacity(0.8)),
+                              color: Colors.white.withValues(alpha: 0.8)),
                           const SizedBox(width: 4),
                           Flexible(
                             child: Text(
@@ -392,7 +392,7 @@ class _UserCardState extends State<UserCard>
                               style: TextStyle(
                                 fontFamily: 'Inter',
                                 fontSize: 13,
-                                color: Colors.white.withOpacity(0.85),
+                                color: Colors.white.withValues(alpha: 0.85),
                               ),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -422,7 +422,7 @@ class _UserCardState extends State<UserCard>
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.4),
+                      color: Colors.black.withValues(alpha: 0.4),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: const Row(

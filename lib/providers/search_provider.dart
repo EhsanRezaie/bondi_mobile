@@ -13,8 +13,15 @@ class SearchProvider extends ChangeNotifier {
     super.dispose();
   }
 
+  bool _notifyScheduled = false;
+
   void _safeNotify() {
-    if (!_disposed) notifyListeners();
+    if (_disposed || _notifyScheduled) return;
+    _notifyScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _notifyScheduled = false;
+      if (!_disposed) notifyListeners();
+    });
   }
 
   // ── Results state ──────────────────────────────────────────────
@@ -26,7 +33,7 @@ class SearchProvider extends ChangeNotifier {
   int _offset = 0;
   int _currentPage = 0;
   bool _hasMore = true;
-  static const int _pageSize = 6;
+  static const int _pageSize = 9;
 
   // ── Basic filters (quick bar) ──────────────────────────────────
   String? _genderFilter;
@@ -447,7 +454,8 @@ class SearchProvider extends ChangeNotifier {
     try {
       final response = await SearchService.swipeUser(profile.id, 'like');
       if (response.statusCode == 200) {
-        _removeProfile(profile);
+        _users.removeWhere((p) => p.id == profile.id);
+        _total = (_total - 1).clamp(0, _total);
         final data = response.data as Map<String, dynamic>;
         await _refreshLimits();
         return data;
@@ -474,7 +482,8 @@ class SearchProvider extends ChangeNotifier {
         } catch (_) {}
       }
 
-      _removeProfile(profile);
+      _users.removeWhere((p) => p.id == profile.id);
+      _total = (_total - 1).clamp(0, _total);
       await _refreshLimits();
 
       final data = response.data as Map<String, dynamic>;
@@ -484,12 +493,6 @@ class SearchProvider extends ChangeNotifier {
       };
     } catch (_) {}
     return null;
-  }
-
-  void _removeProfile(DiscoverProfile profile) {
-    _users.removeWhere((p) => p.id == profile.id);
-    _total = (_total - 1).clamp(0, _total);
-    _safeNotify();
   }
 
   // ── Limits ─────────────────────────────────────────────────────

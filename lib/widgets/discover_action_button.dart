@@ -42,7 +42,7 @@ class DiscoverActionButton extends StatelessWidget {
               boxShadow: [
                 BoxShadow(
                   color: (gradient?.colors.first ?? backgroundColor ?? Colors.black)
-                      .withOpacity(0.35),
+                      .withValues(alpha: 0.35),
                   blurRadius: 16,
                   offset: const Offset(0, 6),
                 ),
@@ -56,8 +56,8 @@ class DiscoverActionButton extends StatelessWidget {
             top: -4,
             right: -4,
             child: Container(
-              constraints: const BoxConstraints(minWidth: 26, minHeight: 26),
-              padding: const EdgeInsets.symmetric(horizontal: 6),
+              constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 5),
               decoration: BoxDecoration(
                 color: const Color(0xFFDC3545),
                 shape: BoxShape.circle,
@@ -71,7 +71,7 @@ class DiscoverActionButton extends StatelessWidget {
                   '$badgeCount',
                   style: const TextStyle(
                     fontFamily: 'Inter',
-                    fontSize: 13,
+                    fontSize: 10,
                     fontWeight: FontWeight.w800,
                     color: Colors.white,
                     height: 1,

@@ -1,4 +1,5 @@
 // lib/providers/profile_provider.dart
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:dating_app/models/photo.dart';
 import 'package:dating_app/models/profile_stats.dart';
@@ -49,13 +50,13 @@ class ProfileProvider extends ChangeNotifier {
     _error = null;
 
     try {
-      print('📸 Loading photos...');
+      debugPrint('📸 Loading photos...');
       final photos = await PhotoService.getMyPhotos();
-      print('📸 Photos loaded: ${photos.length}');
+      debugPrint('📸 Photos loaded: ${photos.length}');
       _photos = photos;
       _isInitialized = true;
     } catch (e) {
-      print('❌ Failed to load photos: $e');
+      debugPrint('❌ Failed to load photos: $e');
       _error = 'Failed to load photos';
     } finally {
       _setLoading(false);
@@ -102,12 +103,12 @@ class ProfileProvider extends ChangeNotifier {
 
   // Refresh all data
   Future<void> refreshData() async {
-    print('🔄 Refreshing profile data...');
+    debugPrint('🔄 Refreshing profile data...');
     await Future.wait([
       loadPhotos(),
       loadStats(),
     ]);
-    print('✅ Profile data refreshed');
+    debugPrint('✅ Profile data refreshed');
   }
 
   void _setLoading(bool loading) {

@@ -514,15 +514,15 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
         RangeSlider(
           values: RangeValues(_ageMin.toDouble(), (_ageMax ?? 100).toDouble()),
           min: 18, max: 100, divisions: 82,
-          activeColor: primaryColor, inactiveColor: primaryColor.withOpacity(0.2),
+          activeColor: primaryColor, inactiveColor: primaryColor.withValues(alpha: 0.2),
           onChanged: (v) => setState(() { _ageMin = v.start.round(); _ageMax = v.end.round() == 100 ? null : v.end.round(); }),
         ),
         _buildSectionHeader('📏', t.search_filter_distance_km, isDark, primaryColor),
-        Text(_distanceKm != null ? '${_distanceKm} km' : '500+ km', style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: textColor)),
+        Text(_distanceKm != null ? '$_distanceKm km' : '500+ km', style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: textColor)),
         Slider(
           value: (_distanceKm ?? 500).toDouble(),
           min: 1, max: 500, divisions: 499,
-          activeColor: primaryColor, inactiveColor: primaryColor.withOpacity(0.2),
+          activeColor: primaryColor, inactiveColor: primaryColor.withValues(alpha: 0.2),
           onChanged: (v) => setState(() => _distanceKm = v.round() >= 500 ? null : v.round()),
         ),
       ],
@@ -540,7 +540,7 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
         RangeSlider(
           values: RangeValues((_heightMin ?? 50).toDouble(), (_heightMax ?? 250).toDouble()),
           min: 50, max: 250, divisions: 200,
-          activeColor: primaryColor, inactiveColor: primaryColor.withOpacity(0.2),
+          activeColor: primaryColor, inactiveColor: primaryColor.withValues(alpha: 0.2),
           onChanged: (v) => setState(() {
             _heightMin = v.start.round() <= 50 ? null : v.start.round();
             _heightMax = v.end.round() >= 250 ? null : v.end.round();
@@ -552,7 +552,7 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
         RangeSlider(
           values: RangeValues((_weightMin ?? 30).toDouble(), (_weightMax ?? 300).toDouble()),
           min: 30, max: 300, divisions: 270,
-          activeColor: primaryColor, inactiveColor: primaryColor.withOpacity(0.2),
+          activeColor: primaryColor, inactiveColor: primaryColor.withValues(alpha: 0.2),
           onChanged: (v) => setState(() {
             _weightMin = v.start.round() <= 30 ? null : v.start.round();
             _weightMax = v.end.round() >= 300 ? null : v.end.round();
@@ -877,43 +877,9 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
         Switch(
           value: value,
           onChanged: onChanged,
-          activeColor: primaryColor,
+          activeThumbColor: primaryColor,
         ),
       ],
-    );
-  }
-
-  Widget _buildTextInput({
-    required String? value,
-    required String hintText,
-    required ValueChanged<String> onChanged,
-    required bool isDark,
-    required Color textColor,
-    required Color borderColor,
-  }) {
-    return TextField(
-      controller: TextEditingController(text: value),
-      onChanged: onChanged,
-      style: TextStyle(fontFamily: 'Inter', color: textColor),
-      decoration: InputDecoration(
-        hintText: hintText,
-        hintStyle: TextStyle(color: isDark ? AppTheme.darkTextMuted : Colors.grey),
-        filled: true,
-        fillColor: isDark ? AppTheme.darkSecondary : Colors.grey.shade100,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: borderColor),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: borderColor),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(color: isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary),
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-      ),
     );
   }
 }

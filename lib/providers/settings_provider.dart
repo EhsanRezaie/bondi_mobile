@@ -4,6 +4,8 @@ import '../models/user.dart';
 import '../services/auth_service.dart';
 
 class SettingsProvider extends ChangeNotifier {
+  bool _disposed = false;
+
   static const String _darkModeKey = 'dark_mode';
 
   bool _darkMode = false;
@@ -31,10 +33,19 @@ class SettingsProvider extends ChangeNotifier {
     _loadSavedDarkMode();
   }
 
-  Future<void> _loadSavedDarkMode() async {
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+   Future<void> _loadSavedDarkMode() async {
     final prefs = await SharedPreferences.getInstance();
-    _darkMode = prefs.getBool(_darkModeKey) ?? false;
-    notifyListeners();
+    final darkMode = prefs.getBool(_darkModeKey) ?? false;
+    if (_darkMode != darkMode) {
+      _darkMode = darkMode;
+      _safeNotify();
+    }
   }
 
   Future<void> _saveDarkMode(bool value) async {
@@ -55,55 +66,59 @@ class SettingsProvider extends ChangeNotifier {
     _language = s.language;
     _darkMode = s.darkMode;
     _saveDarkMode(s.darkMode);
-    notifyListeners();
+    _safeNotify();
+  }
+
+  void _safeNotify() {
+    if (!_disposed) notifyListeners();
   }
 
   Future<void> toggleDarkMode(bool value) async {
     _darkMode = value;
-    notifyListeners();
+    _safeNotify();
     _saveDarkMode(value);
     await _updateApi({'dark_mode': value});
   }
 
   Future<void> toggleHideLastSeen(bool value) async {
     _hideLastSeen = value;
-    notifyListeners();
+    _safeNotify();
     await _updateApi({'hide_last_seen': value});
   }
 
   Future<void> toggleHideOnlineStatus(bool value) async {
     _hideOnlineStatus = value;
-    notifyListeners();
+    _safeNotify();
     await _updateApi({'hide_online_status': value});
   }
 
   Future<void> togglePushEnabled(bool value) async {
     _pushEnabled = value;
-    notifyListeners();
+    _safeNotify();
     await _updateApi({'push_enabled': value});
   }
 
   Future<void> toggleLikeNotifications(bool value) async {
     _likeNotifications = value;
-    notifyListeners();
+    _safeNotify();
     await _updateApi({'like_notifications': value});
   }
 
   Future<void> toggleMatchNotifications(bool value) async {
     _matchNotifications = value;
-    notifyListeners();
+    _safeNotify();
     await _updateApi({'match_notifications': value});
   }
 
   Future<void> toggleMessageNotifications(bool value) async {
     _messageNotifications = value;
-    notifyListeners();
+    _safeNotify();
     await _updateApi({'message_notifications': value});
   }
 
   Future<void> changeLanguage(String value) async {
     _language = value;
-    notifyListeners();
+    _safeNotify();
     await _updateApi({'language': value});
   }
 
@@ -117,3 +132,4 @@ class SettingsProvider extends ChangeNotifier {
     }
   }
 }
+

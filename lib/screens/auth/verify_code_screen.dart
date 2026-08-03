@@ -46,32 +46,32 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
   @override
   void initState() {
     super.initState();
-    this._startResendTimer();
+    _startResendTimer();
     // Focus on first field after build
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      this._codeFocusNodes[0].requestFocus();
+      _codeFocusNodes[0].requestFocus();
     });
   }
 
   void _startResendTimer() {
-    this._isTimerRunning = true;
-    this._resendTimerSeconds = 300;
-    this._timerCallback = () {
+    _isTimerRunning = true;
+    _resendTimerSeconds = 300;
+    _timerCallback = () {
       if (mounted) {
         setState(() {
-          if (this._resendTimerSeconds > 0) {
-            this._resendTimerSeconds--;
+          if (_resendTimerSeconds > 0) {
+            _resendTimerSeconds--;
           } else {
-            this._isTimerRunning = false;
-            this._timerCallback = () {};
+            _isTimerRunning = false;
+            _timerCallback = () {};
           }
         });
       }
     };
     Future.doWhile(() async {
       await Future.delayed(const Duration(seconds: 1));
-      this._timerCallback();
-      return this._isTimerRunning && mounted;
+      _timerCallback();
+      return _isTimerRunning && mounted;
     });
   }
 
@@ -83,58 +83,58 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
 
   @override
   void dispose() {
-    for (var controller in this._codeControllers) {
+    for (var controller in _codeControllers) {
       controller.dispose();
     }
-    for (var node in this._codeFocusNodes) {
+    for (var node in _codeFocusNodes) {
       node.dispose();
     }
-    this._referralController.dispose();
-    this._isTimerRunning = false;
+    _referralController.dispose();
+    _isTimerRunning = false;
     super.dispose();
   }
 
   void _onCodeChanged(int index, String value) {
     // Auto-advance to next field
     if (value.length == 1 && index < 5) {
-      this._codeFocusNodes[index + 1].requestFocus();
+      _codeFocusNodes[index + 1].requestFocus();
     }
     // Auto-backspace to previous field
     if (value.isEmpty && index > 0) {
-      this._codeFocusNodes[index - 1].requestFocus();
+      _codeFocusNodes[index - 1].requestFocus();
     }
     setState(() {
-      this._errorMessage = null;
+      _errorMessage = null;
     });
   }
 
   String _getFullCode() {
-    return this._codeControllers.map((c) => c.text).join();
+    return _codeControllers.map((c) => c.text).join();
   }
 
   Future<void> _handleVerify() async {
     final t = AppLocalizations.of(context)!;
-    final code = this._getFullCode();
+    final code = _getFullCode();
     if (code.length != 6) {
       setState(() {
-        this._errorMessage = t.verify_code_required;
+        _errorMessage = t.verify_code_required;
       });
       return;
     }
 
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    this._setLoading(true);
+    _setLoading(true);
 
     final success = await authProvider.registerVerify(
       code: code,
       password: widget.password,
-      referralCode: this._referralController.text.trim().isNotEmpty
-          ? this._referralController.text.trim()
+      referralCode: _referralController.text.trim().isNotEmpty
+          ? _referralController.text.trim()
           : null,
       context: context,
     );
 
-    this._setLoading(false);
+    _setLoading(false);
 
     if (success) {
       if (mounted) {
@@ -152,37 +152,37 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
     } else {
       if (mounted) {
         setState(() {
-          this._errorMessage = authProvider.errorMessage ?? t.error_verification_failed;
+          _errorMessage = authProvider.errorMessage ?? t.error_verification_failed;
         });
-        for (var controller in this._codeControllers) {
+        for (var controller in _codeControllers) {
           controller.clear();
         }
-        this._codeFocusNodes[0].requestFocus();
+        _codeFocusNodes[0].requestFocus();
       }
     }
   }
 
   void _setLoading(bool loading) {
     setState(() {
-      this._isLoading = loading;
+      _isLoading = loading;
     });
   }
 
   void _resendCode() async {
-    if (this._isTimerRunning) {
+    if (_isTimerRunning) {
       return;
     }
 
     final t = AppLocalizations.of(context)!;
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    this._setLoading(true);
+    _setLoading(true);
 
     final success = await authProvider.registerInit(widget.email, context);
 
-    this._setLoading(false);
+    _setLoading(false);
 
     if (success && mounted) {
-      this._startResendTimer();
+      _startResendTimer();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(t.verify_resend_success),
@@ -190,10 +190,10 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
           duration: const Duration(seconds: 3),
         ),
       );
-      for (var controller in this._codeControllers) {
+      for (var controller in _codeControllers) {
         controller.clear();
       }
-      this._codeFocusNodes[0].requestFocus();
+      _codeFocusNodes[0].requestFocus();
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -272,13 +272,13 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                   ),
                   const SizedBox(height: 48),
 
-                  if (this._errorMessage != null)
+                  if (_errorMessage != null)
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: errorColor.withOpacity(0.1),
+                        color: errorColor.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: errorColor.withOpacity(0.3)),
+                        border: Border.all(color: errorColor.withValues(alpha: 0.3)),
                       ),
                       child: Row(
                         children: [
@@ -286,7 +286,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
-                              this._errorMessage!,
+                              _errorMessage!,
                               style: TextStyle(
                                 fontFamily: 'Inter',
                                 fontSize: 14,
@@ -297,7 +297,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                         ],
                       ),
                     ),
-                  if (this._errorMessage != null) const SizedBox(height: 24),
+                  if (_errorMessage != null) const SizedBox(height: 24),
 
                   Directionality(
                     textDirection: TextDirection.ltr,
@@ -308,8 +308,8 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                           width: 48,
                           height: 56,
                           child: TextFormField(
-                            controller: this._codeControllers[index],
-                            focusNode: this._codeFocusNodes[index],
+                            controller: _codeControllers[index],
+                            focusNode: _codeFocusNodes[index],
                             textAlign: TextAlign.center,
                             textDirection: TextDirection.ltr,
                             maxLength: 1,
@@ -323,7 +323,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                               fontWeight: FontWeight.w600,
                               color: onSurfaceColor,
                             ),
-                            onChanged: (value) => this._onCodeChanged(index, value),
+                            onChanged: (value) => _onCodeChanged(index, value),
                             decoration: InputDecoration(
                               counterText: '',
                               hintText: '—',
@@ -331,7 +331,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                                 fontFamily: 'Inter',
                                 fontSize: 20,
                                 fontWeight: FontWeight.w600,
-                                color: textMutedColor.withOpacity(0.3),
+                                color: textMutedColor.withValues(alpha: 0.3),
                               ),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -360,18 +360,18 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                   const SizedBox(height: 16),
 
                   TextButton(
-                    onPressed: this._isTimerRunning || this._isLoading ? null : this._resendCode,
+                    onPressed: _isTimerRunning || _isLoading ? null : _resendCode,
                     child: Text(
-                      this._isTimerRunning
-                          ? '${t.verify_resend} (${this._formatTime(this._resendTimerSeconds)})'
+                      _isTimerRunning
+                          ? '${t.verify_resend} (${_formatTime(_resendTimerSeconds)})'
                           : t.verify_resend,
                       style: TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 14,
-                        color: this._isTimerRunning
+                        color: _isTimerRunning
                             ? textMutedColor
                             : primaryColor,
-                        fontWeight: this._isTimerRunning
+                        fontWeight: _isTimerRunning
                             ? FontWeight.w400
                             : FontWeight.w600,
                       ),
@@ -390,7 +390,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                   const SizedBox(height: 8),
 
                   TextFormField(
-                    controller: this._referralController,
+                    controller: _referralController,
                     textInputAction: TextInputAction.done,
                     style: AppTheme.bodyLarge.copyWith(
                       color: onSurfaceColor,
@@ -436,7 +436,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: this._isLoading ? null : this._handleVerify,
+                      onPressed: _isLoading ? null : _handleVerify,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: primaryColor,
                         foregroundColor: Colors.white,
@@ -446,7 +446,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                         elevation: 0,
                         minimumSize: const Size(double.infinity, 56),
                       ),
-                      child: this._isLoading
+                      child: _isLoading
                           ? SizedBox(
                               height: 24,
                               width: 24,

@@ -252,5 +252,7 @@
   "chat_loading_more": "بارگذاری بیشتر...",
   "chat_delete_message": "حذف پیام",
   "chat_forward": "ارسال به",
-  "chat_matched_at": "تطابق {time}"
+  "chat_matched_at": "تطابق {time}",
+  "toast_like_sent": "لایک ارسال شد!",
+  "toast_like_and_message_sent": "لایک و پیام ارسال شد!"
 }

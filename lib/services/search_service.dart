@@ -30,7 +30,7 @@ class SearchService {
     bool? isVerified,
     String sortBy = 'recent',
     String sortOrder = 'desc',
-    int limit = 6,
+    int limit = 9,
     int offset = 0,
   }) async {
     try {

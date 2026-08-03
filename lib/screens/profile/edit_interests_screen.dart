@@ -14,7 +14,6 @@ class EditInterestsScreen extends StatefulWidget {
 }
 
 class _EditInterestsScreenState extends State<EditInterestsScreen> {
-  List<Interest> _allInterests = [];
   List<String> _selectedInterestNames = [];
   bool _isLoading = true;
   bool _isSaving = false;
@@ -46,7 +45,6 @@ class _EditInterestsScreenState extends State<EditInterestsScreen> {
       if (!mounted) return;
 
       setState(() {
-        _allInterests = interests;
         _groupedInterests = _groupByCategory(interests);
         if (_groupedInterests.isNotEmpty) {
           _expandedCategories.add(_groupedInterests.keys.first);
@@ -126,7 +124,7 @@ class _EditInterestsScreenState extends State<EditInterestsScreen> {
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
-      print('📤 Sending interest names: $_selectedInterestNames');
+      debugPrint('📤 Sending interest names: $_selectedInterestNames');
 
       final success = await authProvider.updateInterests(_selectedInterestNames);
 
@@ -228,9 +226,9 @@ class _EditInterestsScreenState extends State<EditInterestsScreen> {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                               decoration: BoxDecoration(
-                                color: errorColor.withOpacity(0.08),
+                                color: errorColor.withValues(alpha: 0.08),
                                 borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: errorColor.withOpacity(0.2)),
+                                border: Border.all(color: errorColor.withValues(alpha: 0.2)),
                               ),
                               child: Row(
                                 children: [
@@ -255,7 +253,7 @@ class _EditInterestsScreenState extends State<EditInterestsScreen> {
                             width: double.infinity,
                             height: 6,
                             decoration: BoxDecoration(
-                              color: isDark ? Colors.white.withOpacity(0.1) : Colors.grey.shade200,
+                              color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade200,
                               borderRadius: BorderRadius.circular(3),
                             ),
                             child: FractionallySizedBox(
@@ -347,7 +345,7 @@ class _EditInterestsScreenState extends State<EditInterestsScreen> {
                                     fontFamily: 'Inter',
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
-                                    color: isEnough ? Colors.white : Colors.white.withOpacity(0.7),
+                                    color: isEnough ? Colors.white : Colors.white.withValues(alpha: 0.7),
                                   ),
                                 ),
                         ),
@@ -412,7 +410,7 @@ class _EditInterestsScreenState extends State<EditInterestsScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       margin: const EdgeInsets.only(right: 8),
                       decoration: BoxDecoration(
-                        color: primaryColor.withOpacity(0.15),
+                        color: primaryColor.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
@@ -459,7 +457,7 @@ class _EditInterestsScreenState extends State<EditInterestsScreen> {
                         boxShadow: isSelected
                             ? [
                                 BoxShadow(
-                                  color: primaryColor.withOpacity(0.3),
+                                  color: primaryColor.withValues(alpha: 0.3),
                                   blurRadius: 8,
                                   offset: const Offset(0, 4),
                                 ),

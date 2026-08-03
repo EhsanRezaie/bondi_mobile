@@ -258,7 +258,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                           color: (isDark
                                   ? AppTheme.darkPrimary
                                   : AppTheme.lightPrimary)
-                              .withOpacity(0.1),
+                              .withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Row(

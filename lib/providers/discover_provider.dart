@@ -13,8 +13,15 @@ class DiscoverProvider extends ChangeNotifier {
     super.dispose();
   }
 
+  bool _notifyScheduled = false;
+
   void _safeNotify() {
-    if (!_disposed) notifyListeners();
+    if (_disposed || _notifyScheduled) return;
+    _notifyScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _notifyScheduled = false;
+      if (!_disposed) notifyListeners();
+    });
   }
 
   List<DiscoverProfile> _profiles = [];
@@ -189,9 +196,11 @@ class DiscoverProvider extends ChangeNotifier {
     try {
       final response = await DiscoverService.swipeUser(profile.id, 'like');
       if (response.statusCode == 200) {
-        _removeProfile(profile);
+        _profiles.removeWhere((p) => p.id == profile.id);
         final data = response.data as Map<String, dynamic>;
-        await _refreshLimits();
+        await _refreshLimits(notify: false);
+        _safeNotify();
+        _refillIfLow();
         if (data['matched'] == true) {
           return data;
         }
@@ -205,7 +214,9 @@ class DiscoverProvider extends ChangeNotifier {
     try {
       final response = await DiscoverService.swipeUser(profile.id, 'pass');
       if (response.statusCode == 200) {
-        _removeProfile(profile);
+        _profiles.removeWhere((p) => p.id == profile.id);
+        _refillIfLow();
+        _safeNotify();
       }
     } catch (_) {}
   }
@@ -228,8 +239,10 @@ class DiscoverProvider extends ChangeNotifier {
         } catch (_) {}
       }
 
-      _removeProfile(profile);
-      await _refreshLimits();
+      _profiles.removeWhere((p) => p.id == profile.id);
+      await _refreshLimits(notify: false);
+      _safeNotify();
+      _refillIfLow();
 
       final data = response.data as Map<String, dynamic>;
       return {
@@ -240,9 +253,7 @@ class DiscoverProvider extends ChangeNotifier {
     return null;
   }
 
-  void _removeProfile(DiscoverProfile profile) {
-    _profiles.removeWhere((p) => p.id == profile.id);
-    _safeNotify();
+  void _refillIfLow() {
     if (_profiles.length <= 2 && _hasMore) {
       loadMore();
     }
@@ -250,7 +261,7 @@ class DiscoverProvider extends ChangeNotifier {
 
   // ── Limits ──────────────────────────────────────────────────────────
 
-  Future<void> _refreshLimits() async {
+  Future<void> _refreshLimits({bool notify = true}) async {
     try {
       final response = await DiscoverService.getMyLimits();
       if (response.statusCode == 200) {
@@ -260,7 +271,7 @@ class DiscoverProvider extends ChangeNotifier {
         _dailyLikesLimit = data['daily_likes_limit'] ?? 20;
         _chatsRemaining = data['chats_remaining_today'] ?? 0;
         _dailyChatsLimit = data['daily_chats_limit'] ?? 10;
-        _safeNotify();
+        if (notify) _safeNotify();
       }
     } catch (_) {}
   }

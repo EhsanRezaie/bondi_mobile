@@ -40,8 +40,8 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
   bool _isSaving = false;
   String? _errorMessage;
 
-  static const int MIN_PHOTOS = 3;
-  static const int MAX_PHOTOS = 9;
+  static const int minPhotos = 3;
+  static const int maxPhotos = 9;
 
   @override
   void initState() {
@@ -73,8 +73,8 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
   }
 
   Future<void> _pickAndAddPhoto(ImageSource source) async {
-    if (_items.length >= MAX_PHOTOS) {
-      setState(() => _errorMessage = 'Maximum $MAX_PHOTOS photos allowed');
+    if (_items.length >= maxPhotos) {
+      setState(() => _errorMessage = 'Maximum $maxPhotos photos allowed');
       return;
     }
 
@@ -202,9 +202,9 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
   Future<void> _handleSave() async {
     if (_isSaving) return;
 
-    if (_items.length < MIN_PHOTOS) {
+    if (_items.length < minPhotos) {
       setState(() {
-        _errorMessage = 'At least $MIN_PHOTOS photos are required';
+        _errorMessage = 'At least $minPhotos photos are required';
         _isSaving = false;
       });
       return;
@@ -308,7 +308,7 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
         Navigator.pop(context);
       }
     } catch (e) {
-      print('❌ Save error: $e');
+      debugPrint('❌ Save error: $e');
       if (mounted) {
         setState(() {
           _errorMessage = 'An error occurred. Please try again.';
@@ -336,7 +336,8 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
       onPopInvokedWithResult: (didPop, _) async {
         if (didPop) return;
         final shouldPop = await _hasUnsavedChanges();
-        if (shouldPop && mounted) {
+        if (!context.mounted) return;
+        if (shouldPop) {
           Navigator.pop(context);
         }
       },
@@ -347,7 +348,8 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
             icon: Icon(Icons.arrow_back_ios, color: onSurfaceColor, size: 20),
             onPressed: () async {
               final shouldPop = await _hasUnsavedChanges();
-              if (shouldPop && mounted) {
+              if (!context.mounted) return;
+              if (shouldPop) {
                 Navigator.pop(context);
               }
             },
@@ -395,7 +397,7 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
                               Row(
                                 children: [
                                   Text(
-                                    '${_items.length} / $MAX_PHOTOS photos',
+                                    '${_items.length} / $maxPhotos photos',
                                     style: TextStyle(
                                       fontFamily: 'Inter',
                                       fontSize: 13,
@@ -403,10 +405,10 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
                                       color: onSurfaceColor,
                                     ),
                                   ),
-                                  if (_items.length < MIN_PHOTOS) ...[
+                                  if (_items.length < minPhotos) ...[
                                     const SizedBox(width: 8),
                                     Text(
-                                      '(${MIN_PHOTOS - _items.length} more required)',
+                                      '(${minPhotos - _items.length} more required)',
                                       style: TextStyle(
                                         fontFamily: 'Inter',
                                         fontSize: 12,
@@ -424,9 +426,9 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
                                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                                   margin: const EdgeInsets.only(bottom: 8),
                                   decoration: BoxDecoration(
-                                    color: errorColor.withOpacity(0.08),
+                                    color: errorColor.withValues(alpha: 0.08),
                                     borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(color: errorColor.withOpacity(0.2)),
+                                    border: Border.all(color: errorColor.withValues(alpha: 0.2)),
                                   ),
                                   child: Row(
                                     children: [
@@ -500,8 +502,8 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
                             child: ElevatedButton(
                               onPressed: (_isSaving || !canSave) ? null : _handleSave,
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: canSave ? primaryColor : primaryColor.withOpacity(0.3),
-                                foregroundColor: canSave ? Colors.white : primaryColor.withOpacity(0.5),
+                                backgroundColor: canSave ? primaryColor : primaryColor.withValues(alpha: 0.3),
+                                foregroundColor: canSave ? Colors.white : primaryColor.withValues(alpha: 0.5),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(16),
                                 ),
@@ -515,12 +517,12 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
                                     child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
                                   )
                                 : Text(
-                                    _items.length < MIN_PHOTOS ? 'Add ${MIN_PHOTOS - _items.length} more' : (canSave ? 'Save' : 'No changes'),
+                                    _items.length < minPhotos ? 'Add ${minPhotos - _items.length} more' : (canSave ? 'Save' : 'No changes'),
                                     style: TextStyle(
                                       fontFamily: 'Inter',
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
-                                      color: canSave ? Colors.white : primaryColor.withOpacity(0.5),
+                                      color: canSave ? Colors.white : primaryColor.withValues(alpha: 0.5),
                                     ),
                                   ),
                             ),
@@ -676,11 +678,11 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
     }
 
     return DragTarget<int>(
-      onWillAccept: (oldIndex) {
-        return oldIndex != null && oldIndex != index && oldIndex < items.length;
+      onWillAcceptWithDetails: (oldIndex) {
+        return oldIndex.data != index && oldIndex.data < items.length;
       },
-      onAccept: (oldIndex) {
-        _reorderPhotos(oldIndex, index);
+      onAcceptWithDetails: (oldIndex) {
+        _reorderPhotos(oldIndex.data, index);
       },
       builder: (context, candidateData, rejectedData) {
         return LongPressDraggable<int>(
@@ -705,8 +707,8 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
                       ? CachedNetworkImage(
                           imageUrl: item!.serverPhoto!.displayUrl,
                           fit: BoxFit.cover,
-                          placeholder: (_, __) => Container(color: Colors.grey.shade200),
-                          errorWidget: (_, __, ___) => const Icon(Icons.broken_image),
+                          placeholder: (_, _) => Container(color: Colors.grey.shade200),
+                          errorWidget: (_, _, _) => const Icon(Icons.broken_image),
                         )
                       : Container()),
               ),
@@ -776,13 +778,13 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
             fit: StackFit.expand,
             children: [
               if (hasItem && item.localFile != null)
-                Image.file(item.localFile!, fit: BoxFit.cover, errorBuilder: (_, __, ___) => _imageErrorWidget())
+                Image.file(item.localFile!, fit: BoxFit.cover, errorBuilder: (_, _, _) => _imageErrorWidget())
               else if (hasItem && item.serverPhoto != null)
                 CachedNetworkImage(
                   imageUrl: item.serverPhoto!.displayUrl,
                   fit: BoxFit.cover,
-                  placeholder: (_, __) => const ShimmerAvatar(),
-                  errorWidget: (_, __, ___) => _imageErrorWidget(),
+                  placeholder: (_, _) => const ShimmerAvatar(),
+                  errorWidget: (_, _, _) => _imageErrorWidget(),
                 )
               else
                 Center(
@@ -924,8 +926,8 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
   }
 
   void _showImagePicker(BuildContext context) {
-    if (_items.length >= MAX_PHOTOS) {
-      setState(() => _errorMessage = 'Maximum $MAX_PHOTOS photos allowed');
+    if (_items.length >= maxPhotos) {
+      setState(() => _errorMessage = 'Maximum $maxPhotos photos allowed');
       return;
     }
 

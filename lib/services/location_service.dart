@@ -1,4 +1,5 @@
 // lib/services/location_service.dart
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:dating_app/services/api_service.dart';
 import 'package:dating_app/models/location.dart';
@@ -30,7 +31,7 @@ class LocationService {
         desiredAccuracy: LocationAccuracy.best,
       );
     } catch (e) {
-      print('❌ Location error: $e');
+      debugPrint('❌ Location error: $e');
       return null;
     }
   }
@@ -53,7 +54,7 @@ class LocationService {
       );
       return ReverseGeocodeResponse.fromJson(response.data);
     } catch (e) {
-      print('❌ Reverse geocoding error: $e');
+      debugPrint('❌ Reverse geocoding error: $e');
       return null;
     }
   }
@@ -69,7 +70,7 @@ class LocationService {
           .map((json) => CountryResponse.fromJson(json))
           .toList();
     } catch (e) {
-      print('❌ Get countries error: $e');
+      debugPrint('❌ Get countries error: $e');
       return [];
     }
   }
@@ -90,7 +91,7 @@ class LocationService {
           .map((json) => ProvinceResponse.fromJson(json))
           .toList();
     } catch (e) {
-      print('❌ Get states error: $e');
+      debugPrint('❌ Get states error: $e');
       return [];
     }
   }
@@ -123,7 +124,7 @@ class LocationService {
           .map((json) => CityResponse.fromJson(json))
           .toList();
     } catch (e) {
-      print('❌ Get cities error: $e');
+      debugPrint('❌ Get cities error: $e');
       return [];
     }
   }
@@ -155,7 +156,7 @@ class LocationService {
           .map((json) => CityResponse.fromJson(json))
           .toList();
     } catch (e) {
-      print('❌ Search cities error: $e');
+      debugPrint('❌ Search cities error: $e');
       return [];
     }
   }
@@ -185,7 +186,7 @@ class LocationService {
       );
       return CityResponse.fromJson(response.data);
     } catch (e) {
-      print('❌ Get city centroid error: $e');
+      debugPrint('❌ Get city centroid error: $e');
       return null;
     }
   }
@@ -197,9 +198,9 @@ class LocationService {
   static Future<void> clearCache() async {
     try {
       await ApiService.dio.post('/locations/clear-cache');
-      print('✅ Location cache cleared');
+      debugPrint('✅ Location cache cleared');
     } catch (e) {
-      print('❌ Clear cache error: $e');
+      debugPrint('❌ Clear cache error: $e');
     }
   }
 
@@ -219,10 +220,10 @@ class LocationService {
           'lng': lng,
         },
       );
-      print('✅ GPS location updated: ${response.statusCode}');
+      debugPrint('✅ GPS location updated: ${response.statusCode}');
       return true;
     } catch (e) {
-      print('❌ Update location GPS error: $e');
+      debugPrint('❌ Update location GPS error: $e');
       return false;
     }
   }
@@ -245,10 +246,10 @@ class LocationService {
           'city': city,
         },
       );
-      print('✅ Location text updated: ${response.data}');
+      debugPrint('✅ Location text updated: ${response.data}');
       return true;
     } catch (e) {
-      print('❌ Update location text error: $e');
+      debugPrint('❌ Update location text error: $e');
       return false;
     }
   }
@@ -276,7 +277,7 @@ class LocationService {
       );
       return response.data;
     } catch (e) {
-      print('❌ Update location manual error: $e');
+      debugPrint('❌ Update location manual error: $e');
       return null;
     }
   }

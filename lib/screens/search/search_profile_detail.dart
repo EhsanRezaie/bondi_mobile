@@ -5,6 +5,7 @@ import 'package:dating_app/generated/app_localizations.dart';
 import 'package:dating_app/models/discover_profile.dart';
 import 'package:dating_app/widgets/shimmer_avatar.dart';
 import 'package:dating_app/widgets/discover_action_button.dart';
+import 'package:dating_app/widgets/action_toast.dart';
 
 class SearchProfileDetail extends StatefulWidget {
   final DiscoverProfile profile;
@@ -142,10 +143,10 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.black.withOpacity(0.4),
+                    Colors.black.withValues(alpha: 0.4),
                     Colors.transparent,
                     Colors.transparent,
-                    Colors.black.withOpacity(0.7),
+                    Colors.black.withValues(alpha: 0.7),
                   ],
                   stops: const [0.0, 0.2, 0.6, 1.0],
                 ),
@@ -160,7 +161,7 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.4),
+                    color: Colors.black.withValues(alpha: 0.4),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.close, color: Colors.white, size: 22),
@@ -185,7 +186,7 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                         decoration: BoxDecoration(
                           color: _currentPhotoIndex == index
                               ? Colors.white
-                              : Colors.white.withOpacity(0.4),
+                              : Colors.white.withValues(alpha: 0.4),
                           borderRadius: BorderRadius.circular(4),
                         ),
                       );
@@ -257,27 +258,27 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                   Row(
                     children: [
                       if (profile.distanceKm != null) ...[
-                        Icon(Icons.near_me, size: 14, color: Colors.white.withOpacity(0.8)),
+                        Icon(Icons.near_me, size: 14, color: Colors.white.withValues(alpha: 0.8)),
                         const SizedBox(width: 4),
                         Text(
                           t.discover_km_away(profile.distanceKm!.round()),
                           style: TextStyle(
                             fontFamily: 'Inter',
                             fontSize: 13,
-                            color: Colors.white.withOpacity(0.8),
+                            color: Colors.white.withValues(alpha: 0.8),
                           ),
                         ),
                         const SizedBox(width: 12),
                       ],
                       if (profile.locationDisplay.isNotEmpty) ...[
-                        Icon(Icons.location_on, size: 14, color: Colors.white.withOpacity(0.8)),
+                        Icon(Icons.location_on, size: 14, color: Colors.white.withValues(alpha: 0.8)),
                         const SizedBox(width: 4),
                         Text(
                           profile.locationDisplay,
                           style: TextStyle(
                             fontFamily: 'Inter',
                             fontSize: 13,
-                            color: Colors.white.withOpacity(0.85),
+                            color: Colors.white.withValues(alpha: 0.85),
                           ),
                         ),
                       ],
@@ -482,7 +483,7 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
           decoration: BoxDecoration(
             color: surfaceColor,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: borderColor.withOpacity(0.5)),
+            border: Border.all(color: borderColor.withValues(alpha: 0.5)),
           ),
           child: Text(
             profile.bio!,
@@ -538,7 +539,7 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white10 : (context.isDarkMode ? AppTheme.darkPrimary : AppTheme.lightPrimary).withOpacity(0.06),
+        color: isDark ? Colors.white10 : (context.isDarkMode ? AppTheme.darkPrimary : AppTheme.lightPrimary).withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
@@ -592,7 +593,7 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
-                color: isDark ? Colors.white10 : primaryColor.withOpacity(0.06),
+                color: isDark ? Colors.white10 : primaryColor.withValues(alpha: 0.06),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
@@ -651,7 +652,7 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
             decoration: BoxDecoration(
               color: surfaceColor,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: borderColor.withOpacity(0.5)),
+              border: Border.all(color: borderColor.withValues(alpha: 0.5)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -743,6 +744,8 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
       if (result['matched'] == true) {
         _showMatchDialog(result);
       } else {
+        final t = AppLocalizations.of(context)!;
+        showActionToast(context, t.toast_like_sent);
         Navigator.pop(context);
       }
     }
@@ -762,6 +765,8 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
         if (result['matched'] == true) {
           _showMatchDialog(result);
         } else {
+          final t = AppLocalizations.of(context)!;
+          showActionToast(context, t.toast_like_and_message_sent);
           Navigator.pop(context);
         }
       }
@@ -823,10 +828,11 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
             top: 20,
             bottom: MediaQuery.of(ctx).viewInsets.bottom + 20,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
               Center(
                 child: Container(
                   width: 40,
@@ -892,12 +898,13 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                 ),
               ),
             ],
+            ),
           ),
         );
       },
     );
 
-    messageController.dispose();
+    WidgetsBinding.instance.addPostFrameCallback((_) => messageController.dispose());
     return result;
   }
 

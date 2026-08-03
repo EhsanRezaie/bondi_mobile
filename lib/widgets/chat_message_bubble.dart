@@ -47,7 +47,7 @@ class ChatMessageBubble extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: isMine
                       ? (isDark
-                          ? AppTheme.darkPrimary.withOpacity(0.85)
+                          ? AppTheme.darkPrimary.withValues(alpha: 0.85)
                           : AppTheme.lightPrimary)
                       : surfaceColor,
                   borderRadius: BorderRadius.only(
@@ -82,7 +82,7 @@ class ChatMessageBubble extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: isDark
-            ? AppTheme.darkSurface.withOpacity(0.6)
+            ? AppTheme.darkSurface.withValues(alpha: 0.6)
             : AppTheme.lightBackground,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
@@ -151,8 +151,8 @@ class ChatMessageBubble extends StatelessWidget {
                 fontFamily: 'Inter',
                 fontSize: 10,
                 color: isMine
-                    ? Colors.white.withOpacity(0.6)
-                    : textColor.withOpacity(0.5),
+                    ? Colors.white.withValues(alpha: 0.6)
+                    : textColor.withValues(alpha: 0.5),
                 fontStyle: FontStyle.italic,
               ),
             ),

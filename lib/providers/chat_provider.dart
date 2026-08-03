@@ -11,9 +11,14 @@ import 'package:dating_app/services/storage_service.dart';
 class ChatProvider extends ChangeNotifier {
   bool _disposed = false;
 
+  StreamSubscription<bool>? _connectionStateSubscription;
+  StreamSubscription<Map<String, dynamic>>? _eventsSubscription;
+
   @override
   void dispose() {
     _disposed = true;
+    _connectionStateSubscription?.cancel();
+    _eventsSubscription?.cancel();
     _wsService?.dispose();
     _typingTimer?.cancel();
     super.dispose();
@@ -619,12 +624,12 @@ class ChatProvider extends ChangeNotifier {
       jwtToken: token,
     );
 
-    _wsService!.connectionState.listen((connected) {
+    _connectionStateSubscription = _wsService!.connectionState.listen((connected) {
       _isConnected = connected;
       _safeNotify();
     });
 
-    _wsService!.events.listen((event) {
+    _eventsSubscription = _wsService!.events.listen((event) {
       _handleSocketEvent(event);
     });
 
@@ -633,6 +638,8 @@ class ChatProvider extends ChangeNotifier {
 
   Future<void> disconnectWebSocket() async {
     await _wsService?.dispose();
+    _connectionStateSubscription?.cancel();
+    _eventsSubscription?.cancel();
     _wsService = null;
     _isConnected = false;
     _isOtherUserOnline = false;

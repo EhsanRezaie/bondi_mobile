@@ -1,4 +1,5 @@
 // lib/services/onboarding_service.dart
+import 'package:flutter/foundation.dart';
 import 'package:dating_app/services/api_service.dart';
 import 'package:dating_app/models/interest.dart';
 import 'package:dating_app/models/prompt.dart';
@@ -15,7 +16,7 @@ class OnboardingService {
           .map((json) => Interest.fromJson(json))
           .toList();
     } catch (e) {
-      print('❌ Get interests error: $e');
+      debugPrint('❌ Get interests error: $e');
       return [];
     }
   }
@@ -39,7 +40,7 @@ class OnboardingService {
           .map((json) => Prompt.fromJson(json))
           .toList();
     } catch (e) {
-      print('❌ Get prompts error: $e');
+      debugPrint('❌ Get prompts error: $e');
       return [];
     }
   }

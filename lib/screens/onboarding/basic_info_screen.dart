@@ -40,7 +40,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
   double? _lat;
   double? _lng;
 
-  bool _isLoading = false;
+  final bool _isLoading = false;
   bool _isLoadingCountries = false;
   bool _isLoadingProvinces = false;
   bool _isLoadingCities = false;
@@ -300,7 +300,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
       setState(() {
         _errorMessage = 'Error getting location. Please select manually.';
       });
-      print('❌ Get location error: $e');
+      debugPrint('❌ Get location error: $e');
     } finally {
       if (mounted) {
         setState(() {
@@ -472,6 +472,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
       }
     }
 
+    if (!mounted) return;
     final onboarding = Provider.of<OnboardingProvider>(context, listen: false);
 
     onboarding.setPersonalInfo(
@@ -504,7 +505,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
     required T? selectedItem,
     required String hintText,
     required String labelText,
-    required String displayName(T item),
+    required String Function(T item) displayName,
     required void Function(T?) onSelected,
     required bool isLoading,
     required SearchController searchController,
@@ -527,7 +528,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
               fontWeight: FontWeight.w600,
               color: isEnabled
                   ? Theme.of(context).colorScheme.onSurface
-                  : Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+                  : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
             ),
           ),
         ),
@@ -544,10 +545,10 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
               backgroundColor: WidgetStatePropertyAll(
                 isEnabled
                     ? (isDark
-                        ? Colors.white.withOpacity(0.05)
+                        ? Colors.white.withValues(alpha: 0.05)
                         : Colors.grey.shade50)
                     : (isDark
-                        ? Colors.white.withOpacity(0.02)
+                        ? Colors.white.withValues(alpha: 0.02)
                         : Colors.grey.shade100),
               ),
               shape: WidgetStatePropertyAll(
@@ -565,8 +566,8 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                   Icon(
                     Icons.search,
                     color: isEnabled
-                        ? Theme.of(context).colorScheme.onSurface.withOpacity(0.6)
-                        : Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
+                        ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)
+                        : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
                   ),
               trailing: [
                 if (selectedItem != null && isEnabled)
@@ -574,7 +575,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                     icon: Icon(
                       Icons.close,
                       size: 18,
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                     onPressed: () {
                       searchController.clear();
@@ -604,7 +605,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                   fontSize: 15,
                   color: isEnabled
                       ? Theme.of(context).colorScheme.onSurface
-                      : Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+                      : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
                 ),
               ),
               hintStyle: WidgetStatePropertyAll(
@@ -612,8 +613,8 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                   fontFamily: 'Inter',
                   fontSize: 15,
                   color: isEnabled
-                      ? Theme.of(context).colorScheme.onSurface.withOpacity(0.5)
-                      : Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
+                      ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)
+                      : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
                 ),
               ),
             );
@@ -649,7 +650,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                     'No results found',
                     style: TextStyle(
                       fontFamily: 'Inter',
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                     ),
                   ),
                 ),
@@ -660,7 +661,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
               final isSelected = item == selectedItem;
               return ListTile(
                 selected: isSelected,
-                selectedTileColor: primaryColor.withOpacity(0.1),
+                selectedTileColor: primaryColor.withValues(alpha: 0.1),
                 title: Text(
                   displayName(item),
                   style: TextStyle(
@@ -710,8 +711,6 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
     final isDark = context.isDarkMode;
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
     final bgColor = isDark ? AppTheme.darkBackground : AppTheme.lightBackground;
-    final surfaceColor = isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
-    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
     final textMutedColor = isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted;
     final onSurfaceColor = colors.onSurface;
     final errorColor = AppTheme.lightError;
@@ -801,9 +800,9 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                                 decoration: BoxDecoration(
-                                  color: errorColor.withOpacity(0.08),
+                                  color: errorColor.withValues(alpha: 0.08),
                                   borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: errorColor.withOpacity(0.2)),
+                                  border: Border.all(color: errorColor.withValues(alpha: 0.2)),
                                 ),
                                 child: Row(
                                   children: [
@@ -952,7 +951,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                                       onPressed: _isLoadingLocation ? null : _getCurrentLocation,
                                       style: TextButton.styleFrom(
                                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                        backgroundColor: primaryColor.withOpacity(0.06),
+                                        backgroundColor: primaryColor.withValues(alpha: 0.06),
                                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                                       ),
                                       icon: _isLoadingLocation
@@ -1104,14 +1103,14 @@ class _GenderOption extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: isSelected ? primaryColor.withOpacity(0.06) : surfaceColor,
+          color: isSelected ? primaryColor.withValues(alpha: 0.06) : surfaceColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected ? primaryColor : borderColor,
             width: isSelected ? 2 : 1,
           ),
           boxShadow: isSelected
-              ? [BoxShadow(color: primaryColor.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))]
+              ? [BoxShadow(color: primaryColor.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))]
               : null,
         ),
         child: Row(
@@ -1119,7 +1118,7 @@ class _GenderOption extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: isSelected ? primaryColor : onSurfaceColor.withOpacity(0.6),
+              color: isSelected ? primaryColor : onSurfaceColor.withValues(alpha: 0.6),
               size: 20,
             ),
             const SizedBox(width: 8),

@@ -304,57 +304,43 @@ class _EditProfileDetailsScreenState extends State<EditProfileDetailsScreen> {
       // Body Type
       if (_bodyType != null) {
         final backendValue = _getBackendValue(_bodyType!);
-        if (backendValue != null) {
-          updateData['body_type'] = backendValue;
-        }
+        updateData['body_type'] = backendValue;
       }
 
       // Relationship Status
       if (_relationshipStatus != null) {
         final backendValue = _getBackendValue(_relationshipStatus!);
-        if (backendValue != null) {
-          updateData['relationship_status'] = backendValue;
-        }
+        updateData['relationship_status'] = backendValue;
       }
 
       // Living Situation
       if (_livingSituation != null) {
         final backendValue = _getBackendValue(_livingSituation!);
-        if (backendValue != null) {
-          updateData['living_situation'] = backendValue;
-        }
+        updateData['living_situation'] = backendValue;
       }
 
       // Children Status
       if (_childrenStatus != null) {
         final backendValue = _getBackendValue(_childrenStatus!);
-        if (backendValue != null) {
-          updateData['children_status'] = backendValue;
-        }
+        updateData['children_status'] = backendValue;
       }
 
       // Smoking
       if (_smoking != null) {
         final backendValue = _getBackendValue(_smoking!);
-        if (backendValue != null) {
-          updateData['smoking'] = backendValue;
-        }
+        updateData['smoking'] = backendValue;
       }
 
       // Drinking
       if (_drinking != null) {
         final backendValue = _getBackendValue(_drinking!);
-        if (backendValue != null) {
-          updateData['drinking'] = backendValue;
-        }
+        updateData['drinking'] = backendValue;
       }
 
       // Education
       if (_education != null) {
         final backendValue = _getBackendValue(_education!);
-        if (backendValue != null) {
-          updateData['education'] = backendValue;
-        }
+        updateData['education'] = backendValue;
       }
 
       // Workplace - send null if empty
@@ -365,25 +351,19 @@ class _EditProfileDetailsScreenState extends State<EditProfileDetailsScreen> {
       // Religion
       if (_religion != null) {
         final backendValue = _getBackendValue(_religion!);
-        if (backendValue != null) {
-          updateData['religion'] = backendValue;
-        }
+        updateData['religion'] = backendValue;
       }
 
       // Ethnicity
       if (_ethnicity != null) {
         final backendValue = _getBackendValue(_ethnicity!);
-        if (backendValue != null) {
-          updateData['ethnicity'] = backendValue;
-        }
+        updateData['ethnicity'] = backendValue;
       }
 
       // Political Orientation
       if (_politicalOrientation != null) {
         final backendValue = _getBackendValue(_politicalOrientation!);
-        if (backendValue != null) {
-          updateData['political_orientation'] = backendValue;
-        }
+        updateData['political_orientation'] = backendValue;
       }
 
       // Languages - send null if empty
@@ -391,7 +371,7 @@ class _EditProfileDetailsScreenState extends State<EditProfileDetailsScreen> {
         updateData['languages'] = _selectedLanguages;
       }
 
-      print('📤 Sending update data: $updateData');
+      debugPrint('📤 Sending update data: $updateData');
 
       final success = await authProvider.updateProfile(updateData);
 
@@ -410,7 +390,7 @@ class _EditProfileDetailsScreenState extends State<EditProfileDetailsScreen> {
         });
       }
     } catch (e) {
-      print('❌ Save error: $e');
+      debugPrint('❌ Save error: $e');
       if (mounted) {
         setState(() {
           _errorMessage = 'An error occurred. Please try again.';
@@ -479,9 +459,9 @@ class _EditProfileDetailsScreenState extends State<EditProfileDetailsScreen> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                                 decoration: BoxDecoration(
-                                  color: errorColor.withOpacity(0.08),
+                                  color: errorColor.withValues(alpha: 0.08),
                                   borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: errorColor.withOpacity(0.2)),
+                                  border: Border.all(color: errorColor.withValues(alpha: 0.2)),
                                 ),
                                 child: Row(
                                   children: [
@@ -697,7 +677,7 @@ class _EditProfileDetailsScreenState extends State<EditProfileDetailsScreen> {
                                         duration: const Duration(milliseconds: 150),
                                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                                         decoration: BoxDecoration(
-                                          color: isSelected ? primaryColor.withOpacity(0.06) : surfaceColor,
+                                          color: isSelected ? primaryColor.withValues(alpha: 0.06) : surfaceColor,
                                           borderRadius: BorderRadius.circular(20),
                                           border: Border.all(
                                             color: isSelected ? primaryColor : borderColor,
@@ -710,7 +690,7 @@ class _EditProfileDetailsScreenState extends State<EditProfileDetailsScreen> {
                                             fontFamily: 'Inter',
                                             fontSize: 14,
                                             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                                            color: isSelected ? primaryColor : onSurfaceColor.withOpacity(0.8),
+                                            color: isSelected ? primaryColor : onSurfaceColor.withValues(alpha: 0.8),
                                           ),
                                         ),
                                       ),
@@ -825,7 +805,7 @@ class _EditProfileDetailsScreenState extends State<EditProfileDetailsScreen> {
                 duration: const Duration(milliseconds: 150),
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
-                  color: isSelected ? primaryColor.withOpacity(0.06) : surfaceColor,
+                  color: isSelected ? primaryColor.withValues(alpha: 0.06) : surfaceColor,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: isSelected ? primaryColor : borderColor,
@@ -838,7 +818,7 @@ class _EditProfileDetailsScreenState extends State<EditProfileDetailsScreen> {
                     fontFamily: 'Inter',
                     fontSize: 14,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                    color: isSelected ? primaryColor : onSurfaceColor.withOpacity(0.8),
+                    color: isSelected ? primaryColor : onSurfaceColor.withValues(alpha: 0.8),
                   ),
                 ),
               ),

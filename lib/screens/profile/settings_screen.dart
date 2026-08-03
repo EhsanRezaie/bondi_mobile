@@ -5,7 +5,6 @@ import 'package:dating_app/generated/app_localizations.dart';
 import 'package:dating_app/providers/auth_provider.dart';
 import 'package:dating_app/providers/settings_provider.dart';
 import 'package:dating_app/providers/language_provider.dart';
-import 'package:dating_app/screens/login_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -413,8 +412,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             height: 40,
                             decoration: BoxDecoration(
                               color: isDark
-                                  ? AppTheme.darkError.withOpacity(0.1)
-                                  : AppTheme.lightError.withOpacity(0.1),
+                                  ? AppTheme.darkError.withValues(alpha: 0.1)
+                                  : AppTheme.lightError.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Icon(
@@ -556,7 +555,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeColor: primaryColor,
+            activeThumbColor: primaryColor,
           ),
         ],
       ),
@@ -599,7 +598,7 @@ class _LanguageOption extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
         decoration: BoxDecoration(
-          color: isSelected ? primaryColor.withOpacity(0.06) : surfaceColor,
+          color: isSelected ? primaryColor.withValues(alpha: 0.06) : surfaceColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected ? primaryColor : borderColor,

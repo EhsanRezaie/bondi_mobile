@@ -776,4 +776,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String chat_matched_at(Object time) {
     return 'Matched $time';
   }
+
+  @override
+  String get toast_like_sent => 'Like sent!';
+
+  @override
+  String get toast_like_and_message_sent => 'Like and message sent!';
 }

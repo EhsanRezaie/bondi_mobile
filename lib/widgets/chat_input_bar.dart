@@ -216,10 +216,10 @@ class _ChatInputBarState extends State<ChatInputBar> {
       margin: const EdgeInsets.only(bottom: 6),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: primaryColor.withOpacity(0.1),
+        color: primaryColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: primaryColor.withOpacity(0.3),
+          color: primaryColor.withValues(alpha: 0.3),
           width: 1,
         ),
       ),
@@ -254,7 +254,7 @@ class _ChatInputBarState extends State<ChatInputBar> {
       margin: const EdgeInsets.only(bottom: 6),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: primaryColor.withOpacity(0.1),
+        color: primaryColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
@@ -385,7 +385,7 @@ class _ChatInputBarState extends State<ChatInputBar> {
             height: 40,
             decoration: BoxDecoration(
               color: _controller.text.trim().isEmpty
-                  ? mutedColor.withOpacity(0.3)
+                  ? mutedColor.withValues(alpha: 0.3)
                   : primaryColor,
               shape: BoxShape.circle,
             ),

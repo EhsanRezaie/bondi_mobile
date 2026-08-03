@@ -3,9 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:dating_app/generated/app_localizations.dart';
 import '../../config/app_theme.dart';
-import '../../providers/auth_provider.dart';
 import '../../providers/onboarding_provider.dart';
 import '../../services/photo_service.dart';
 import '../../models/photo.dart';
@@ -24,11 +22,8 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
   bool _isUploading = false;
   String? _errorMessage;
 
-  static const int MIN_PHOTOS = 3;
-  static const int MAX_PHOTOS = 9;
-
-  // Drag & Drop state
-  int? _dragIndex;
+  static const int minPhotos = 3;
+  static const int maxPhotos = 9;
 
   @override
   void initState() {
@@ -55,9 +50,9 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
   }
 
   Future<void> _pickImage(ImageSource source) async {
-    if (_photos.length >= MAX_PHOTOS) {
+    if (_photos.length >= maxPhotos) {
       setState(() {
-        _errorMessage = 'Maximum $MAX_PHOTOS photos allowed';
+        _errorMessage = 'Maximum $maxPhotos photos allowed';
       });
       return;
     }
@@ -141,13 +136,13 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
   }
 
   bool get _canProceed {
-    return _photos.length >= MIN_PHOTOS;
+    return _photos.length >= minPhotos;
   }
 
   String? get _validationMessage {
-    if (_photos.isEmpty) return 'Please add at least $MIN_PHOTOS photos';
-    if (_photos.length < MIN_PHOTOS) {
-      return 'Add ${MIN_PHOTOS - _photos.length} more photo${MIN_PHOTOS - _photos.length > 1 ? 's' : ''}';
+    if (_photos.isEmpty) return 'Please add at least $minPhotos photos';
+    if (_photos.length < minPhotos) {
+      return 'Add ${minPhotos - _photos.length} more photo${minPhotos - _photos.length > 1 ? 's' : ''}';
     }
     return null;
   }
@@ -221,7 +216,7 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
     final errorColor = AppTheme.lightError;
 
     final int selectedCount = _photos.length;
-    final bool canProceed = selectedCount >= MIN_PHOTOS;
+    final bool canProceed = selectedCount >= minPhotos;
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -291,9 +286,9 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                       decoration: BoxDecoration(
-                        color: errorColor.withOpacity(0.08),
+                        color: errorColor.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: errorColor.withOpacity(0.2)),
+                        border: Border.all(color: errorColor.withValues(alpha: 0.2)),
                       ),
                       child: Row(
                         children: [
@@ -377,8 +372,8 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
                 child: ElevatedButton(
                   onPressed: _isUploading ? null : _handleComplete,
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: canProceed ? primaryColor : primaryColor.withOpacity(0.2),
-                    foregroundColor: canProceed ? Colors.white : primaryColor.withOpacity(0.4),
+                    backgroundColor: canProceed ? primaryColor : primaryColor.withValues(alpha: 0.2),
+                    foregroundColor: canProceed ? Colors.white : primaryColor.withValues(alpha: 0.4),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(14),
                     ),
@@ -395,7 +390,7 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
                           ),
                         )
                       : Text(
-                          canProceed ? 'Complete' : 'Add ${MIN_PHOTOS - selectedCount} more',
+                          canProceed ? 'Complete' : 'Add ${minPhotos - selectedCount} more',
                           style: AppTheme.buttonText.copyWith(
                             fontSize: 15,
                             fontWeight: FontWeight.w600,
@@ -620,24 +615,20 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
     }
 
     return DragTarget<int>(
-      onWillAccept: (oldIndex) {
-        return oldIndex != null && oldIndex != index && oldIndex < totalCount;
+      onWillAcceptWithDetails: (oldIndex) {
+        return oldIndex.data != index && oldIndex.data < totalCount;
       },
-      onAccept: (oldIndex) {
-        _reorderPhotos(oldIndex, index);
+      onAcceptWithDetails: (oldIndex) {
+        _reorderPhotos(oldIndex.data, index);
       },
       builder: (context, candidateData, rejectedData) {
         return LongPressDraggable<int>(
           data: index,
           onDragStarted: () {
-            setState(() {
-              _dragIndex = index;
-            });
+            setState(() {});
           },
           onDragEnd: (details) {
-            setState(() {
-              _dragIndex = null;
-            });
+            setState(() {});
           },
           feedback: Material(
             elevation: 8,

@@ -41,7 +41,7 @@ class AppTheme {
   static LinearGradient rejectGradient({required bool isDark}) {
     final base = isDark ? darkError : lightError;
     return LinearGradient(
-      colors: [base, base.withOpacity(0.7)],
+      colors: [base, base.withValues(alpha: 0.7)],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     );
@@ -50,7 +50,7 @@ class AppTheme {
   static LinearGradient chatGradient({required bool isDark}) {
     final base = isDark ? darkPrimary : lightPrimary;
     return LinearGradient(
-      colors: [base, base.withOpacity(0.7)],
+      colors: [base, base.withValues(alpha: 0.7)],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     );
@@ -59,7 +59,7 @@ class AppTheme {
   static LinearGradient likeGradient({required bool isDark}) {
     final base = isDark ? darkPrimary : lightPrimary;
     return LinearGradient(
-      colors: [base, base.withOpacity(0.7)],
+      colors: [base, base.withValues(alpha: 0.7)],
       begin: Alignment.topLeft,
       end: Alignment.bottomRight,
     );
@@ -282,12 +282,10 @@ class AppTheme {
         primary: lightPrimary,
         secondary: lightPrimaryLight,
         surface: lightSurface,
-        background: lightBackground,
         error: lightError,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
         onSurface: lightText,
-        onBackground: lightText,
         onError: Colors.white,
       ),
       
@@ -437,12 +435,10 @@ class AppTheme {
         primary: darkPrimary,
         secondary: darkPrimaryLight,
         surface: darkSurface,
-        background: darkBackground,
         error: darkError,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
         onSurface: darkText,
-        onBackground: darkText,
         onError: Colors.white,
       ),
       
@@ -609,11 +605,11 @@ extension ThemeColors on BuildContext {
   Color get primaryColor => Theme.of(this).colorScheme.primary;
   Color get secondaryColor => Theme.of(this).colorScheme.secondary;
   Color get surfaceColor => Theme.of(this).colorScheme.surface;
-  Color get backgroundColor => Theme.of(this).colorScheme.background;
+  Color get backgroundColor => Theme.of(this).scaffoldBackgroundColor;
   Color get errorColor => Theme.of(this).colorScheme.error;
   Color get onPrimaryColor => Theme.of(this).colorScheme.onPrimary;
   Color get onSurfaceColor => Theme.of(this).colorScheme.onSurface;
-  Color get onBackgroundColor => Theme.of(this).colorScheme.onBackground;
+  Color get onBackgroundColor => Theme.of(this).colorScheme.onSurface;
   
   bool get isDarkMode => Theme.of(this).brightness == Brightness.dark;
 }

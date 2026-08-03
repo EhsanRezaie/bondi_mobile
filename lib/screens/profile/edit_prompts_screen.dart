@@ -184,7 +184,7 @@ class _EditPromptsScreenState extends State<EditPromptsScreen> {
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
-      print('📤 Sending prompts: $_selectedPrompts');
+      debugPrint('📤 Sending prompts: $_selectedPrompts');
 
       final success = await authProvider.updatePrompts(_selectedPrompts);
 
@@ -289,7 +289,7 @@ class _EditPromptsScreenState extends State<EditPromptsScreen> {
                       vertical: 12,
                     ),
                     decoration: BoxDecoration(
-                      color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade50,
+                      color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade50,
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
                         color: borderColor,
@@ -335,9 +335,9 @@ class _EditPromptsScreenState extends State<EditPromptsScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                       decoration: BoxDecoration(
-                        color: errorColor.withOpacity(0.08),
+                        color: errorColor.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: errorColor.withOpacity(0.2)),
+                        border: Border.all(color: errorColor.withValues(alpha: 0.2)),
                       ),
                       child: Row(
                         children: [
@@ -418,7 +418,7 @@ class _EditPromptsScreenState extends State<EditPromptsScreen> {
                                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                                               margin: const EdgeInsets.only(right: 8),
                                               decoration: BoxDecoration(
-                                                color: primaryColor.withOpacity(0.15),
+                                                color: primaryColor.withValues(alpha: 0.15),
                                                 borderRadius: BorderRadius.circular(12),
                                               ),
                                               child: Text(
@@ -503,7 +503,7 @@ class _EditPromptsScreenState extends State<EditPromptsScreen> {
                             fontFamily: 'Inter',
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
-                            color: isComplete ? Colors.white : Colors.white.withOpacity(0.7),
+                            color: isComplete ? Colors.white : Colors.white.withValues(alpha: 0.7),
                           ),
                         ),
                 ),
@@ -536,7 +536,7 @@ class _EditPromptsScreenState extends State<EditPromptsScreen> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: isSelected ? primaryColor.withOpacity(0.08) : surfaceColor,
+          color: isSelected ? primaryColor.withValues(alpha: 0.08) : surfaceColor,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: isSelected ? primaryColor : borderColor,
@@ -545,7 +545,7 @@ class _EditPromptsScreenState extends State<EditPromptsScreen> {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: primaryColor.withOpacity(0.15),
+                    color: primaryColor.withValues(alpha: 0.15),
                     blurRadius: 10,
                     offset: const Offset(0, 3),
                   ),
@@ -619,7 +619,7 @@ class _EditPromptsScreenState extends State<EditPromptsScreen> {
                     ),
                   ),
                   filled: true,
-                  fillColor: isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade50,
+                  fillColor: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade50,
                   contentPadding: const EdgeInsets.all(12),
                   isDense: true,
                   errorStyle: TextStyle(

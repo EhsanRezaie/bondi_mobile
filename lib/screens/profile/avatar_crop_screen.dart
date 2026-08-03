@@ -140,7 +140,6 @@ class _AvatarCropScreenState extends State<AvatarCropScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? AppTheme.darkBackground : AppTheme.lightBackground;
-    final surfaceColor = isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
     final onSurfaceColor = Theme.of(context).colorScheme.onSurface;
 
     return Scaffold(
@@ -284,7 +283,7 @@ class _AvatarCropScreenState extends State<AvatarCropScreen> {
                                 vertical: 10,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.5),
+                                color: Colors.black.withValues(alpha: 0.5),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
@@ -292,7 +291,7 @@ class _AvatarCropScreenState extends State<AvatarCropScreen> {
                                 style: TextStyle(
                                   fontFamily: 'Inter',
                                   fontSize: 14,
-                                  color: Colors.white.withOpacity(0.8),
+                                  color: Colors.white.withValues(alpha: 0.8),
                                 ),
                               ),
                             ),
@@ -309,7 +308,7 @@ class _AvatarCropScreenState extends State<AvatarCropScreen> {
                                 vertical: 8,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.black.withOpacity(0.6),
+                                color: Colors.black.withValues(alpha: 0.6),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
@@ -344,7 +343,7 @@ class CircleCropPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = isDark ? Colors.black.withOpacity(0.7) : Colors.black.withOpacity(0.5)
+      ..color = isDark ? Colors.black.withValues(alpha: 0.7) : Colors.black.withValues(alpha: 0.5)
       ..style = PaintingStyle.fill;
 
     final center = Offset(size.width / 2, size.height / 2);
@@ -369,7 +368,7 @@ class BackgroundPatternPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = isDark ? Colors.white.withOpacity(0.02) : Colors.black.withOpacity(0.02)
+      ..color = isDark ? Colors.white.withValues(alpha: 0.02) : Colors.black.withValues(alpha: 0.02)
       ..style = PaintingStyle.fill;
 
     const spacing = 30.0;

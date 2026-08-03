@@ -7,6 +7,8 @@ import '../services/storage_service.dart';
 import '../models/user.dart';
 
 class AuthProvider extends ChangeNotifier {
+  bool _disposed = false;
+
   final StorageService _storageService = StorageService();
 
   User? _user;
@@ -27,6 +29,16 @@ class AuthProvider extends ChangeNotifier {
 
   AuthProvider();
 
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+   void _safeNotify() {
+    if (!_disposed) notifyListeners();
+  }
+
   // ============================================================
   // Initialize app - check server health + auth status
   // ============================================================
@@ -36,7 +48,7 @@ class AuthProvider extends ChangeNotifier {
     _serverError = null;
     _isAuthenticated = false;
     _user = null;
-    notifyListeners();
+    _safeNotify();
 
     final results = await Future.wait([
       _checkServerHealth(),
@@ -50,7 +62,7 @@ class AuthProvider extends ChangeNotifier {
       _isLoading = false;
       _isServerHealthy = false;
       _serverError = 'Server connection failed';
-      notifyListeners();
+      _safeNotify();
       return false;
     }
 
@@ -58,7 +70,7 @@ class AuthProvider extends ChangeNotifier {
       _isLoading = false;
       _isAuthenticated = false;
       _user = null;
-      notifyListeners();
+      _safeNotify();
       return false;
     }
 
@@ -68,13 +80,13 @@ class AuthProvider extends ChangeNotifier {
       _isAuthenticated = false;
       _user = null;
       _isLoading = false;
-      notifyListeners();
+      _safeNotify();
       return false;
     }
 
     _isAuthenticated = true;
     _isLoading = false;
-    notifyListeners();
+    _safeNotify();
     return true;
   }
 
@@ -108,19 +120,19 @@ class AuthProvider extends ChangeNotifier {
     final t = AppLocalizations.of(context)!;
     _isLoading = true;
     _errorMessage = null;
-    notifyListeners();
+    _safeNotify();
 
     try {
       final response = await AuthService.registerInit(email);
       if (response.statusCode == 200) {
         _email = email;
         _isLoading = false;
-        notifyListeners();
+        _safeNotify();
         return true;
       } else {
         _errorMessage = response.data['detail'] ?? t.error_something_wrong;
         _isLoading = false;
-        notifyListeners();
+        _safeNotify();
         return false;
       }
     } on DioException catch (e) {
@@ -134,12 +146,12 @@ class AuthProvider extends ChangeNotifier {
         _errorMessage = t.error_network;
       }
       _isLoading = false;
-      notifyListeners();
+      _safeNotify();
       return false;
     } catch (e) {
       _errorMessage = t.error_something_wrong;
       _isLoading = false;
-      notifyListeners();
+      _safeNotify();
       return false;
     }
   }
@@ -157,13 +169,13 @@ class AuthProvider extends ChangeNotifier {
     final t = AppLocalizations.of(context)!;
     if (_email == null) {
       _errorMessage = t.error_email_not_found;
-      notifyListeners();
+      _safeNotify();
       return false;
     }
 
     _isLoading = true;
     _errorMessage = null;
-    notifyListeners();
+    _safeNotify();
 
     try {
       final response = await AuthService.registerVerify(
@@ -182,12 +194,12 @@ class AuthProvider extends ChangeNotifier {
         );
         _isAuthenticated = true;
         _isLoading = false;
-        notifyListeners();
+        _safeNotify();
         return true;
       } else {
         _errorMessage = response.data['detail'] ?? t.error_verification_failed;
         _isLoading = false;
-        notifyListeners();
+        _safeNotify();
         return false;
       }
     } on DioException catch (e) {
@@ -199,12 +211,12 @@ class AuthProvider extends ChangeNotifier {
         _errorMessage = t.error_network;
       }
       _isLoading = false;
-      notifyListeners();
+      _safeNotify();
       return false;
     } catch (e) {
       _errorMessage = t.error_something_wrong;
       _isLoading = false;
-      notifyListeners();
+      _safeNotify();
       return false;
     }
   }
@@ -220,7 +232,7 @@ class AuthProvider extends ChangeNotifier {
     final t = AppLocalizations.of(context)!;
     _isLoading = true;
     _errorMessage = null;
-    notifyListeners();
+    _safeNotify();
 
     try {
       final response = await AuthService.registerComplete(data);
@@ -237,12 +249,12 @@ class AuthProvider extends ChangeNotifier {
         _user = User.fromJson(userData);
         _isAuthenticated = true;
         _isLoading = false;
-        notifyListeners();
+        _safeNotify();
         return true;
       } else {
         _errorMessage = response.data['detail'] ?? t.error_profile_complete_failed;
         _isLoading = false;
-        notifyListeners();
+        _safeNotify();
         return false;
       }
     } on DioException catch (e) {
@@ -256,12 +268,12 @@ class AuthProvider extends ChangeNotifier {
         _errorMessage = t.error_network;
       }
       _isLoading = false;
-      notifyListeners();
+      _safeNotify();
       return false;
     } catch (e) {
       _errorMessage = t.error_something_wrong;
       _isLoading = false;
-      notifyListeners();
+      _safeNotify();
       return false;
     }
   }
@@ -278,7 +290,7 @@ class AuthProvider extends ChangeNotifier {
     final t = AppLocalizations.of(context)!;
     _isLoading = true;
     _errorMessage = null;
-    notifyListeners();
+    _safeNotify();
 
     try {
       final response = await AuthService.login(
@@ -299,12 +311,12 @@ class AuthProvider extends ChangeNotifier {
         _user = User.fromJson(userData);
         _isAuthenticated = true;
         _isLoading = false;
-        notifyListeners();
+        _safeNotify();
         return true;
       } else {
         _errorMessage = response.data['detail'] ?? t.error_login_failed;
         _isLoading = false;
-        notifyListeners();
+        _safeNotify();
         return false;
       }
     } on DioException catch (e) {
@@ -314,12 +326,12 @@ class AuthProvider extends ChangeNotifier {
         _errorMessage = t.error_network;
       }
       _isLoading = false;
-      notifyListeners();
+      _safeNotify();
       return false;
     } catch (e) {
       _errorMessage = t.error_something_wrong;
       _isLoading = false;
-      notifyListeners();
+      _safeNotify();
       return false;
     }
   }
@@ -340,7 +352,7 @@ class AuthProvider extends ChangeNotifier {
     _user = null;
     _email = null;
     _isAuthenticated = false;
-    notifyListeners();
+    _safeNotify();
   }
 
   // ============================================================
@@ -351,7 +363,7 @@ class AuthProvider extends ChangeNotifier {
       final response = await AuthService.getCurrentUser();
       if (response.statusCode == 200) {
         _user = User.fromJson(response.data);
-        notifyListeners();
+        _safeNotify();
       }
     } catch (e) {
       // ignore
@@ -365,7 +377,7 @@ class AuthProvider extends ChangeNotifier {
   Future<bool> updateProfile(Map<String, dynamic> data) async {
     _isLoading = true;
     _errorMessage = null;
-    notifyListeners();
+    _safeNotify();
 
     try {
       final response = await AuthService.updateProfile(data);
@@ -373,12 +385,12 @@ class AuthProvider extends ChangeNotifier {
       if (response.statusCode == 200) {
         _user = User.fromJson(response.data);
         _isLoading = false;
-        notifyListeners();
+        _safeNotify();
         return true;
       } else {
         _errorMessage = response.data['detail'] ?? 'Failed to update profile';
         _isLoading = false;
-        notifyListeners();
+        _safeNotify();
         return false;
       }
     } on DioException catch (e) {
@@ -390,12 +402,12 @@ class AuthProvider extends ChangeNotifier {
         _errorMessage = 'Failed to update profile. Please try again.';
       }
       _isLoading = false;
-      notifyListeners();
+      _safeNotify();
       return false;
     } catch (e) {
       _errorMessage = 'An error occurred. Please try again.';
       _isLoading = false;
-      notifyListeners();
+      _safeNotify();
       return false;
     }
   }
@@ -403,12 +415,12 @@ class AuthProvider extends ChangeNotifier {
   void resetServerError() {
     _serverError = null;
     _isServerHealthy = true;
-    notifyListeners();
+    _safeNotify();
   }
 
   void clearError() {
     _errorMessage = null;
-    notifyListeners();
+    _safeNotify();
   }
 
   Future<bool> googleLogin({
@@ -421,7 +433,7 @@ class AuthProvider extends ChangeNotifier {
     final t = AppLocalizations.of(context)!;
     _isLoading = true;
     _errorMessage = null;
-    notifyListeners();
+    _safeNotify();
 
     try {
       final response = await AuthService.googleLogin(
@@ -444,12 +456,12 @@ class AuthProvider extends ChangeNotifier {
         _user = User.fromJson(userData);
         _isAuthenticated = true;
         _isLoading = false;
-        notifyListeners();
+        _safeNotify();
         return true;
       } else {
         _errorMessage = response.data['detail'] ?? t.error_login_failed;
         _isLoading = false;
-        notifyListeners();
+        _safeNotify();
         return false;
       }
     } on DioException catch (e) {
@@ -459,12 +471,12 @@ class AuthProvider extends ChangeNotifier {
         _errorMessage = t.error_network;
       }
       _isLoading = false;
-      notifyListeners();
+      _safeNotify();
       return false;
     } catch (e) {
       _errorMessage = t.error_something_wrong;
       _isLoading = false;
-      notifyListeners();
+      _safeNotify();
       return false;
     }
   }
@@ -473,7 +485,7 @@ class AuthProvider extends ChangeNotifier {
   Future<bool> updateInterests(List<String> interests) async {
     _isLoading = true;
     _errorMessage = null;
-    notifyListeners();
+    _safeNotify();
 
     try {
       final response = await AuthService.updateInterests(interests);
@@ -481,12 +493,12 @@ class AuthProvider extends ChangeNotifier {
       if (response.statusCode == 200) {
         _user = User.fromJson(response.data);
         _isLoading = false;
-        notifyListeners();
+        _safeNotify();
         return true;
       } else {
         _errorMessage = response.data['detail'] ?? 'Failed to update interests';
         _isLoading = false;
-        notifyListeners();
+        _safeNotify();
         return false;
       }
     } on DioException catch (e) {
@@ -498,12 +510,12 @@ class AuthProvider extends ChangeNotifier {
         _errorMessage = 'Failed to update interests. Please try again.';
       }
       _isLoading = false;
-      notifyListeners();
+      _safeNotify();
       return false;
     } catch (e) {
       _errorMessage = 'An error occurred. Please try again.';
       _isLoading = false;
-      notifyListeners();
+      _safeNotify();
       return false;
     }
   }
@@ -512,7 +524,7 @@ class AuthProvider extends ChangeNotifier {
   Future<bool> updatePrompts(List<Map<String, dynamic>> prompts) async {
     _isLoading = true;
     _errorMessage = null;
-    notifyListeners();
+    _safeNotify();
 
     try {
       final response = await AuthService.updatePrompts(prompts);
@@ -520,12 +532,12 @@ class AuthProvider extends ChangeNotifier {
       if (response.statusCode == 200) {
         _user = User.fromJson(response.data);
         _isLoading = false;
-        notifyListeners();
+        _safeNotify();
         return true;
       } else {
         _errorMessage = response.data['detail'] ?? 'Failed to update prompts';
         _isLoading = false;
-        notifyListeners();
+        _safeNotify();
         return false;
       }
     } on DioException catch (e) {
@@ -537,12 +549,12 @@ class AuthProvider extends ChangeNotifier {
         _errorMessage = 'Failed to update prompts. Please try again.';
       }
       _isLoading = false;
-      notifyListeners();
+      _safeNotify();
       return false;
     } catch (e) {
       _errorMessage = 'An error occurred. Please try again.';
       _isLoading = false;
-      notifyListeners();
+      _safeNotify();
       return false;
     }
   }

@@ -545,7 +545,7 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
       profileData['bio'] = bio.isEmpty ? null : bio;
       profileData['birth_date'] = birthDate.isEmpty ? null : birthDate;
 
-      print('📤 1. Updating profile via PUT /users/me: $profileData');
+      debugPrint('📤 1. Updating profile via PUT /users/me: $profileData');
       final profileSuccess = await authProvider.updateProfile(profileData);
 
       if (!profileSuccess) {
@@ -558,7 +558,7 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
       }
 
       // 2. Update location text via PATCH /users/me/location-text
-      print('📤 2. Updating location text via PATCH /users/me/location-text');
+      debugPrint('📤 2. Updating location text via PATCH /users/me/location-text');
       final locationTextSuccess = await LocationService.updateLocationText(
         country: _selectedCountry!.name,
         province: _selectedProvince!.name,
@@ -575,7 +575,7 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
       }
 
       // 3. Update GPS location via POST /users/me/location
-      print('📤 3. Updating GPS via POST /users/me/location: lat=$_lat, lng=$_lng');
+      debugPrint('📤 3. Updating GPS via POST /users/me/location: lat=$_lat, lng=$_lng');
       final gpsSuccess = await LocationService.updateLocationGPS(
         lat: _lat!,
         lng: _lng!,
@@ -604,7 +604,7 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
       }
 
     } catch (e) {
-      print('❌ Save error: $e');
+      debugPrint('❌ Save error: $e');
       if (!mounted) return;
       setState(() {
         _errorMessage = 'An error occurred. Please try again.';
@@ -618,7 +618,7 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
     required T? selectedItem,
     required String hintText,
     required String labelText,
-    required String displayName(T item),
+    required String Function(T item) displayName,
     required void Function(T?) onSelected,
     required bool isLoading,
     required SearchController searchController,
@@ -641,7 +641,7 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
               fontWeight: FontWeight.w600,
               color: isEnabled
                   ? Theme.of(context).colorScheme.onSurface
-                  : Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+                  : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
             ),
           ),
         ),
@@ -658,10 +658,10 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
               backgroundColor: WidgetStatePropertyAll(
                 isEnabled
                     ? (isDark
-                        ? Colors.white.withOpacity(0.05)
+                        ? Colors.white.withValues(alpha: 0.05)
                         : Colors.grey.shade50)
                     : (isDark
-                        ? Colors.white.withOpacity(0.02)
+                        ? Colors.white.withValues(alpha: 0.02)
                         : Colors.grey.shade100),
               ),
               shape: WidgetStatePropertyAll(
@@ -679,8 +679,8 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
                   Icon(
                     Icons.search,
                     color: isEnabled
-                        ? Theme.of(context).colorScheme.onSurface.withOpacity(0.6)
-                        : Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
+                        ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)
+                        : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
                   ),
               trailing: [
                 if (selectedItem != null && isEnabled)
@@ -688,7 +688,7 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
                     icon: Icon(
                       Icons.close,
                       size: 18,
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                     onPressed: () {
                       searchController.clear();
@@ -718,7 +718,7 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
                   fontSize: 15,
                   color: isEnabled
                       ? Theme.of(context).colorScheme.onSurface
-                      : Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
+                      : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
                 ),
               ),
               hintStyle: WidgetStatePropertyAll(
@@ -726,8 +726,8 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
                   fontFamily: 'Inter',
                   fontSize: 15,
                   color: isEnabled
-                      ? Theme.of(context).colorScheme.onSurface.withOpacity(0.5)
-                      : Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
+                      ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)
+                      : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
                 ),
               ),
             );
@@ -763,7 +763,7 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
                     'No results found',
                     style: TextStyle(
                       fontFamily: 'Inter',
-                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                     ),
                   ),
                 ),
@@ -774,7 +774,7 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
               final isSelected = item == selectedItem;
               return ListTile(
                 selected: isSelected,
-                selectedTileColor: primaryColor.withOpacity(0.1),
+                selectedTileColor: primaryColor.withValues(alpha: 0.1),
                 title: Text(
                   displayName(item),
                   style: TextStyle(
@@ -820,7 +820,6 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
     final isDark = context.isDarkMode;
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
     final bgColor = isDark ? AppTheme.darkBackground : AppTheme.lightBackground;
-    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
     final textMutedColor = isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted;
     final onSurfaceColor = colors.onSurface;
     final errorColor = AppTheme.lightError;
@@ -869,9 +868,9 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                                 decoration: BoxDecoration(
-                                  color: errorColor.withOpacity(0.08),
+                                  color: errorColor.withValues(alpha: 0.08),
                                   borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: errorColor.withOpacity(0.2)),
+                                  border: Border.all(color: errorColor.withValues(alpha: 0.2)),
                                 ),
                                 child: Row(
                                   children: [
@@ -1031,7 +1030,7 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
                                       onPressed: _isLoadingLocation ? null : _getCurrentLocation,
                                       style: TextButton.styleFrom(
                                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                        backgroundColor: primaryColor.withOpacity(0.06),
+                                        backgroundColor: primaryColor.withValues(alpha: 0.06),
                                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                                       ),
                                       icon: _isLoadingLocation
@@ -1190,14 +1189,14 @@ class _GenderOption extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: isSelected ? primaryColor.withOpacity(0.06) : surfaceColor,
+          color: isSelected ? primaryColor.withValues(alpha: 0.06) : surfaceColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected ? primaryColor : borderColor,
             width: isSelected ? 2 : 1,
           ),
           boxShadow: isSelected
-              ? [BoxShadow(color: primaryColor.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))]
+              ? [BoxShadow(color: primaryColor.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))]
               : null,
         ),
         child: Row(
@@ -1205,7 +1204,7 @@ class _GenderOption extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: isSelected ? primaryColor : onSurfaceColor.withOpacity(0.6),
+              color: isSelected ? primaryColor : onSurfaceColor.withValues(alpha: 0.6),
               size: 20,
             ),
             const SizedBox(width: 8),

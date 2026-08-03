@@ -1,6 +1,5 @@
 // lib/models/photo.dart
 import 'dart:io';
-import 'package:flutter/material.dart';
 
 class PhotoUpload {
   final String id;

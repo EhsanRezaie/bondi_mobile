@@ -195,6 +195,7 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
+    if (!mounted) return;
     final success = await authProvider.googleLogin(
       idToken: result['id_token']!,
       name: result['name'],

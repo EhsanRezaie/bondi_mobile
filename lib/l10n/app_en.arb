@@ -252,5 +252,7 @@
   "chat_loading_more": "Loading more...",
   "chat_delete_message": "Delete message",
   "chat_forward": "Forward",
-  "chat_matched_at": "Matched {time}"
+  "chat_matched_at": "Matched {time}",
+  "toast_like_sent": "Like sent!",
+  "toast_like_and_message_sent": "Like and message sent!"
 }

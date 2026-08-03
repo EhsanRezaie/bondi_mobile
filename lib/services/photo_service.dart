@@ -1,4 +1,5 @@
 // lib/services/photo_service.dart
+import 'package:flutter/foundation.dart';
 import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:dating_app/services/api_service.dart';
@@ -28,7 +29,7 @@ class PhotoService {
 
       return PhotoUploadResponse.fromJson(response.data);
     } catch (e) {
-      print('❌ Upload photo error: $e');
+      debugPrint('❌ Upload photo error: $e');
       return null;
     }
   }
@@ -40,7 +41,7 @@ class PhotoService {
           .map((json) => PhotoResponse.fromJson(json))
           .toList();
     } catch (e) {
-      print('❌ Get photos error: $e');
+      debugPrint('❌ Get photos error: $e');
       return [];
     }
   }
@@ -50,7 +51,7 @@ class PhotoService {
       await _dio.delete('/users/me/photos/$photoId');
       return true;
     } catch (e) {
-      print('❌ Delete photo error: $e');
+      debugPrint('❌ Delete photo error: $e');
       return false;
     }
   }
@@ -60,7 +61,7 @@ class PhotoService {
       final response = await _dio.put('/users/me/photos/$photoId/main');
       return PhotoResponse.fromJson(response.data);
     } catch (e) {
-      print('❌ Set main photo error: $e');
+      debugPrint('❌ Set main photo error: $e');
       return null;
     }
   }
@@ -76,7 +77,7 @@ class PhotoService {
       );
       return PhotoResponse.fromJson(response.data);
     } catch (e) {
-      print('❌ Update crop error: $e');
+      debugPrint('❌ Update crop error: $e');
       return null;
     }
   }
@@ -108,7 +109,7 @@ class PhotoService {
       );
       return true;
     } catch (e) {
-      print('❌ Reorder photos error: $e');
+      debugPrint('❌ Reorder photos error: $e');
       return false;
     }
   }

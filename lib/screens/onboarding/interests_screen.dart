@@ -1,7 +1,6 @@
 // lib/screens/onboarding/interests_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:dating_app/generated/app_localizations.dart';
 import '../../config/app_theme.dart';
 import '../../providers/onboarding_provider.dart';
 import '../../services/onboarding_service.dart';
@@ -16,10 +15,9 @@ class InterestsScreen extends StatefulWidget {
 }
 
 class _InterestsScreenState extends State<InterestsScreen> {
-  List<Interest> _allInterests = [];
   List<String> _selectedInterests = [];
   bool _isLoading = true;
-  bool _isSubmitting = false;
+  final bool _isSubmitting = false;
   String? _errorMessage;
 
   Map<String, List<Interest>> _groupedInterests = {};
@@ -44,7 +42,6 @@ class _InterestsScreenState extends State<InterestsScreen> {
     try {
       final interests = await OnboardingService.getInterests();
       setState(() {
-        _allInterests = interests;
         _groupedInterests = _groupByCategory(interests);
         if (_groupedInterests.isNotEmpty) {
           _expandedCategories.add(_groupedInterests.keys.first);
@@ -122,7 +119,6 @@ class _InterestsScreenState extends State<InterestsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final t = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
     final isDark = context.isDarkMode;
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
@@ -222,9 +218,9 @@ class _InterestsScreenState extends State<InterestsScreen> {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                               decoration: BoxDecoration(
-                                color: errorColor.withOpacity(0.08),
+                                color: errorColor.withValues(alpha: 0.08),
                                 borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: errorColor.withOpacity(0.2)),
+                                border: Border.all(color: errorColor.withValues(alpha: 0.2)),
                               ),
                               child: Row(
                                 children: [
@@ -251,7 +247,7 @@ class _InterestsScreenState extends State<InterestsScreen> {
                             width: double.infinity,
                             height: 6,
                             decoration: BoxDecoration(
-                              color: isDark ? Colors.white.withOpacity(0.1) : Colors.grey.shade200,
+                              color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade200,
                               borderRadius: BorderRadius.circular(3),
                             ),
                             child: FractionallySizedBox(
@@ -380,7 +376,7 @@ class _InterestsScreenState extends State<InterestsScreen> {
                                         Text(
                                           isEnough ? 'Continue' : 'Select ${8 - selectedCount} more',
                                           style: AppTheme.buttonText.copyWith(
-                                            color: isEnough ? Colors.white : Colors.white.withOpacity(0.7),
+                                            color: isEnough ? Colors.white : Colors.white.withValues(alpha: 0.7),
                                           ),
                                         ),
                                         if (isEnough) ...[
@@ -451,7 +447,7 @@ class _InterestsScreenState extends State<InterestsScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       margin: const EdgeInsets.only(right: 8),
                       decoration: BoxDecoration(
-                        color: primaryColor.withOpacity(0.15),
+                        color: primaryColor.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
@@ -498,7 +494,7 @@ class _InterestsScreenState extends State<InterestsScreen> {
                         boxShadow: isSelected
                             ? [
                                 BoxShadow(
-                                  color: primaryColor.withOpacity(0.3),
+                                  color: primaryColor.withValues(alpha: 0.3),
                                   blurRadius: 8,
                                   offset: const Offset(0, 4),
                                 ),

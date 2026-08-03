@@ -8,6 +8,7 @@ import 'package:dating_app/services/onboarding_service.dart';
 import 'package:dating_app/widgets/user_card.dart';
 import 'package:dating_app/widgets/discover_action_button.dart';
 import 'package:dating_app/screens/discover/profile_detail_screen.dart';
+import 'package:dating_app/widgets/action_toast.dart';
 
 class DiscoverScreen extends StatefulWidget {
   final VoidCallback? onSwitchToChats;
@@ -53,8 +54,12 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       return;
     }
     final result = await provider.swipeRight(profile);
-    if (result != null && result['matched'] == true && mounted) {
+    if (!mounted) return;
+    if (result != null && result['matched'] == true) {
       _showMatchDialog(result, profile);
+    } else if (result != null) {
+      final t = AppLocalizations.of(context)!;
+      showActionToast(context, t.toast_like_sent);
     }
   }
 
@@ -76,9 +81,13 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     if (!mounted) return;
 
     final result = await provider.swipeAndChat(profile, message: message);
+    if (!mounted) return;
 
-    if (result != null && result['matched'] == true && mounted) {
+    if (result != null && result['matched'] == true) {
       _showMatchDialog(result, profile, messageSent: result['message_sent'] == true);
+    } else if (result != null) {
+      final t = AppLocalizations.of(context)!;
+      showActionToast(context, t.toast_like_and_message_sent);
     }
   }
 
@@ -141,58 +150,60 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
               color: isDark ? AppTheme.darkSurface : Colors.white,
               borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: isDark ? AppTheme.darkBorder : Colors.grey.shade300,
-                      borderRadius: BorderRadius.circular(2),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: isDark ? AppTheme.darkBorder : Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 20),
-                Text(
-                  t.discover_say_something,
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? AppTheme.darkText : AppTheme.lightText,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                TextField(
-                  controller: controller,
-                  autofocus: true,
-                  maxLength: 200,
-                  maxLines: 3,
-                  decoration: InputDecoration(
-                    hintText: t.discover_send_message_hint,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(16),
+                  const SizedBox(height: 20),
+                  Text(
+                    t.discover_say_something,
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? AppTheme.darkText : AppTheme.lightText,
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.pop(ctx, controller.text),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: controller,
+                    autofocus: true,
+                    maxLength: 200,
+                    maxLines: 3,
+                    decoration: InputDecoration(
+                      hintText: t.discover_send_message_hint,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(ctx, controller.text),
                     child: Text(t.discover_send_and_like),
                   ),
                 ),
               ],
+              ),
             ),
           ),
         );
       },
     );
-    controller.dispose();
+    WidgetsBinding.instance.addPostFrameCallback((_) => controller.dispose());
     return result;
   }
 
@@ -525,11 +536,11 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
           color: isDark
-              ? primaryColor.withOpacity(0.15)
-              : primaryColor.withOpacity(0.08),
+              ? primaryColor.withValues(alpha: 0.15)
+              : primaryColor.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: primaryColor.withOpacity(0.3),
+            color: primaryColor.withValues(alpha: 0.3),
           ),
         ),
         child: Row(

@@ -144,10 +144,10 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Colors.black.withOpacity(0.4),
+                    Colors.black.withValues(alpha: 0.4),
                     Colors.transparent,
                     Colors.transparent,
-                    Colors.black.withOpacity(0.7),
+                    Colors.black.withValues(alpha: 0.7),
                   ],
                   stops: const [0.0, 0.2, 0.6, 1.0],
                 ),
@@ -162,7 +162,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                   width: 40,
                   height: 40,
                   decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.4),
+                    color: Colors.black.withValues(alpha: 0.4),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.close, color: Colors.white, size: 22),
@@ -187,7 +187,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                         decoration: BoxDecoration(
                           color: _currentPhotoIndex == index
                               ? Colors.white
-                              : Colors.white.withOpacity(0.4),
+                              : Colors.white.withValues(alpha: 0.4),
                           borderRadius: BorderRadius.circular(4),
                         ),
                       );
@@ -259,27 +259,27 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
                   Row(
                     children: [
                       if (profile.distanceKm != null) ...[
-                        Icon(Icons.near_me, size: 14, color: Colors.white.withOpacity(0.8)),
+                        Icon(Icons.near_me, size: 14, color: Colors.white.withValues(alpha: 0.8)),
                         const SizedBox(width: 4),
                         Text(
                           t.discover_km_away(profile.distanceKm!.round()),
                           style: TextStyle(
                             fontFamily: 'Inter',
                             fontSize: 13,
-                            color: Colors.white.withOpacity(0.8),
+                            color: Colors.white.withValues(alpha: 0.8),
                           ),
                         ),
                         const SizedBox(width: 12),
                       ],
                       if (profile.locationDisplay.isNotEmpty) ...[
-                        Icon(Icons.location_on, size: 14, color: Colors.white.withOpacity(0.8)),
+                        Icon(Icons.location_on, size: 14, color: Colors.white.withValues(alpha: 0.8)),
                         const SizedBox(width: 4),
                         Text(
                           profile.locationDisplay,
                           style: TextStyle(
                             fontFamily: 'Inter',
                             fontSize: 13,
-                            color: Colors.white.withOpacity(0.85),
+                            color: Colors.white.withValues(alpha: 0.85),
                           ),
                         ),
                       ],
@@ -484,7 +484,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
           decoration: BoxDecoration(
             color: surfaceColor,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: borderColor.withOpacity(0.5)),
+            border: Border.all(color: borderColor.withValues(alpha: 0.5)),
           ),
           child: Text(
             profile.bio!,
@@ -540,7 +540,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white10 : (context.isDarkMode ? AppTheme.darkPrimary : AppTheme.lightPrimary).withOpacity(0.06),
+        color: isDark ? Colors.white10 : (context.isDarkMode ? AppTheme.darkPrimary : AppTheme.lightPrimary).withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
@@ -594,7 +594,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
-                color: isDark ? Colors.white10 : primaryColor.withOpacity(0.06),
+                color: isDark ? Colors.white10 : primaryColor.withValues(alpha: 0.06),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
@@ -653,7 +653,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
             decoration: BoxDecoration(
               color: surfaceColor,
               borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: borderColor.withOpacity(0.5)),
+              border: Border.all(color: borderColor.withValues(alpha: 0.5)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

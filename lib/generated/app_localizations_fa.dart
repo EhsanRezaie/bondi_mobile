@@ -778,4 +778,10 @@ class AppLocalizationsFa extends AppLocalizations {
   String chat_matched_at(Object time) {
     return 'تطابق $time';
   }
+
+  @override
+  String get toast_like_sent => 'لایک ارسال شد!';
+
+  @override
+  String get toast_like_and_message_sent => 'لایک و پیام ارسال شد!';
 }

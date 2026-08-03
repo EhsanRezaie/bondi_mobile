@@ -24,7 +24,7 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _currentIndex = 0;
+  int _currentIndex = 1;
   bool _isChecking = false;
 
   late final List<Widget> _screens;
@@ -32,14 +32,14 @@ class _MainScreenState extends State<MainScreen> {
   void _initScreens() {
     _screens = [
       ChangeNotifierProvider(
+        create: (_) => SearchProvider(),
+        child: const SearchScreen(),
+      ),
+      ChangeNotifierProvider(
         create: (_) => DiscoverProvider(),
         child: DiscoverScreen(
           onSwitchToChats: () => _switchToTab(2),
         ),
-      ),
-      ChangeNotifierProvider(
-        create: (_) => SearchProvider(),
-        child: const SearchScreen(),
       ),
       const ChatsScreen(),
       ChangeNotifierProvider(
@@ -177,14 +177,14 @@ class _MainScreenState extends State<MainScreen> {
         unselectedItemColor: Colors.grey,
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.explore_outlined),
-            activeIcon: Icon(Icons.explore),
-            label: 'Discover',
-          ),
-          BottomNavigationBarItem(
             icon: Icon(Icons.search_outlined),
             activeIcon: Icon(Icons.search),
             label: 'Search',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.explore_outlined),
+            activeIcon: Icon(Icons.explore),
+            label: 'Discover',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.chat_outlined),

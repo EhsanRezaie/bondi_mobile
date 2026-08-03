@@ -41,12 +41,12 @@ class _SplashScreenState extends State<SplashScreen> {
     
     final isAuthenticated = await authProvider.initializeApp();
 
-    if (authProvider.user != null) {
+    if (authProvider.user != null && mounted) {
       final settingsProvider = Provider.of<SettingsProvider>(context, listen: false);
       settingsProvider.loadFromUser(authProvider.user);
     }
     
-    if (!authProvider.isServerHealthy) {
+    if (!authProvider.isServerHealthy && mounted) {
       final t = AppLocalizations.of(context)!;
       setState(() {
         _isLoading = false;
@@ -106,10 +106,9 @@ class _SplashScreenState extends State<SplashScreen> {
     final colors = Theme.of(context).colorScheme;
     final isDark = context.isDarkMode;
     final textMuted = isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted;
-    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
     
     return Scaffold(
-      backgroundColor: colors.background,
+      backgroundColor: context.backgroundColor,
       body: SafeArea(
         child: Center(
           child: Padding(
@@ -219,7 +218,7 @@ class _SplashScreenState extends State<SplashScreen> {
         Icon(
           Icons.wifi_off_rounded,
           size: 48,
-          color: textMuted.withOpacity(0.5),
+          color: textMuted.withValues(alpha: 0.5),
         ),
         const SizedBox(height: 16),
         Text(

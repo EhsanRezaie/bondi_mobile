@@ -160,7 +160,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildProfileHeader(
-    user,
+    User? user,
     PhotoResponse? mainPhoto,
     Color primaryColor,
     Color onSurfaceColor,
@@ -178,7 +178,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 border: Border.all(color: Colors.grey.shade200, width: 2),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.04),
+                    color: Colors.black.withValues(alpha: 0.04),
                     blurRadius: 16,
                     offset: const Offset(0, 4),
                   ),
@@ -355,7 +355,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildPremiumSection(user, Color primaryColor, bool isDark) {
+  Widget _buildPremiumSection(User? user, Color primaryColor, bool isDark) {
     final isPremium = user?.isPremium ?? false;
     final premiumUntil = user?.premiumUntil;
     final daysLeft = isPremium ? _getPremiumDaysLeft(premiumUntil) : '0';
@@ -373,7 +373,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: primaryColor.withOpacity(0.12),
+            color: primaryColor.withValues(alpha: 0.12),
             blurRadius: 32,
             offset: const Offset(0, 12),
           ),
@@ -389,7 +389,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 children: [
                   Icon(
                     isPremium ? Icons.workspace_premium : Icons.workspace_premium_outlined,
-                    color: isPremium ? Colors.amber.shade300 : Colors.white.withOpacity(0.5),
+                    color: isPremium ? Colors.amber.shade300 : Colors.white.withValues(alpha: 0.5),
                     size: 18,
                   ),
                   const SizedBox(width: 8),
@@ -399,7 +399,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       fontFamily: 'Inter',
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
-                      color: isPremium ? Colors.amber.shade300 : Colors.white.withOpacity(0.5),
+                      color: isPremium ? Colors.amber.shade300 : Colors.white.withValues(alpha: 0.5),
                       letterSpacing: 0.5,
                     ),
                   ),
@@ -428,7 +428,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.1),
+                    color: Colors.white.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Row(
@@ -436,7 +436,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       Icon(
                         Icons.timer_outlined,
-                        color: Colors.white.withOpacity(0.6),
+                        color: Colors.white.withValues(alpha: 0.6),
                         size: 14,
                       ),
                       const SizedBox(width: 4),
@@ -445,7 +445,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         style: TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 12,
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.white.withValues(alpha: 0.8),
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -472,7 +472,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             style: TextStyle(
               fontFamily: 'Inter',
               fontSize: 14,
-              color: Colors.white.withOpacity(0.8),
+              color: Colors.white.withValues(alpha: 0.8),
             ),
           ),
           const SizedBox(height: 16),
@@ -487,13 +487,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       // TODO: Navigate to premium purchase
                     },
               style: ElevatedButton.styleFrom(
-                backgroundColor: isPremium ? Colors.white.withOpacity(0.1) : Colors.white,
+                backgroundColor: isPremium ? Colors.white.withValues(alpha: 0.1) : Colors.white,
                 foregroundColor: isPremium ? Colors.white : primaryColor,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
                 minimumSize: const Size(double.infinity, 48),
-                side: isPremium ? BorderSide(color: Colors.white.withOpacity(0.2)) : BorderSide.none,
+                side: isPremium ? BorderSide(color: Colors.white.withValues(alpha: 0.2)) : BorderSide.none,
               ),
               child: Text(
                 isPremium ? 'Manage Subscription' : 'Get Premium',
@@ -512,7 +512,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildAccountSection(
-    user,
+    User? user,
     PhotoResponse? mainPhoto,
     Color onSurfaceColor,
     Color textMutedColor,

@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 
 class OnboardingProvider extends ChangeNotifier {
+  bool _disposed = false;
+
   // Step 1: Email & Password (already passed from SignUp)
   String? _email;
   String? _password;
@@ -80,13 +82,23 @@ class OnboardingProvider extends ChangeNotifier {
 
   bool get hasEmail => _email != null && _email!.isNotEmpty;
 
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
+  }
+
+   void _safeNotify() {
+    if (!_disposed) notifyListeners();
+  }
+
   // ============================================================
   // Set from SignUp (called after successful verify)
   // ============================================================
   void setEmailAndPassword(String email, String password) {
     _email = email;
     _password = password;
-    notifyListeners();
+    _safeNotify();
   }
 
   // ============================================================
@@ -104,7 +116,7 @@ class OnboardingProvider extends ChangeNotifier {
     _gender = gender;
     _sexualOrientation = sexualOrientation;
     _bio = bio;
-    notifyListeners();
+    _safeNotify();
   }
 
   // ============================================================
@@ -140,7 +152,7 @@ class OnboardingProvider extends ChangeNotifier {
     _ethnicity = ethnicity;
     _politicalOrientation = politicalOrientation;
     _languages = languages;
-    notifyListeners();
+    _safeNotify();
   }
 
   // ============================================================
@@ -158,7 +170,7 @@ class OnboardingProvider extends ChangeNotifier {
     _country = country;
     _province = province;
     _city = city;
-    notifyListeners();
+    _safeNotify();
   }
 
   // ============================================================
@@ -166,28 +178,26 @@ class OnboardingProvider extends ChangeNotifier {
   // ============================================================
   void setInterests(List<String> interests) {
     _interests = interests;
-    notifyListeners();
+    _safeNotify();
   }
 
   void setPrompts(List<Map<String, dynamic>> prompts) {
     _prompts = prompts;
-    notifyListeners();
+    _safeNotify();
   }
 
   void addInterest(String interest) {
-    if (_interests == null) {
-      _interests = [];
-    }
+    _interests ??= [];
     if (!_interests!.contains(interest)) {
       _interests!.add(interest);
-      notifyListeners();
+      _safeNotify();
     }
   }
 
   void removeInterest(String interest) {
     if (_interests != null) {
       _interests!.remove(interest);
-      notifyListeners();
+      _safeNotify();
     }
   }
 
@@ -196,21 +206,19 @@ class OnboardingProvider extends ChangeNotifier {
   // ============================================================
   void setPhotos(List<String> photos) {
     _photos = photos;
-    notifyListeners();
+    _safeNotify();
   }
 
   void addPhoto(String photoPath) {
-    if (_photos == null) {
-      _photos = [];
-    }
+    _photos ??= [];
     _photos!.add(photoPath);
-    notifyListeners();
+    _safeNotify();
   }
 
   void removePhoto(String photoPath) {
     if (_photos != null) {
       _photos!.remove(photoPath);
-      notifyListeners();
+      _safeNotify();
     }
   }
 
@@ -300,6 +308,6 @@ class OnboardingProvider extends ChangeNotifier {
     _interests = null;
     _prompts = null;
     _photos = null;
-    notifyListeners();
+    _safeNotify();
   }
 }

@@ -117,9 +117,9 @@ class _VoiceMessagePlayerState extends State<VoiceMessagePlayer> {
                     thumbShape:
                         const RoundSliderThumbShape(enabledThumbRadius: 5),
                     activeTrackColor:
-                        widget.isMine ? Colors.white.withOpacity(0.8) : primaryColor,
+                        widget.isMine ? Colors.white.withValues(alpha: 0.8) : primaryColor,
                     inactiveTrackColor:
-                        widget.isMine ? Colors.white.withOpacity(0.3) : mutedColor.withOpacity(0.3),
+                        widget.isMine ? Colors.white.withValues(alpha: 0.3) : mutedColor.withValues(alpha: 0.3),
                     thumbColor: widget.isMine ? Colors.white : primaryColor,
                   ),
                   child: Slider(
@@ -143,7 +143,7 @@ class _VoiceMessagePlayerState extends State<VoiceMessagePlayer> {
               fontFamily: 'Inter',
               fontSize: 10,
               color: widget.isMine
-                  ? Colors.white.withOpacity(0.7)
+                  ? Colors.white.withValues(alpha: 0.7)
                   : mutedColor,
             ),
           ),
