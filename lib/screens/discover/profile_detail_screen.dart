@@ -9,9 +9,9 @@ import 'package:dating_app/widgets/discover_action_button.dart';
 class ProfileDetailScreen extends StatefulWidget {
   final DiscoverProfile profile;
   final Map<String, String> interestIcons;
-  final VoidCallback? onSwipeLeft;
-  final VoidCallback? onSwipeRight;
-  final VoidCallback? onChat;
+  final Future<void> Function()? onSwipeLeft;
+  final Future<void> Function()? onSwipeRight;
+  final Future<void> Function()? onChat;
   final int? likesRemaining;
   final int? chatsRemaining;
   final bool isPremium;
@@ -32,20 +32,121 @@ class ProfileDetailScreen extends StatefulWidget {
   State<ProfileDetailScreen> createState() => _ProfileDetailScreenState();
 }
 
-class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
+class _ProfileDetailScreenState extends State<ProfileDetailScreen>
+    with SingleTickerProviderStateMixin {
   int _currentPhotoIndex = 0;
   late ScrollController _photoStripController;
+  late AnimationController _dismissController;
+  late Animation<Offset> _dismissAnimation;
+  bool _isAnimating = false;
 
   @override
   void initState() {
     super.initState();
     _photoStripController = ScrollController();
+    _dismissController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+    );
+    _dismissAnimation = Tween<Offset>(
+      begin: Offset.zero,
+      end: const Offset(1.5, 0),
+    ).animate(CurvedAnimation(parent: _dismissController, curve: Curves.easeIn));
   }
 
   @override
   void dispose() {
     _photoStripController.dispose();
+    _dismissController.dispose();
     super.dispose();
+  }
+
+  void _startDismissAnimation(int direction) {
+    _dismissAnimation = Tween<Offset>(
+      begin: Offset.zero,
+      end: Offset(direction * 1.5, 0),
+    ).animate(CurvedAnimation(parent: _dismissController, curve: Curves.easeIn));
+    _isAnimating = true;
+    _dismissController.reset();
+    _dismissController.forward().then((_) {
+      if (mounted) {
+        Navigator.pop(context);
+      }
+    });
+  }
+
+  void _snapBack() {
+    _dismissController.stop();
+    _dismissController.reset();
+    _dismissAnimation = Tween<Offset>(
+      begin: _dismissAnimation.value,
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _dismissController, curve: Curves.elasticOut));
+    _dismissController.forward().then((_) {
+      if (mounted) {
+        _isAnimating = false;
+      }
+    });
+  }
+
+  Future<void> _onSwipeLeft() async {
+    if (_isAnimating) return;
+    _isAnimating = true;
+
+    // Start animation immediately
+    _startDismissAnimation(-1);
+
+    try {
+      if (widget.onSwipeLeft != null) {
+        await widget.onSwipeLeft!();
+      }
+      if (!mounted) return;
+      // API succeeded - wait for animation to complete then pop
+    } catch (e) {
+      // API failed - snap back
+      _snapBack();
+      if (!mounted) return;
+    }
+  }
+
+  Future<void> _onSwipeRight() async {
+    if (_isAnimating) return;
+    _isAnimating = true;
+
+    // Start animation immediately
+    _startDismissAnimation(1);
+
+    try {
+      if (widget.onSwipeRight != null) {
+        await widget.onSwipeRight!();
+      }
+      if (!mounted) return;
+      // API succeeded - wait for animation to complete then pop
+    } catch (e) {
+      // API failed - snap back
+      _snapBack();
+      if (!mounted) return;
+    }
+  }
+
+  Future<void> _onChat() async {
+    if (_isAnimating) return;
+    _isAnimating = true;
+
+    // Start animation immediately
+    _startDismissAnimation(1);
+
+    try {
+      if (widget.onChat != null) {
+        await widget.onChat!();
+      }
+      if (!mounted) return;
+      // API succeeded - wait for animation to complete then pop
+    } catch (e) {
+      // API failed - snap back
+      _snapBack();
+      if (!mounted) return;
+    }
   }
 
   DiscoverProfile get profile => widget.profile;
@@ -81,8 +182,17 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
               child: CustomScrollView(
                 slivers: [
                   SliverToBoxAdapter(
-                    child: _buildHeaderSection(
-                      t, isDark, primaryColor, mutedColor, textColor, surfaceColor, borderColor, photos,
+                    child: AnimatedBuilder(
+                      animation: _dismissController,
+                      builder: (context, child) {
+                        return Transform.translate(
+                          offset: _dismissAnimation.value * MediaQuery.of(context).size.width,
+                          child: child,
+                        );
+                      },
+                      child: _buildHeaderSection(
+                        t, isDark, primaryColor, mutedColor, textColor, surfaceColor, borderColor, photos,
+                      ),
                     ),
                   ),
                   SliverToBoxAdapter(
@@ -708,7 +818,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
             icon: Icons.close_rounded,
             gradient: AppTheme.rejectGradient(isDark: isDark),
             size: 52,
-            onPressed: widget.onSwipeLeft,
+            onPressed: _isAnimating ? null : _onSwipeLeft,
           ),
           const SizedBox(width: 20),
           DiscoverActionButton(
@@ -718,7 +828,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
             borderColor: isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary,
             size: 58,
             badgeCount: widget.isPremium ? null : widget.chatsRemaining,
-            onPressed: widget.onChat,
+            onPressed: _isAnimating ? null : _onChat,
           ),
           const SizedBox(width: 20),
           DiscoverActionButton(
@@ -726,7 +836,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen> {
             gradient: AppTheme.likeGradient(isDark: isDark),
             size: 52,
             badgeCount: widget.isPremium ? null : widget.likesRemaining,
-            onPressed: widget.onSwipeRight,
+            onPressed: _isAnimating ? null : _onSwipeRight,
           ),
         ],
       ),

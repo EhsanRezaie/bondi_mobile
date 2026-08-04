@@ -21,6 +21,12 @@ class DiscoverScreen extends StatefulWidget {
 
 class _DiscoverScreenState extends State<DiscoverScreen> {
   Map<String, String> _interestIcons = {};
+  UserCardState? _currentCardState;
+  bool _isSwiping = false;
+
+  void _onCardReady(UserCardState state) {
+    _currentCardState = state;
+  }
 
   @override
   void initState() {
@@ -88,6 +94,136 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     } else if (result != null) {
       final t = AppLocalizations.of(context)!;
       showActionToast(context, t.toast_like_and_message_sent);
+    }
+  }
+
+  Future<void> _onLikePressed(DiscoverProfile profile) async {
+    if (_isSwiping || !mounted) return;
+    final provider = Provider.of<DiscoverProvider>(context, listen: false);
+    if (provider.isLikeBlocked) {
+      _showLimitReached('likes');
+      return;
+    }
+
+    _isSwiping = true;
+    if (mounted) setState(() {});
+
+    // Start animation immediately
+    final animationFuture = _currentCardState?.swipeOut(1);
+
+    try {
+      final result = await provider.swipeRight(profile);
+      if (!mounted) return;
+
+      if (result != null) {
+        // API succeeded - wait for animation to complete
+        await animationFuture;
+        if (!mounted) return;
+        if (result['matched'] == true) {
+          _showMatchDialog(result, profile);
+        } else {
+          final t = AppLocalizations.of(context)!;
+          showActionToast(context, t.toast_like_sent);
+        }
+      } else {
+        // API returned null (error) - snap back
+        await _currentCardState?.snapBack();
+        if (!mounted) return;
+        final t = AppLocalizations.of(context)!;
+        showActionToast(context, t.error_something_wrong);
+      }
+    } catch (e) {
+      // API threw - snap back
+      await _currentCardState?.snapBack();
+      if (!mounted) return;
+      final t = AppLocalizations.of(context)!;
+      showActionToast(context, t.error_something_wrong);
+    } finally {
+      if (mounted) {
+        _isSwiping = false;
+        setState(() {});
+      }
+    }
+  }
+
+  Future<void> _onPassPressed(DiscoverProfile profile) async {
+    if (_isSwiping || !mounted) return;
+
+    _isSwiping = true;
+    if (mounted) setState(() {});
+
+    // Start animation immediately
+    final animationFuture = _currentCardState?.swipeOut(-1);
+
+    try {
+      await Provider.of<DiscoverProvider>(context, listen: false).swipeLeft(profile);
+      if (!mounted) return;
+
+      // API succeeded - wait for animation to complete
+      await animationFuture;
+    } catch (e) {
+      // API failed - snap back
+      await _currentCardState?.snapBack();
+      if (!mounted) return;
+      final t = AppLocalizations.of(context)!;
+      showActionToast(context, t.error_something_wrong);
+    } finally {
+      if (mounted) {
+        _isSwiping = false;
+        setState(() {});
+      }
+    }
+  }
+
+  Future<void> _onChatPressed(DiscoverProfile profile) async {
+    if (_isSwiping || !mounted) return;
+    final provider = Provider.of<DiscoverProvider>(context, listen: false);
+    if (provider.isChatBlocked) {
+      _showLimitReached('chats');
+      return;
+    }
+    final message = await _showChatBottomSheet();
+    if (message == null) return;
+    if (!mounted) return;
+
+    _isSwiping = true;
+    if (mounted) setState(() {});
+
+    // Start animation immediately
+    final animationFuture = _currentCardState?.swipeOut(1);
+
+    try {
+      final result = await provider.swipeAndChat(profile, message: message);
+      if (!mounted) return;
+
+      if (result != null) {
+        // API succeeded - wait for animation to complete
+        await animationFuture;
+        if (!mounted) return;
+        if (result['matched'] == true) {
+          _showMatchDialog(result, profile, messageSent: result['message_sent'] == true);
+        } else {
+          final t = AppLocalizations.of(context)!;
+          showActionToast(context, t.toast_like_and_message_sent);
+        }
+      } else {
+        // API returned null (error) - snap back
+        await _currentCardState?.snapBack();
+        if (!mounted) return;
+        final t = AppLocalizations.of(context)!;
+        showActionToast(context, t.error_something_wrong);
+      }
+    } catch (e) {
+      // API threw - snap back
+      await _currentCardState?.snapBack();
+      if (!mounted) return;
+      final t = AppLocalizations.of(context)!;
+      showActionToast(context, t.error_something_wrong);
+    } finally {
+      if (mounted) {
+        _isSwiping = false;
+        setState(() {});
+      }
     }
   }
 
@@ -325,15 +461,12 @@ Future<String?> _showChatBottomSheet() async {
           isPremium: provider.isPremium,
           onSwipeLeft: () async {
             await _handleSwipeLeft(profile);
-            if (mounted) Navigator.pop(context);
           },
           onSwipeRight: () async {
             await _handleSwipeRight(profile);
-            if (mounted) Navigator.pop(context);
           },
           onChat: () async {
             await _handleChat(profile);
-            if (mounted) Navigator.pop(context);
           },
         ),
       ),
@@ -891,6 +1024,7 @@ Future<String?> _showChatBottomSheet() async {
         onTap: () => _openProfileDetail(profile),
         onSwipeLeft: () => _handleSwipeLeft(profile),
         onSwipeRight: () => _handleSwipeRight(profile),
+        onCardReady: _onCardReady,
       ),
     );
   }
@@ -910,7 +1044,7 @@ Future<String?> _showChatBottomSheet() async {
             icon: Icons.close_rounded,
             gradient: AppTheme.rejectGradient(isDark: isDark),
             size: 56,
-            onPressed: () => _handleSwipeLeft(profile),
+            onPressed: _isSwiping ? null : () => _onPassPressed(profile),
           ),
           const SizedBox(width: 20),
           DiscoverActionButton(
@@ -920,7 +1054,7 @@ Future<String?> _showChatBottomSheet() async {
             borderColor: isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary,
             size: 62,
             badgeCount: provider.isPremium ? null : provider.chatsRemaining,
-            onPressed: provider.isChatBlocked ? null : () => _handleChat(profile),
+            onPressed: _isSwiping || provider.isChatBlocked ? null : () => _onChatPressed(profile),
           ),
           const SizedBox(width: 20),
           DiscoverActionButton(
@@ -928,7 +1062,7 @@ Future<String?> _showChatBottomSheet() async {
             gradient: AppTheme.likeGradient(isDark: isDark),
             size: 56,
             badgeCount: provider.isPremium ? null : provider.likesRemaining,
-            onPressed: provider.isLikeBlocked ? null : () => _handleSwipeRight(profile),
+            onPressed: _isSwiping || provider.isLikeBlocked ? null : () => _onLikePressed(profile),
           ),
         ],
       ),

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -13,6 +14,7 @@ class UserCard extends StatefulWidget {
   final VoidCallback? onTap;
   final VoidCallback? onSwipeLeft;
   final VoidCallback? onSwipeRight;
+  final void Function(UserCardState)? onCardReady;
 
   const UserCard({
     super.key,
@@ -23,13 +25,14 @@ class UserCard extends StatefulWidget {
     this.onTap,
     this.onSwipeLeft,
     this.onSwipeRight,
+    this.onCardReady,
   });
 
   @override
-  State<UserCard> createState() => _UserCardState();
+  State<UserCard> createState() => UserCardState();
 }
 
-class _UserCardState extends State<UserCard>
+class UserCardState extends State<UserCard>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
@@ -39,6 +42,10 @@ class _UserCardState extends State<UserCard>
   bool _isDismissed = false;
   String? _swipeLabel;
 
+  // Animation state tracking
+  Completer<void>? _currentAnimationCompleter;
+  bool _isAnimatingOut = false;
+
   @override
   void initState() {
     super.initState();
@@ -46,6 +53,12 @@ class _UserCardState extends State<UserCard>
       vsync: this,
       duration: const Duration(milliseconds: 300),
     );
+    // Notify parent that this card is ready for programmatic control
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        widget.onCardReady?.call(this);
+      }
+    });
   }
 
   @override
@@ -83,8 +96,9 @@ class _UserCardState extends State<UserCard>
     }
   }
 
-  void _animateDismiss(int direction) {
+  void _animateDismiss(int direction, {bool fireCallbacks = true}) {
     _isDismissed = true;
+    _isAnimatingOut = true;
     _controller.reset();
 
     final startX = _dx;
@@ -107,10 +121,13 @@ class _UserCardState extends State<UserCard>
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         _controller.removeListener(listener);
-        if (direction > 0) {
-          widget.onSwipeRight?.call();
-        } else {
-          widget.onSwipeLeft?.call();
+        _isAnimatingOut = false;
+        if (fireCallbacks) {
+          if (direction > 0) {
+            widget.onSwipeRight?.call();
+          } else {
+            widget.onSwipeLeft?.call();
+          }
         }
       }
     });
@@ -138,10 +155,92 @@ class _UserCardState extends State<UserCard>
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         _controller.removeListener(listener);
+        _isDismissed = false;
       }
     });
 
     _controller.forward();
+  }
+
+  Future<void> swipeOut(int direction) {
+    // If already animating out, return existing future
+    if (_isAnimatingOut && _currentAnimationCompleter != null) {
+      return _currentAnimationCompleter!.future;
+    }
+
+    _currentAnimationCompleter = Completer<void>();
+    _isAnimatingOut = true;
+    _isDismissed = true;
+
+    setState(() {
+      _swipeLabel = direction > 0 ? 'LIKE' : 'NOPE';
+    });
+    _controller.reset();
+
+    final startX = _dx;
+    final startY = _dy;
+    final startR = _rotation;
+    final endX = direction * 600.0;
+    final endY = _dy + 100.0;
+    final endR = direction * 0.3;
+
+    void listener() {
+      final t = Curves.easeIn.transform(_controller.value);
+      setState(() {
+        _dx = startX + (endX - startX) * t;
+        _dy = startY + (endY - startY) * t;
+        _rotation = startR + (endR - startR) * t;
+      });
+    }
+
+    _controller.addListener(listener);
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _controller.removeListener(listener);
+        _isAnimatingOut = false;
+        _currentAnimationCompleter?.complete();
+        _currentAnimationCompleter = null;
+      }
+    });
+
+    _controller.forward();
+    return _currentAnimationCompleter!.future;
+  }
+
+  Future<void> snapBack() {
+    // If currently animating out, stop it and snap back
+    _controller.stop();
+    _controller.reset();
+    _isAnimatingOut = false;
+    _currentAnimationCompleter?.complete(); // Complete any pending swipeOut
+    _currentAnimationCompleter = null;
+
+    final completer = Completer<void>();
+    setState(() { _swipeLabel = null; });
+    final startX = _dx;
+    final startY = _dy;
+    final startR = _rotation;
+
+    void listener() {
+      final t = Curves.elasticOut.transform(_controller.value);
+      setState(() {
+        _dx = startX * (1 - t);
+        _dy = startY * (1 - t);
+        _rotation = startR * (1 - t);
+      });
+    }
+
+    _controller.addListener(listener);
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        _controller.removeListener(listener);
+        _isDismissed = false;
+        completer.complete();
+      }
+    });
+
+    _controller.forward();
+    return completer.future;
   }
 
   void _onTapCard() {
