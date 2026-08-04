@@ -79,18 +79,35 @@ class SearchGridCard extends StatelessWidget {
                 ),
               ),
 
-              // Verified badge
-              if (profile.isVerified)
+              // Verified + Liked badges
+              if (profile.isVerified || profile.currentUserAction == 'like')
                 Positioned(
                   top: 4,
                   right: 4,
-                  child: Container(
-                    padding: const EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      color: isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.verified, size: 10, color: Colors.white),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (profile.isVerified)
+                        Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            color: isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.verified, size: 10, color: Colors.white),
+                        ),
+                      if (profile.isVerified && profile.currentUserAction == 'like')
+                        const SizedBox(width: 2),
+                      if (profile.currentUserAction == 'like')
+                        Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(Icons.favorite, size: 10, color: Colors.white),
+                        ),
+                    ],
                   ),
                 ),
 

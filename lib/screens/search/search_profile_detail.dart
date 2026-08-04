@@ -282,17 +282,28 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                           ),
                         ),
                       ],
-                      if (profile.isVerified) ...[
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(Icons.verified, size: 14, color: Colors.white),
-                        ),
-                      ],
+                       if (profile.isVerified) ...[
+                         const SizedBox(width: 8),
+                         Container(
+                           padding: const EdgeInsets.all(4),
+                           decoration: BoxDecoration(
+                             color: isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary,
+                             shape: BoxShape.circle,
+                           ),
+                           child: const Icon(Icons.verified, size: 14, color: Colors.white),
+                         ),
+                       ],
+                       if (profile.currentUserAction == 'like') ...[
+                         const SizedBox(width: 6),
+                         Container(
+                           padding: const EdgeInsets.all(3),
+                           decoration: BoxDecoration(
+                             color: Colors.red,
+                             shape: BoxShape.circle,
+                           ),
+                           child: const Icon(Icons.favorite, size: 10, color: Colors.white),
+                         ),
+                       ],
                     ],
                   ),
                 ],
@@ -688,7 +699,8 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
   Widget _buildBottomActionBar(AppLocalizations t, bool isDark) {
     final isLikeBlocked = !widget.isPremium && (widget.likesRemaining ?? 0) <= 0;
     final isChatBlocked = !widget.isPremium && (widget.chatsRemaining ?? 0) <= 0;
-    final alreadyLiked = profile.currentUserAction == 'liked' || profile.currentUserAction == 'matched';
+    final alreadyLiked = profile.currentUserAction == 'like' || 
+profile.currentUserAction == 'matched';
 
     return Container(
       decoration: BoxDecoration(
