@@ -782,4 +782,39 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get toast_like_and_message_sent => 'Like and message sent!';
+
+  @override
+  String get profile_updated_success => 'Profile updated successfully!';
+
+  @override
+  String get interests_updated_success => 'Interests updated successfully!';
+
+  @override
+  String get photos_updated_success => 'Photos updated successfully';
+
+  @override
+  String get photo_cropped_success => 'Profile picture cropped successfully';
+
+  @override
+  String get photo_crop_failed => 'Failed to save crop';
+
+  @override
+  String photo_crop_error(String error) {
+    return 'Error: $error';
+  }
+
+  @override
+  String get prompts_updated_success => 'Prompts updated successfully!';
+
+  @override
+  String get upload_profile_picture_first =>
+      'Please upload a profile picture first';
+
+  @override
+  String get face_verification_coming_soon => 'Face verification coming soon!';
+
+  @override
+  String photo_rejected_reason(String reason) {
+    return 'Reason: $reason';
+  }
 }

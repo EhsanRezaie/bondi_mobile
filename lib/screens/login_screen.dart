@@ -8,6 +8,7 @@ import '../providers/auth_provider.dart';
 import 'auth/sign_up_screen.dart';
 import 'main_screen.dart';
 import '../services/google_auth_service.dart';
+import '../../widgets/action_toast.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -172,19 +173,14 @@ class _LoginScreenState extends State<LoginScreen> {
         MaterialPageRoute(builder: (_) => const MainScreen()),
       );
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(t.error_wrong_credentials),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 3),
-        ),
-      );
+      showActionToast(context, t.error_wrong_credentials, isError: true);
     }
   }
 
-  Future<void> _handleGoogleSignIn() async {
-    
-    final authProvider = Provider.of<AuthProvider>(context, listen: false);
+   Future<void> _handleGoogleSignIn() async {
+     final t = AppLocalizations.of(context)!;
+     
+     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     
     if (authProvider.isLoading) return;
 
@@ -212,14 +208,10 @@ class _LoginScreenState extends State<LoginScreen> {
         MaterialPageRoute(builder: (_) => const MainScreen()),
       );
     } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            authProvider.errorMessage ?? 'Google login failed',
-          ),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 3),
-        ),
+      showActionToast(
+        context,
+        authProvider.errorMessage ?? t.error_login_failed,
+        isError: true,
       );
     }
   }

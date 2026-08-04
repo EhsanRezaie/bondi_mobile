@@ -784,4 +784,41 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get toast_like_and_message_sent => 'لایک و پیام ارسال شد!';
+
+  @override
+  String get profile_updated_success => 'پروفایل با موفقیت به‌روزرسانی شد!';
+
+  @override
+  String get interests_updated_success =>
+      'علاقه‌مندی‌ها با موفقیت به‌روزرسانی شدند!';
+
+  @override
+  String get photos_updated_success => 'عکس‌ها با موفقیت به‌روزرسانی شدند';
+
+  @override
+  String get photo_cropped_success => 'عکس پروفایل با موفقیت برش داده شد';
+
+  @override
+  String get photo_crop_failed => 'ذخیره برش انجام نشد';
+
+  @override
+  String photo_crop_error(String error) {
+    return 'خطا: $error';
+  }
+
+  @override
+  String get prompts_updated_success => 'پرامپت‌ها با موفقیت به‌روزرسانی شدند!';
+
+  @override
+  String get upload_profile_picture_first =>
+      'لطفاً ابتدا عکس پروفایل آپلود کنید';
+
+  @override
+  String get face_verification_coming_soon =>
+      'تأیید چهره به زودی اضافه می‌شود!';
+
+  @override
+  String photo_rejected_reason(String reason) {
+    return 'دلیل: $reason';
+  }
 }

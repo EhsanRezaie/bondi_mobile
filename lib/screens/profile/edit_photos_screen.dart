@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dating_app/config/app_theme.dart';
+import 'package:dating_app/generated/app_localizations.dart';
 import 'package:dating_app/models/photo.dart';
 import 'package:dating_app/providers/profile_provider.dart';
 import 'package:dating_app/services/photo_service.dart';
+import 'package:dating_app/widgets/action_toast.dart';
 import 'package:dating_app/widgets/shimmer_avatar.dart';
 
 class _EditablePhoto {
@@ -200,6 +202,7 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
   }
 
   Future<void> _handleSave() async {
+    final t = AppLocalizations.of(context)!;
     if (_isSaving) return;
 
     if (_items.length < minPhotos) {
@@ -299,12 +302,7 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
 
       if (mounted) {
         widget.profileProvider?.loadPhotos();
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Photos updated successfully'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        showActionToast(context, t.photos_updated_success);
         Navigator.pop(context);
       }
     } catch (e) {
@@ -873,6 +871,7 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
   }
 
   Widget _buildStatusBadge(_EditablePhoto item, Color textMutedColor, Color primaryColor) {
+    final t = AppLocalizations.of(context)!;
     if (item.serverPhoto == null) return const SizedBox.shrink();
 
     if (item.serverPhoto!.status != 'rejected') return const SizedBox.shrink();
@@ -883,11 +882,10 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
       child: GestureDetector(
         onTap: item.serverPhoto!.rejectReason != null
             ? () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Reason: ${item.serverPhoto!.rejectReason}'),
-                    backgroundColor: AppTheme.lightError,
-                  ),
+                showActionToast(
+                  context,
+                  t.photo_rejected_reason(item.serverPhoto!.rejectReason!),
+                  isError: true,
                 );
               }
             : null,

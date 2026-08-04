@@ -254,5 +254,26 @@
   "chat_forward": "ارسال به",
   "chat_matched_at": "تطابق {time}",
   "toast_like_sent": "لایک ارسال شد!",
-  "toast_like_and_message_sent": "لایک و پیام ارسال شد!"
+  "toast_like_and_message_sent": "لایک و پیام ارسال شد!",
+
+  "profile_updated_success": "پروفایل با موفقیت به‌روزرسانی شد!",
+  "interests_updated_success": "علاقه‌مندی‌ها با موفقیت به‌روزرسانی شدند!",
+  "photos_updated_success": "عکس‌ها با موفقیت به‌روزرسانی شدند",
+  "photo_cropped_success": "عکس پروفایل با موفقیت برش داده شد",
+  "photo_crop_failed": "ذخیره برش انجام نشد",
+  "photo_crop_error": "خطا: {error}",
+  "prompts_updated_success": "پرامپت‌ها با موفقیت به‌روزرسانی شدند!",
+  "upload_profile_picture_first": "لطفاً ابتدا عکس پروفایل آپلود کنید",
+  "face_verification_coming_soon": "تأیید چهره به زودی اضافه می‌شود!",
+  "photo_rejected_reason": "دلیل: {reason}",
+  "@photo_crop_error": {
+    "placeholders": {
+      "error": { "type": "String", "format": "text" }
+    }
+  },
+  "@photo_rejected_reason": {
+    "placeholders": {
+      "reason": { "type": "String", "format": "text" }
+    }
+  }
 }

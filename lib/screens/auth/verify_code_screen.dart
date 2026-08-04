@@ -7,6 +7,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/onboarding_provider.dart';
 import 'sign_up_screen.dart';
 import '../onboarding/basic_info_screen.dart';
+import '../../widgets/action_toast.dart';
 
 class VerifyCodeScreen extends StatefulWidget {
   final String email;
@@ -183,26 +184,16 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
 
     if (success && mounted) {
       _startResendTimer();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(t.verify_resend_success),
-          backgroundColor: Colors.green,
-          duration: const Duration(seconds: 3),
-        ),
-      );
+      showActionToast(context, t.verify_resend_success);
       for (var controller in _codeControllers) {
         controller.clear();
       }
       _codeFocusNodes[0].requestFocus();
     } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            authProvider.errorMessage ?? t.verify_resend_failed,
-          ),
-          backgroundColor: Colors.red,
-          duration: const Duration(seconds: 3),
-        ),
+      showActionToast(
+        context,
+        authProvider.errorMessage ?? t.verify_resend_failed,
+        isError: true,
       );
     }
   }

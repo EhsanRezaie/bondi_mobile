@@ -1561,6 +1561,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Like and message sent!'**
   String get toast_like_and_message_sent;
+
+  /// No description provided for @profile_updated_success.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated successfully!'**
+  String get profile_updated_success;
+
+  /// No description provided for @interests_updated_success.
+  ///
+  /// In en, this message translates to:
+  /// **'Interests updated successfully!'**
+  String get interests_updated_success;
+
+  /// No description provided for @photos_updated_success.
+  ///
+  /// In en, this message translates to:
+  /// **'Photos updated successfully'**
+  String get photos_updated_success;
+
+  /// No description provided for @photo_cropped_success.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile picture cropped successfully'**
+  String get photo_cropped_success;
+
+  /// No description provided for @photo_crop_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to save crop'**
+  String get photo_crop_failed;
+
+  /// No description provided for @photo_crop_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Error: {error}'**
+  String photo_crop_error(String error);
+
+  /// No description provided for @prompts_updated_success.
+  ///
+  /// In en, this message translates to:
+  /// **'Prompts updated successfully!'**
+  String get prompts_updated_success;
+
+  /// No description provided for @upload_profile_picture_first.
+  ///
+  /// In en, this message translates to:
+  /// **'Please upload a profile picture first'**
+  String get upload_profile_picture_first;
+
+  /// No description provided for @face_verification_coming_soon.
+  ///
+  /// In en, this message translates to:
+  /// **'Face verification coming soon!'**
+  String get face_verification_coming_soon;
+
+  /// No description provided for @photo_rejected_reason.
+  ///
+  /// In en, this message translates to:
+  /// **'Reason: {reason}'**
+  String photo_rejected_reason(String reason);
 }
 
 class _AppLocalizationsDelegate

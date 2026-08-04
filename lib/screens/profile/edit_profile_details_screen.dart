@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../config/app_theme.dart';
 import '../../providers/auth_provider.dart';
+import '../../generated/app_localizations.dart';
+import '../../widgets/action_toast.dart';
 
 class EditProfileDetailsScreen extends StatefulWidget {
   const EditProfileDetailsScreen({super.key});
@@ -285,6 +287,7 @@ class _EditProfileDetailsScreenState extends State<EditProfileDetailsScreen> {
   }
 
   Future<void> _handleSave() async {
+    final t = AppLocalizations.of(context)!;
     setState(() {
       _isSaving = true;
       _errorMessage = null;
@@ -376,12 +379,7 @@ class _EditProfileDetailsScreenState extends State<EditProfileDetailsScreen> {
       final success = await authProvider.updateProfile(updateData);
 
       if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Profile updated successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        showActionToast(context, t.profile_updated_success);
         Navigator.pop(context);
       } else if (mounted) {
         setState(() {

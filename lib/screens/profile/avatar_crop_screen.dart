@@ -6,6 +6,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:dating_app/models/photo.dart';
 import 'package:dating_app/services/photo_service.dart';
 import 'package:dating_app/config/app_theme.dart';
+import 'package:dating_app/generated/app_localizations.dart';
+import 'package:dating_app/widgets/action_toast.dart';
 
 class AvatarCropScreen extends StatefulWidget {
   final PhotoResponse photo;
@@ -79,6 +81,7 @@ class _AvatarCropScreenState extends State<AvatarCropScreen> {
   }
 
   Future<void> _saveCrop() async {
+    final t = AppLocalizations.of(context)!;
     if (_imageFile == null || _isSaving) return;
 
     setState(() => _isSaving = true);
@@ -99,29 +102,14 @@ class _AvatarCropScreenState extends State<AvatarCropScreen> {
         widget.onCropSaved(updatedPhoto);
         if (mounted) {
           Navigator.pop(context);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Profile picture cropped successfully'),
-              backgroundColor: Colors.green,
-            ),
-          );
+          showActionToast(context, t.photo_cropped_success);
         }
       } else if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to save crop'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        showActionToast(context, t.photo_crop_failed, isError: true);
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: ${e.toString()}'),
-            backgroundColor: Colors.red,
-          ),
-        );
+         showActionToast(context, t.photo_crop_error(e.toString()), isError: true);
       }
     } finally {
       if (mounted) {

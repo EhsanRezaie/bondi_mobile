@@ -5,6 +5,8 @@ import '../../config/app_theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/onboarding_service.dart';
 import '../../models/interest.dart';
+import '../../generated/app_localizations.dart';
+import '../../widgets/action_toast.dart';
 
 class EditInterestsScreen extends StatefulWidget {
   const EditInterestsScreen({super.key});
@@ -107,6 +109,7 @@ class _EditInterestsScreenState extends State<EditInterestsScreen> {
   }
 
   Future<void> _handleSave() async {
+    final t = AppLocalizations.of(context)!;
     if (_selectedInterestNames.length < 8) {
       if (!mounted) return;
       setState(() {
@@ -129,12 +132,7 @@ class _EditInterestsScreenState extends State<EditInterestsScreen> {
       final success = await authProvider.updateInterests(_selectedInterestNames);
 
       if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Interests updated successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        showActionToast(context, t.interests_updated_success);
         Navigator.pop(context);
       } else if (mounted) {
         setState(() {

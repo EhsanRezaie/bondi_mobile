@@ -5,6 +5,8 @@ import '../../config/app_theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../services/location_service.dart';
 import '../../models/location.dart';
+import '../../generated/app_localizations.dart';
+import '../../widgets/action_toast.dart';
 
 class EditBasicInfoScreen extends StatefulWidget {
   const EditBasicInfoScreen({super.key});
@@ -499,6 +501,7 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
   }
 
   Future<void> _handleSave() async {
+    final t = AppLocalizations.of(context)!;
     if (!_formKey.currentState!.validate()) return;
 
     final name = _nameController.text.trim();
@@ -594,12 +597,7 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
       await authProvider.refreshUser();
 
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Profile updated successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        showActionToast(context, t.profile_updated_success);
         Navigator.pop(context);
       }
 

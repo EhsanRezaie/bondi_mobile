@@ -6,6 +6,8 @@ import '../../providers/auth_provider.dart';
 import '../../providers/language_provider.dart';
 import '../../services/onboarding_service.dart';
 import '../../models/prompt.dart';
+import '../../generated/app_localizations.dart';
+import '../../widgets/action_toast.dart';
 
 class EditPromptsScreen extends StatefulWidget {
   const EditPromptsScreen({super.key});
@@ -167,6 +169,7 @@ class _EditPromptsScreenState extends State<EditPromptsScreen> {
   }
 
   Future<void> _handleSave() async {
+    final t = AppLocalizations.of(context)!;
     if (_selectedPrompts.isNotEmpty && !_isFormValid()) {
       if (!mounted) return;
       setState(() {
@@ -189,12 +192,7 @@ class _EditPromptsScreenState extends State<EditPromptsScreen> {
       final success = await authProvider.updatePrompts(_selectedPrompts);
 
       if (success && mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Prompts updated successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        showActionToast(context, t.prompts_updated_success);
         Navigator.pop(context);
       } else if (mounted) {
         setState(() {

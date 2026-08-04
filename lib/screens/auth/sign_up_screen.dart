@@ -7,6 +7,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/onboarding_provider.dart';
 import '../login_screen.dart';
 import 'verify_code_screen.dart';
+import '../../widgets/action_toast.dart';
 
 class SignUpScreen extends StatefulWidget {
   const SignUpScreen({super.key});
@@ -125,14 +126,10 @@ class _SignUpScreenState extends State<SignUpScreen> {
       }
     } else {
       if (mounted) {
-        final errorMessage =
-            authProvider.errorMessage ?? t.error_something_wrong;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(errorMessage),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 4),
-          ),
+        showActionToast(
+          context,
+          authProvider.errorMessage ?? t.error_something_wrong,
+          isError: true,
         );
       }
     }

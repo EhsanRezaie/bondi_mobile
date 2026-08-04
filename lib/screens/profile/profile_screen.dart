@@ -16,6 +16,8 @@ import 'package:dating_app/screens/profile/edit_prompts_screen.dart';
 import 'package:dating_app/screens/profile/edit_photos_screen.dart';
 import 'package:dating_app/screens/profile/settings_screen.dart';
 import 'package:dating_app/widgets/shimmer_avatar.dart';
+import 'package:dating_app/generated/app_localizations.dart';
+import 'package:dating_app/widgets/action_toast.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -166,6 +168,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     Color onSurfaceColor,
     Color textMutedColor,
   ) {
+    final t = AppLocalizations.of(context)!;
     return Column(
       children: [
         Stack(
@@ -238,11 +241,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     );
                   } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Please upload a profile picture first'),
-                      ),
-                    );
+                    showActionToast(context, t.upload_profile_picture_first, isError: true);
                   }
                 },
                 child: Container(
@@ -518,6 +517,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     Color textMutedColor,
     bool isDark,
   ) {
+    final t = AppLocalizations.of(context)!;
     // Check if main photo is face verified
     final bool isFaceVerified = mainPhoto?.faceVerified ?? false;
 
@@ -556,11 +556,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 onTap: () {
                   if (!isFaceVerified) {
                     // TODO: Navigate to face verification screen
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Face verification coming soon!'),
-                      ),
-                    );
+                    showActionToast(context, t.face_verification_coming_soon);
                   }
                 },
                 showChevron: !isFaceVerified,

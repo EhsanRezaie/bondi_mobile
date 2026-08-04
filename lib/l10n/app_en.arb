@@ -254,5 +254,26 @@
   "chat_forward": "Forward",
   "chat_matched_at": "Matched {time}",
   "toast_like_sent": "Like sent!",
-  "toast_like_and_message_sent": "Like and message sent!"
+  "toast_like_and_message_sent": "Like and message sent!",
+
+  "profile_updated_success": "Profile updated successfully!",
+  "interests_updated_success": "Interests updated successfully!",
+  "photos_updated_success": "Photos updated successfully",
+  "photo_cropped_success": "Profile picture cropped successfully",
+  "photo_crop_failed": "Failed to save crop",
+  "photo_crop_error": "Error: {error}",
+  "prompts_updated_success": "Prompts updated successfully!",
+  "upload_profile_picture_first": "Please upload a profile picture first",
+  "face_verification_coming_soon": "Face verification coming soon!",
+  "photo_rejected_reason": "Reason: {reason}",
+  "@photo_crop_error": {
+    "placeholders": {
+      "error": { "type": "String", "format": "text" }
+    }
+  },
+  "@photo_rejected_reason": {
+    "placeholders": {
+      "reason": { "type": "String", "format": "text" }
+    }
+  }
 }
