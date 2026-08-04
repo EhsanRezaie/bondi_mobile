@@ -7,7 +7,8 @@ import '../providers/discover_provider.dart';
 import '../providers/onboarding_provider.dart';
 import '../providers/profile_provider.dart';
 import '../services/photo_service.dart';
-import 'auth/sign_up_screen.dart';
+
+import 'login_screen.dart';
 import 'onboarding/basic_info_screen.dart';
 import 'onboarding/photo_upload_screen.dart';
 import 'profile/profile_screen.dart';
@@ -153,7 +154,7 @@ class _MainScreenState extends State<MainScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const SignUpScreen()),
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
         );
       });
       return const SizedBox.shrink();

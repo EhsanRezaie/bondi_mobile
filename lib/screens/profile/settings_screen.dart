@@ -5,6 +5,7 @@ import 'package:dating_app/generated/app_localizations.dart';
 import 'package:dating_app/providers/auth_provider.dart';
 import 'package:dating_app/providers/settings_provider.dart';
 import 'package:dating_app/providers/language_provider.dart';
+import 'package:dating_app/screens/login_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -65,10 +66,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               final authProvider = Provider.of<AuthProvider>(context, listen: false);
               await authProvider.logout();
               if (context.mounted) {
-                Navigator.of(context).pushNamedAndRemoveUntil(
-                  '/login',
-                  (route) => false,
-                );
+                Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (_) => const LoginScreen()), (route) => false);
               }
             },
             child: Text(
