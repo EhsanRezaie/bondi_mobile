@@ -199,4 +199,46 @@ void main() {
       expect(fake.sent, isEmpty);
     });
   });
+
+  group('edge cases', () {
+    test('does not crash when channel factory throws', () {
+      final service = ChatWebSocketService(
+        matchId: 'm1',
+        jwtToken: 'test-token',
+        channelFactory: (Uri url) {
+          throw Exception('Connection refused');
+        },
+      );
+
+      service.connect();
+      service.dispose();
+    });
+
+    test('ignores malformed frames without crashing', () {
+      final service = ChatWebSocketService(
+        matchId: 'm1',
+        jwtToken: 'test-token',
+        channelFactory: (Uri url) {
+          return FakeWebSocketChannel();
+        },
+      );
+
+      service.connect();
+      service.dispose();
+    });
+
+    test('does not send after dispose', () {
+      final service = ChatWebSocketService(
+        matchId: 'm1',
+        jwtToken: 'test-token',
+        channelFactory: (Uri url) {
+          return FakeWebSocketChannel();
+        },
+      );
+
+      service.connect();
+      service.dispose();
+      service.sendTyping();
+    });
+  });
 }

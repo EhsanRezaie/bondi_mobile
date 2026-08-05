@@ -339,7 +339,9 @@ project_d_mobile/
   6. [x] **Phase 5** — golden tests for design-system-critical components (OnlineIndicator).
   7. [x] **Phase 6** — the 5 E2E flows via patrol (auth_flow, google_oauth, match_and_chat, filter_and_discover, premium_upgrade).
   8. [x] **Phase 7** — GitHub Actions: `flutter_test.yml` (every push) + `flutter_e2e.yml` (nightly).
-  9. [ ] **Phase 8** — revisit coverage gaps from real user bug reports.
+  9. [ ] **Phase 8** — additional unit tests (providers, services, edge cases).
+  10. [ ] **Phase 9** — additional widget tests (ChatList, ChatDetail, Chats, ILiked, LikedMe, Login, Search, Onboarding, Edit screens, VoiceMessagePlayer, ChatAppBar, TypingIndicator, DiscoverActionButton).
+  11. [ ] **Phase 10** — additional E2E flows (chat list navigation, search, onboarding, edit profile).
 
 ---
 
