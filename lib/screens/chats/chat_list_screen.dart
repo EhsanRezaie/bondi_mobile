@@ -22,7 +22,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ChatProvider>().loadMatches();
+      context.read<ChatProvider>().loadConversations();
     });
     _scrollController.addListener(_onScroll);
   }
@@ -37,7 +37,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
   void _onScroll() {
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
-      context.read<ChatProvider>().loadMoreMatches();
+      context.read<ChatProvider>().loadMoreConversations();
     }
   }
 
@@ -54,7 +54,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
 
     return Consumer<ChatProvider>(
       builder: (context, provider, _) {
-        if (provider.isLoading && provider.matches.isEmpty) {
+        if (provider.isLoading && provider.conversations.isEmpty) {
           return Center(
             child: CircularProgressIndicator(
               color: primaryColor,
@@ -62,7 +62,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
           );
         }
 
-        if (provider.matches.isEmpty) {
+        if (provider.conversations.isEmpty) {
           return Center(
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -85,10 +85,10 @@ class _ChatListScreenState extends State<ChatListScreen> {
         return ListView.builder(
           controller: _scrollController,
           padding: const EdgeInsets.symmetric(vertical: 8),
-          itemCount:
-              provider.matches.length + (provider.hasMoreMatches ? 1 : 0),
+          itemCount: provider.conversations.length +
+              (provider.hasMoreConversations ? 1 : 0),
           itemBuilder: (context, index) {
-            if (index == provider.matches.length) {
+            if (index == provider.conversations.length) {
               return Center(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
@@ -100,7 +100,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
               );
             }
             return _buildChatItem(
-              provider.matches[index],
+              provider.conversations[index],
               isDark,
               textColor,
               mutedColor,
@@ -187,9 +187,34 @@ class _ChatListScreenState extends State<ChatListScreen> {
               overflow: TextOverflow.ellipsis,
             )
           : null,
-      trailing: Icon(
-        Icons.chevron_right,
-        color: mutedColor,
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (match.unreadCount > 0)
+            Container(
+              margin: const EdgeInsets.only(right: 8),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: primaryColor,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              constraints: const BoxConstraints(minWidth: 22),
+              child: Text(
+                match.unreadCount > 99 ? '99+' : '${match.unreadCount}',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          Icon(
+            Icons.chevron_right,
+            color: mutedColor,
+          ),
+        ],
       ),
       onTap: () {
         Navigator.push(

@@ -26,6 +26,22 @@ class ChatService {
     }
   }
 
+  static Future<Response> getConversations({
+    int limit = 20,
+    int offset = 0,
+  }) async {
+    try {
+      return await ApiService.get(
+        '/conversations',
+        queryParams: {'limit': limit, 'offset': offset},
+        cacheOptions: ApiService.noCache,
+      );
+    } on DioException catch (e) {
+      if (e.response != null) return e.response!;
+      rethrow;
+    }
+  }
+
   static Future<Response> getLikers({int limit = 20, int offset = 0}) async {
     try {
       return await ApiService.get(

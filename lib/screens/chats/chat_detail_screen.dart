@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:dating_app/config/app_theme.dart';
 import 'package:dating_app/providers/chat_provider.dart';
 import 'package:dating_app/models/message.dart';
+import 'package:dating_app/services/storage_service.dart';
 import 'package:dating_app/widgets/chat_app_bar.dart';
 import 'package:dating_app/widgets/chat_message_bubble.dart';
 import 'package:dating_app/widgets/chat_input_bar.dart';
@@ -31,13 +33,17 @@ class ChatDetailScreen extends StatefulWidget {
 
 class _ChatDetailScreenState extends State<ChatDetailScreen> {
   final _scrollController = ScrollController();
+  final _storageService = StorageService();
   String? _replyToId;
   String? _replyToContent;
+  String? _currentUserId;
 
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      _currentUserId = await _storageService.getUserId();
+      if (!mounted) return;
       final provider = context.read<ChatProvider>();
       provider.loadMessages(widget.identifier);
       provider.connectWebSocket(widget.identifier);
@@ -69,6 +75,24 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         );
       }
     });
+  }
+
+  Future<void> _attachPhoto() async {
+    try {
+      final picker = ImagePicker();
+      final file = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1600,
+        maxHeight: 1600,
+        imageQuality: 85,
+      );
+      if (file == null || !mounted) return;
+      final provider = context.read<ChatProvider>();
+      final success = await provider.sendPhoto(widget.identifier, file.path);
+      if (success) _scrollToBottom();
+    } catch (e) {
+      // silent
+    }
   }
 
   void _showMessageOptions(Message message) {
@@ -229,7 +253,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       appBar: ChatAppBar(
         userName: widget.userName,
         avatarUrl: widget.avatarUrl,
-        isOnline: widget.isOnline,
+        isOnline: context.watch<ChatProvider>().isOtherUserOnline,
         lastSeenAt: widget.lastSeenAt,
       ),
       body: Column(
@@ -351,9 +375,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   );
                   if (success) _scrollToBottom();
                 },
-                onAttachPhoto: () {
-                  // TODO: image picker integration
-                },
+                onAttachPhoto: _attachPhoto,
               );
             },
           ),
@@ -368,9 +390,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     Color textColor,
     Color mutedColor,
   ) {
-    final userId = provider.messages.isNotEmpty
-        ? provider.messages.first.senderId
-        : '';
+    final userId = _currentUserId ?? '';
 
     return NotificationListener<ScrollNotification>(
       onNotification: (notification) {

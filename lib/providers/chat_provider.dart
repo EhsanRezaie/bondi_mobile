@@ -33,6 +33,7 @@ class ChatProvider extends ChangeNotifier {
 
   // ── State ────────────────────────────────────────────────────────
   List<Match> _matches = [];
+  List<Match> _conversations = [];
   List<SwipeUser> _likedUsers = [];
   List<SwipeUser> _likers = [];
   List<Message> _messages = [];
@@ -53,15 +54,18 @@ class ChatProvider extends ChangeNotifier {
   Timer? _typingTimer;
 
   int _matchesOffset = 0;
+  int _conversationsOffset = 0;
   int _likersOffset = 0;
   int _likedOffset = 0;
   bool _hasMoreMatches = true;
+  bool _hasMoreConversations = true;
   bool _hasMoreLikers = true;
   bool _hasMoreLiked = true;
   static const _pageSize = 20;
 
   // ── Getters ──────────────────────────────────────────────────────
   List<Match> get matches => _matches;
+  List<Match> get conversations => _conversations;
   List<SwipeUser> get likedUsers => _likedUsers;
   List<SwipeUser> get likers => _likers;
   List<Message> get messages => _messages;
@@ -76,6 +80,7 @@ class ChatProvider extends ChangeNotifier {
   bool get isLoadingMore => _isLoadingMore;
   String? get errorMessage => _errorMessage;
   bool get hasMoreMatches => _hasMoreMatches;
+  bool get hasMoreConversations => _hasMoreConversations;
   bool get hasMoreLikers => _hasMoreLikers;
   bool get hasMoreLiked => _hasMoreLiked;
   String? get editingMessageId => _editingMessageId;
@@ -137,6 +142,64 @@ class ChatProvider extends ChangeNotifier {
         _matches.addAll(newMatches);
         _matchesOffset += newMatches.length;
         _hasMoreMatches = items.length >= _pageSize;
+      }
+    } catch (e) {
+      // silent
+    }
+
+    _isLoadingMore = false;
+    _safeNotify();
+  }
+
+  // ── Conversations ───────────────────────────────────────────────
+  Future<void> loadConversations() async {
+    _isLoading = true;
+    _errorMessage = null;
+    _conversationsOffset = 0;
+    _hasMoreConversations = true;
+    _safeNotify();
+
+    try {
+      final response = await ChatService.getConversations(
+        limit: _pageSize,
+        offset: 0,
+      );
+      final data = response.data;
+      if (response.statusCode == 200) {
+        final items =
+            (data['items'] ?? data['conversations'] ?? data ?? []) as List;
+        _conversations = items.map((j) => Match.fromJson(j)).toList();
+        _conversationsOffset = _conversations.length;
+        _hasMoreConversations = items.length >= _pageSize;
+      } else {
+        _errorMessage = data?['detail'] ?? 'Failed to load conversations';
+      }
+    } catch (e) {
+      _errorMessage = e.toString();
+    }
+
+    _isLoading = false;
+    _safeNotify();
+  }
+
+  Future<void> loadMoreConversations() async {
+    if (_isLoadingMore || !_hasMoreConversations) return;
+    _isLoadingMore = true;
+    _safeNotify();
+
+    try {
+      final response = await ChatService.getConversations(
+        limit: _pageSize,
+        offset: _conversationsOffset,
+      );
+      if (response.statusCode == 200) {
+        final data = response.data;
+        final items =
+            (data['items'] ?? data['conversations'] ?? data ?? []) as List;
+        final newConversations = items.map((j) => Match.fromJson(j)).toList();
+        _conversations.addAll(newConversations);
+        _conversationsOffset += newConversations.length;
+        _hasMoreConversations = items.length >= _pageSize;
       }
     } catch (e) {
       // silent
@@ -644,6 +707,7 @@ class ChatProvider extends ChangeNotifier {
     _isConnected = false;
     _isOtherUserOnline = false;
     _isTyping = false;
+    _safeNotify();
   }
 
   void _handleSocketEvent(Map<String, dynamic> event) {
@@ -714,6 +778,9 @@ class ChatProvider extends ChangeNotifier {
     try {
       final match = Match.fromJson(data);
       _matches.insert(0, match);
+      if (!_conversations.any((c) => c.id == match.id)) {
+        _conversations.insert(0, match);
+      }
       _safeNotify();
     } catch (e) {
       // silent

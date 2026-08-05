@@ -29,7 +29,7 @@ class _ChatsScreenState extends State<ChatsScreen>
       final authProvider = context.read<AuthProvider>();
       if (authProvider.isAuthenticated) {
         final chatProvider = context.read<ChatProvider>();
-        chatProvider.loadMatches();
+        chatProvider.loadConversations();
         chatProvider.refreshLimits();
       }
     });
@@ -106,7 +106,7 @@ class _ChatsScreenState extends State<ChatsScreen>
           Consumer<ChatProvider>(
             builder: (context, provider, _) {
               return MatchedAvatarStrip(
-                matches: provider.matches,
+                matches: provider.conversations,
                 onMatchTap: (matchId) {
                   _tabController.animateTo(2);
                 },

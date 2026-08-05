@@ -23,7 +23,8 @@ class MatchedAvatarStrip extends StatelessWidget {
     final borderColor =
         isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
 
-    final displayMatches = matches.take(5).toList();
+    final displayMatches =
+        matches.where((m) => m.kind == 'match').take(5).toList();
 
     return SizedBox(
       height: 90,
