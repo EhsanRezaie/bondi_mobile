@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:dating_app/config/app_theme.dart';
+import 'package:dating_app/utils/formatters.dart';
 import 'package:dating_app/generated/app_localizations.dart';
 import 'package:dating_app/models/discover_profile.dart';
 import 'package:dating_app/providers/discover_provider.dart';
@@ -732,9 +733,7 @@ Future<String?> _showChatBottomSheet() async {
             const SizedBox(width: 8),
             _buildFilterChip(
               icon: Icons.near_me,
-              label: provider.distanceKm == null
-                  ? '500+ km'
-                  : '${provider.distanceKm} km',
+              label: formatDistanceKm(provider.distanceKm?.toDouble()),
               onTap: () => _showDistancePicker(provider),
               isDark: isDark,
               primaryColor: primaryColor,
@@ -938,11 +937,6 @@ Future<String?> _showChatBottomSheet() async {
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
     double distance = (provider.distanceKm ?? 500).toDouble().clamp(1.0, 500.0);
 
-    String distanceLabel(double value) {
-      if (value >= 500) return '500+ km';
-      return '${value.round()} km';
-    }
-
     showModalBottomSheet(
       context: context,
       backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
@@ -969,7 +963,7 @@ Future<String?> _showChatBottomSheet() async {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    distanceLabel(distance),
+formatDistanceKm(distance),
                     style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 14,
@@ -982,7 +976,7 @@ Future<String?> _showChatBottomSheet() async {
                     max: 500,
                     divisions: 499,
                     activeColor: primaryColor,
-                    label: distanceLabel(distance),
+                    label: formatDistanceKm(distance),
                     onChanged: (v) => setSheetState(() => distance = v),
                   ),
                   SizedBox(

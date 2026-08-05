@@ -1,13 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:stream_channel/stream_channel.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:dating_app/config/app_constants.dart';
 
 class ChatWebSocketService {
   final String matchId;
   final String jwtToken;
+  final StreamChannel<dynamic> Function(Uri url) channelFactory;
 
-  WebSocketChannel? _channel;
+  StreamChannel<dynamic>? _channel;
   Timer? _heartbeatTimer;
   Timer? _reconnectTimer;
   int _reconnectAttempts = 0;
@@ -20,7 +22,8 @@ class ChatWebSocketService {
   ChatWebSocketService({
     required this.matchId,
     required this.jwtToken,
-  });
+    StreamChannel<dynamic> Function(Uri url)? channelFactory,
+  }) : channelFactory = channelFactory ?? WebSocketChannel.connect;
 
   Stream<Map<String, dynamic>> get events => _eventsController.stream;
   Stream<bool> get connectionState => _connectionStateController.stream;
@@ -32,7 +35,7 @@ class ChatWebSocketService {
       final baseUrl = AppConstants.wsBaseUrl;
       final url = '$baseUrl/ws/chat/$matchId?token=$jwtToken';
 
-      _channel = WebSocketChannel.connect(Uri.parse(url));
+      _channel = channelFactory(Uri.parse(url));
 
       _connectionStateController.add(true);
       _reconnectAttempts = 0;

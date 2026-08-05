@@ -57,85 +57,89 @@ Coverage bar (realistic, not 100%):
 ## 2. STEP 0 — Scaffolding + minimal production seams (do this first)
 
 ### 2.1 Dependencies (`pubspec.yaml` → `dev_dependencies`)
-- [ ] `mocktail: ^1.0.x` — mocking without code generation (Feels like Python's `unittest.mock`).
-- [ ] `http_mock_adapter: ^0.6.x` — mock Dio routes on a real `Dio` instance; lets the real providers + services run against fake HTTP.
-- [ ] `golden_toolkit: ^0.15.x` — golden-file helpers (`matchesGoldenFile`, `loadAppFonts`, multi-surface rendering).
-- [ ] `integration_test` (SDK) — E2E driver (Phase 6).
+- [x] `mocktail: ^1.0.x` — mocking without code generation (Feels like Python's `unittest.mock`).
+- [x] `http_mock_adapter: ^0.6.x` — mock Dio routes on a real `Dio` instance; lets the real providers + services run against fake HTTP.
+- [x] `golden_toolkit: ^0.15.x` — golden-file helpers (`matchesGoldenFile`, `loadAppFonts`, multi-surface rendering).
+- [x] `integration_test` (SDK) — E2E driver (Phase 6).
 - [ ] `patrol: ^3.x` — E2E with native permission handling (Phase 6; do not add until Phase 6 begins to keep `pub get` fast).
-- [ ] `flutter pub get` — verify resolution.
+- [x] `flutter pub get` — verify resolution.
+- [x] Bonus: added `stream_channel` (channel-fake type), `nested` (test harness), `fake_async` (reconnect tests) as direct deps.
 
 ### 2.2 Production seams (small, non-breaking, isolated to a few files)
 
 #### `lib/services/api_service.dart`
-- [ ] Add `static void setTransport(Dio dio)` → replaces `_dio` (used only in tests).
-- [ ] Add `static Future<void> initForTest({Dio? dio})` → initializes `_dio` from the injected transport **without** touching `flutter_secure_storage`, `path_provider`, or the cache store. Keeps `init()` (production) untouched.
-- [ ] Keep `init()` as-is for production; `setTransport`/`initForTest` are additive.
+- [x] Add `static void setTransport(Dio dio)` → replaces `_dio` (used only in tests).
+- [x] Add `static Future<void> initForTest({Dio? dio})` → initializes `_dio` from the injected transport **without** touching `flutter_secure_storage`, `path_provider`, or the cache store. Keeps `init()` (production) untouched. `_cacheStore` became nullable with a `MemCacheStore()` fallback so `noCache`/`makeCacheOptions` work in tests.
+- [x] Keep `init()` as-is for production; `setTransport`/`initForTest` are additive.
 
 #### `lib/services/chat_websocket_service.dart`
-- [ ] Add an optional constructor param: `final WebSocketChannel Function(String url) channelFactory;` defaulting to `WebSocketChannel.connect` (`chat_websocket_service.dart:20-23`).
-- [ ] `connect()` uses `channelFactory('$baseUrl/ws/chat/$matchId?token=$jwtToken')` instead of hardcoding `WebSocketChannel.connect` (`chat_websocket_service.dart:32-35`).
-- [ ] No behavior change when the default is used.
+- [x] Add an optional constructor param: `final StreamChannel<dynamic> Function(Uri url) channelFactory;` defaulting to `WebSocketChannel.connect` (`chat_websocket_service.dart:20-23`). Typed as `StreamChannel` (the supertype `WebSocketChannel` already satisfies) so tests can inject a mixin-based fake without constructing `WebSocketImpl`.
+- [x] `connect()` uses `channelFactory(Uri.parse(url))` instead of hardcoding `WebSocketChannel.connect` (`chat_websocket_service.dart:32-35`).
+- [x] No behavior change when the default is used.
 
 #### `lib/utils/formatters.dart` (new file)
-- [ ] Extract `formatLastSeen(DateTime? lastSeen, {DateTime? now}) -> String` from `online_indicator.dart:49-66` (rules: "Just now" <1 min, "Xm ago", "Xh ago", "Yesterday", date). Keep the exact current strings so UI doesn't change.
-- [ ] Extract `formatDistanceKm(double? distanceKm) -> String` from `discover_screen.dart:735-737, 939-943` (rules: null → `500+ km`, ≥500 → `500+ km`, else `N km`).
-- [ ] Update `online_indicator.dart` and `discover_screen.dart` to call the new functions (behavior identical).
-- [ ] `flutter analyze` — no new issues after the seam edits.
+- [x] Extract `formatLastSeen(DateTime lastSeen, {DateTime? now}) -> String` from `online_indicator.dart:49-66` (rules: "Just now" <1 min, "Xm ago" <60 min, "Xh ago" <24 h, "Xd ago" <7 d, else `MMM d`). Keep the exact current strings so UI doesn't change.
+- [x] Extract `formatDistanceKm(double? distanceKm) -> String` from `discover_screen.dart:735-737, 939-943` (rules: null → `500+ km`, ≥500 → `500+ km`, else `N km` via `.round()`).
+- [x] Update `online_indicator.dart` and `discover_screen.dart` to call the new functions (behavior identical).
+- [x] `flutter analyze` — no new issues after the seam edits.
 
 ### 2.3 Test helpers
 
 #### `test/helpers/test_helpers.dart`
-- [ ] `Widget buildTestable(Widget child, {List<SingleChildWidget> overrides = const []})`:
+- [x] `Widget buildTestable(Widget child, {List<SingleChildWidget> providers = const []})`:
   - Wraps in `MaterialApp` with `theme: AppTheme.lightTheme`, `darkTheme: AppTheme.darkTheme`, `themeMode: ThemeMode.light`.
   - Adds `localizationsDelegates: AppLocalizations.localizationsDelegates`, `supportedLocales: AppLocalizations.supportedLocales`, `locale: const Locale('en')` so `AppLocalizations.of(context)!` never throws.
-  - Applies `MultiProvider(providers: [default provider overrides…, ...overrides])` so tests can inject `ChangeNotifierProvider.value(fake)`.
-  - Sets `SharedPreferences.setMockInitialValues({})` before pumping.
-  - Mocks the `flutter_secure_storage` method channel (so `StorageService().getUserId()` etc. return canned values instead of hitting the plugin).
-- [ ] `Future<void> pumpApp(WidgetTester tester, Widget child, {...})` wrapper for the common pump + `pumpAndSettle`.
+  - Applies `MultiProvider(providers: [...providers])` so tests can inject `ChangeNotifierProvider.value(fake)`.
+  - `initTestEnvironment()` sets `SharedPreferences.setMockInitialValues`, mocks the `flutter_secure_storage` method channel, and calls `dotenv.testLoad(...)` (required — `AppConstants.*` throws `NotInitializedError` until dotenv is loaded).
+- [x] `Future<void> pumpApp(WidgetTester tester, Widget child, {...})` wrapper for the common pump + `pumpAndSettle`.
 
 #### `test/helpers/fixtures.dart`
-- [ ] Canonical mock objects + the exact JSON maps the backend returns:
+- [x] Canonical mock objects + the exact JSON maps the backend returns:
   - `Message`: text / photo / voice; with and without `reply_to`; **matched** (`match_id` set) and **unmatched** (`match_id` null); `is_sent/is_delivered/is_read` combos.
   - `Match`: `/matches` shape **and** `/conversations` shape (`kind: match|unmatched`, `unread_count`, `is_accepted`, `updated_at`, nullable `last_message`).
   - `SwipeUser`: with/without `is_online`, `last_seen_at`, `swiped_at`.
   - `DiscoverProfile`, `User`, `Photo`, `Interest`, `Prompt`.
-- [ ] `Map<String, dynamic> jsonMatch(...)`, `jsonMessage(...)` builders so tests can tweak one field without rewriting maps.
+- [x] `Map<String, dynamic> jsonMatch(...)`, `jsonMessage(...)` builders so tests can tweak one field without rewriting maps.
 
 #### `test/helpers/mock_api.dart`
-- [ ] Thin wrapper over `http_mock_adapter`'s `DioAdapter`:
-  - `Dio mockDio()` → `Dio(BaseOptions(baseUrl: AppConstants.apiBaseUrl))` + `DioAdapter()` attached.
-  - Seeded route map shared across widget tests (e.g. default `/conversations`, `/messages/{id}`, `/matches`, `/swipes/liked`, `/users/me` responses).
-  - Applies `ApiService.setTransport(mockDio)` in `setUp` and restores the real transport in `tearDown`.
-- [ ] Helper to assert a request was made: `expectLastRequestPath(adapter, '/api/v1/conversations')`.
+- [x] Thin wrapper over `http_mock_adapter`'s `DioAdapter`:
+  - Fresh `Dio(BaseOptions(baseUrl: ...))` + `DioAdapter()` attached to `httpClientAdapter`.
+  - `onGet`/`onPost`/`onPatch`/`onDelete` helpers that register JSON replies with zero delay.
+  - `install()` applies `ApiService.setTransport(dio)`.
+- [x] Helper to assert a request was made: `expectCalled(path, times:)` reads `adapter.history`.
+
+#### `test/helpers/fake_websocket_channel.dart`
+- [x] `StreamChannelMixin`-based fake with a controllable incoming stream, a captured `sent` list, and `closeCount`; `emitIncoming()`/`disconnect()` drive the service.
 
 ---
 
 ## 3. PHASE 1 — Unit tests (`test/unit/`) — no widgets, no device
 
 ### 3.1 Validators — `test/unit/validators/validators_test.dart`
-- [ ] `validateEmail`: accepts `a@b.co`, `name@domain.com`, `x@y.io`; rejects empty, `a@`, `a@b`, `no-at-sign`, spaces.
-- [ ] `validatePassword`: rejects empty; rejects <8 chars; accepts exactly 8 and 8+.
-- [ ] `validateName`: rejects empty and 1 char; accepts 2+.
-- [ ] `validateAge`: rejects empty, non-numeric, 17, 101; accepts 18 and 100 (boundaries).
+- [x] `validateEmail`: accepts `a@b.co`, `name@domain.com`, `x@y.io`; rejects empty, `a@`, `a@b`, `no-at-sign`, spaces.
+- [x] `validatePassword`: rejects empty; rejects <8 chars; accepts exactly 8 and 8+.
+- [x] `validateName`: rejects empty and 1 char; accepts 2+.
+- [x] `validateAge`: rejects empty, non-numeric, 17, 101; accepts 18 and 100 (boundaries).
 
 ### 3.2 Models — `test/unit/models/`
-- [ ] `message_test.dart` — `fromJson` text/photo/voice (content, `media_url`, `media_duration`, `reply_to`, `is_sent/is_delivered/is_read`, `sent_at` parsing), `fromSocketData` (no delivered/read timestamps → defaults), `local()` (optimistic), `copyWith`, `toJson` round-trip, **unmatched `match_id` null → `matchId == ''`**.
-- [ ] `match_test.dart` — `/matches` shape; `/conversations` shape: `kind == 'match'|'unmatched'`, `unreadCount`, `isAccepted` default per kind, `updatedAt`, `lastMessage == null` when absent.
-- [ ] `swipe_user_test.dart` — `isOnline` (bool/null), `lastSeenAt` (string), `swipedAt` (datetime/null), `distanceKm` numeric.
-- [ ] `discover_profile_test.dart` — nested fields, null `distanceKm`, list `interests`/`photos`.
-- [ ] `user_test.dart`, `photo_test.dart`, `interest_test.dart`, `prompt_test.dart` — round-trips.
+- [x] `message_test.dart` — `fromJson` text/photo/voice (content, `media_url`, `media_duration`, `reply_to`, `is_sent/is_delivered/is_read`, `sent_at` parsing), `fromSocketData` (no delivered/read timestamps → defaults), `local()` (optimistic), `copyWith`, `toJson` round-trip, **unmatched `match_id` null → `matchId == ''`**.
+- [x] `match_test.dart` — `/matches` shape; `/conversations` shape: `kind == 'match'|'unmatched'`, `unreadCount`, `isAccepted` default per kind, `updatedAt`, `lastMessage == null` when absent.
+- [x] `swipe_user_test.dart` — `isOnline` (bool/null), `lastSeenAt` (string), `swipedAt` (datetime/null), `distanceKm` numeric.
+- [x] `discover_profile_test.dart` — nested fields, null `distanceKm`, list `interests`/`photos`, `displayPhotoUrl`/`locationDisplay` getters.
+- [x] `user_test.dart` (incl. `UserSettings` + `getAgeFromBirthDate`), `photo_test.dart` (PhotoResponse/PhotoUpload/PhotoUploadResponse/CropData), `interest_test.dart`, `prompt_test.dart` — round-trips.
 
 ### 3.3 Formatters — `test/unit/utils/formatters_test.dart`
-- [ ] `formatLastSeen`: <1 min → "Just now"; 5 min → "5m ago"; 2h → "2h ago"; yesterday → "Yesterday"; older → short date. Deterministic via injected `now`.
-- [ ] `formatDistanceKm`: null → `500+ km`; 500 → `500+ km`; 12.4 → `12 km`; 0.5 → `0 km`? (match current rounding — verify against `discover_screen.dart:939-943`).
+- [x] `formatLastSeen`: <1 min → "Just now"; 5 min → "5m ago"; 2h → "2h ago"; 6d → "6d ago"; ≥7d → short date (`Jul 1`). Deterministic via injected `now`.
+- [x] `formatDistanceKm`: null → `500+ km`; 500 → `500+ km`; 12.4 → `12 km`; 0.5 → `1 km` (Dart `.round()` rounds half away from zero); 499 → `499 km`.
 
 ### 3.4 WebSocket service — `test/unit/services/chat_websocket_service_test.dart`
-Uses `test/helpers/fake_websocket_channel.dart` (a fake `WebSocketChannel` whose stream is a controllable `StreamController`).
-- [ ] `connect()` opens channel with URL containing `/ws/chat/{id}` and `token=`; emits `connectionState = true`.
-- [ ] `sendTyping()` / `sendTypingStopped()` / `sendReadReceipt()` / `sendPing()` emit correct JSON envelopes.
-- [ ] Incoming frame: valid JSON → `events` emits parsed map; **malformed JSON → ignored, no crash**.
-- [ ] Channel `onDone` → emits `false` then schedules reconnect; backoff sequence `[1,2,4,8,16,30]`s; caps at 6 attempts.
-- [ ] `dispose()` cancels timers, closes sink + controllers; subsequent `_send` is a no-op.
+Uses `test/helpers/fake_websocket_channel.dart` (a fake `StreamChannel` whose stream is a controllable `StreamController`).
+- [x] `connect()` opens channel with URL containing `/ws/chat/{id}` and `token=`; emits `connectionState = true`; no-op after dispose.
+- [x] `sendTyping()` / `sendTypingStopped()` / `sendReadReceipt()` / `sendPing()` emit correct JSON envelopes; silent after dispose.
+- [x] Incoming frame: valid JSON → `events` emits parsed map; **malformed JSON → ignored, no crash**. (Test awaits a microtask — the broadcast `events` controller delivers asynchronously.)
+- [x] Healthy server close → `false` then reconnects after 1 s; backoff grows `[1,2,4,8,16,30]` when open keeps failing, capped at 6 attempts (7 total connects).
+- [x] `dispose()` closes the channel sink (`closeCount == 1`) and cancels timers; subsequent `_send` is a no-op.
+- [x] 79 unit tests total, `flutter test` green.
 
 ---
 
@@ -327,9 +331,9 @@ project_d_mobile/
 
 ## 11. Phased rollout (solo-dev pace)
 
-1. [ ] **Step 0** — deps, seams (`ApiService`, `ChatWebSocketService`, `formatters.dart`), helpers.
-2. [ ] **Phase 1** — unit tests: validators, models, formatters, websocket (fast wins, no widget overhead).
-3. [ ] **Phase 2** — widget tests: auth flow (most bug-prone async states).
+1. [x] **Step 0** — deps, seams (`ApiService`, `ChatWebSocketService`, `formatters.dart`), helpers.
+2. [x] **Phase 1** — unit tests: validators, models, formatters, websocket (fast wins, no widget overhead).
+3. [~] **Phase 2** — widget tests: auth flow (most bug-prone async states).
 4. [ ] **Phase 3** — widget tests: Discover + Profile.
 5. [ ] **Phase 4** — widget tests: Chats + Settings (validates the shipped chat-repair work).
 6. [ ] **Phase 5** — golden tests for design-system-critical components.

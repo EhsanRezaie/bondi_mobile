@@ -9,7 +9,7 @@ import '../config/app_constants.dart';
 
 class ApiService {
   static late Dio _dio;
-  static late CacheStore _cacheStore;
+  static CacheStore? _cacheStore;
   static const FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
   static Future<void> init() async {
@@ -81,13 +81,26 @@ class ApiService {
 
   static Dio get dio => _dio;
 
+  // Test seam: replace the transport with a mocked Dio. Does not touch
+  // flutter_secure_storage, path_provider or the real cache store.
+  static void setTransport(Dio dio) {
+    _dio = dio;
+  }
+
+  // Test seam: initialise a clean transport (and in-memory cache store) so
+  // services/providers can run against a mocked HTTP adapter.
+  static Future<void> initForTest({Dio? dio}) async {
+    _cacheStore ??= MemCacheStore();
+    _dio = dio ?? Dio(BaseOptions(baseUrl: AppConstants.apiBaseUrl));
+  }
+
   static CacheOptions makeCacheOptions({
     CachePolicy policy = CachePolicy.request,
     Duration? maxStale,
     List<int>? hitCacheOnErrorExcept,
   }) {
     return CacheOptions(
-      store: _cacheStore,
+      store: _cacheStore ?? MemCacheStore(),
       policy: policy,
       maxStale: maxStale,
       hitCacheOnErrorExcept: hitCacheOnErrorExcept,
@@ -95,7 +108,7 @@ class ApiService {
   }
 
   static CacheOptions get noCache => CacheOptions(
-    store: _cacheStore,
+    store: _cacheStore ?? MemCacheStore(),
     policy: CachePolicy.noCache,
   );
 

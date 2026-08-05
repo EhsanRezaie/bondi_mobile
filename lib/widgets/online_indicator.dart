@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dating_app/config/app_theme.dart';
-import 'package:intl/intl.dart';
+import 'package:dating_app/utils/formatters.dart';
 
 class OnlineIndicator extends StatelessWidget {
   final bool isOnline;
@@ -49,19 +49,7 @@ class OnlineIndicator extends StatelessWidget {
     if (lastSeenAt != null) {
       final lastSeen = DateTime.tryParse(lastSeenAt!);
       if (lastSeen != null) {
-        final diff = DateTime.now().difference(lastSeen);
-        String text;
-        if (diff.inMinutes < 1) {
-          text = 'Just now';
-        } else if (diff.inMinutes < 60) {
-          text = '${diff.inMinutes}m ago';
-        } else if (diff.inHours < 24) {
-          text = '${diff.inHours}h ago';
-        } else if (diff.inDays < 7) {
-          text = '${diff.inDays}d ago';
-        } else {
-          text = DateFormat('MMM d').format(lastSeen);
-        }
+        final text = formatLastSeen(lastSeen);
         return Text(
           'Last seen $text',
           style: TextStyle(
