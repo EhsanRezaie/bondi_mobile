@@ -1,0 +1,21 @@
+name: Flutter E2E
+
+on:
+  schedule:
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/cirruslabs/flutter:stable
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run E2E tests
+        run: flutter test integration_test/
