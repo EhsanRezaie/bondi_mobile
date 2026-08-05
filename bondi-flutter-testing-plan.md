@@ -148,23 +148,29 @@ Uses `test/helpers/fake_websocket_channel.dart` (a fake `StreamChannel` whose st
 > These screens are the most bug-prone due to async validation states — do them early.
 > All pump the real provider tree with `buildTestable()` + mocked HTTP transport + mocked storage.
 
-- [ ] `splash_screen_test.dart`
-  - [ ] No tokens / unauthenticated → navigates to `SignUpScreen`.
-  - [ ] Tokens present + token valid → navigates to Discover (`main_screen.dart`).
-  - [ ] Token refresh fails → cleared tokens + back to sign-up.
-  - [ ] Server down → shows server-error state (mock `/health` failing).
-- [ ] `sign_up_screen_test.dart`
-  - [ ] Empty fields → inline validation errors (`Validators` messages) shown on submit.
-  - [ ] Submit button disabled while `isLoading`; spinner shown.
-  - [ ] Successful `registerInit` → navigates to `VerifyCodeScreen`.
-  - [ ] Failed request → error banner from `AuthProvider.errorMessage`.
-  - [ ] "Continue with Google" button fires the correct callback.
-- [ ] `verify_code_screen_test.dart`
-  - [ ] Typing a digit auto-advances focus to next box (matches `_codeFocusNodes` at `verify_code_screen.dart:33-105`).
-  - [ ] Backspace on empty box returns focus to previous.
-  - [ ] Pasting full code fills all boxes.
-  - [ ] Wrong code → inline error; resend button disabled during cooldown, re-enabled after timer.
-  - [ ] Successful verify → proceeds to onboarding/complete step.
+- [x] `splash_screen_test.dart` (fixed with FakeAsync — controls timer advancement for `_animateProgress` loop)
+  - [x] No tokens / unauthenticated → navigates to `LoginScreen`.
+  - [x] Tokens present + token valid → navigates to Discover (`main_screen.dart`).
+  - [x] Token refresh fails → cleared tokens + back to sign-up.
+  - [x] Server down → shows server-error state (mock `/health` failing).
+- [x] `sign_up_screen_test.dart`
+  - [x] Empty fields → inline validation errors (`Validators` messages) shown on submit.
+  - [x] Submit button disabled while `isLoading`; spinner shown.
+  - [x] Successful `registerInit` → navigates to `VerifyCodeScreen`.
+  - [x] Failed request → error banner from `AuthProvider.errorMessage`.
+  - [x] "Continue with Google" button fires the correct callback.
+- [x] `verify_code_screen_test.dart`
+  - [x] Typing a digit auto-advances focus to next box (matches `_codeFocusNodes` at `verify_code_screen.dart:33-105`).
+  - [x] Backspace on empty box returns focus to previous.
+  - [x] Pasting full code fills all boxes.
+  - [x] Wrong code → inline error; resend button disabled during cooldown, re-enabled after timer.
+  - [x] Successful verify → proceeds to onboarding/complete step.
+- [x] `login_screen_test.dart`
+  - [x] Empty fields → inline validation errors shown on submit.
+  - [x] Submit button disabled while `isLoading`; spinner shown.
+  - [x] Successful login → navigates to `MainScreen` (Discover).
+  - [x] Failed login → error banner from `AuthProvider.errorMessage`.
+  - [x] "Continue with Google" button fires the correct callback.
 
 ---
 
@@ -287,7 +293,121 @@ Uses `test/helpers/fake_websocket_channel.dart` (a fake `StreamChannel` whose st
 
 ---
 
-## 10. Folder structure (target)
+## 10. PHASE 8 — Additional unit tests (`test/unit/`)
+
+> Extra coverage for providers and service edge cases discovered during widget testing.
+
+- [x] `onboarding_provider_test.dart` — `OnboardingProvider` public setters (`bio`, `interests`, `prompts`, `photos`); state transitions after each setter; `reset()` clears all fields.
+- [x] `chat_websocket_service_edge_cases_test.dart` — 3 edge case tests (already done): reconnect backoff cap, dispose cancels all timers, `_send` no-op after dispose.
+
+---
+
+## 11. PHASE 9 — Additional widget tests (`test/widget/`)
+
+> Screens and shared components not yet covered. Each test uses `buildTestable()` + mocked HTTP transport + mocked storage.
+
+### Auth & onboarding screens
+- [ ] `test/widget/screens/auth/` — already covered: `splash`, `sign_up`, `verify_code`, `login`
+- [ ] `onboarding/basic_info_screen_test.dart`
+  - [ ] Renders name, age, gender fields with correct validation.
+  - [ ] Next button disabled until all required fields are filled.
+  - [ ] Successful save → navigates to next onboarding step.
+- [ ] `onboarding/interests_screen_test.dart`
+  - [ ] Renders interest chips from fixture list.
+  - [ ] Tapping a chip toggles selection state.
+  - [ ] Next button disabled when no interests selected.
+  - [ ] Already-selected interests are pre-checked.
+- [ ] `onboarding/photo_upload_screen_test.dart`
+  - [ ] Renders photo grid with add-button.
+  - [ ] Tapping add triggers image picker (mocked).
+  - [ ] Photo count limit enforced (max 6).
+  - [ ] Remove button on each photo removes it from the grid.
+- [ ] `onboarding/profile_details_screen_test.dart`
+  - [ ] Renders bio text field, prompt selection, and next button.
+  - [ ] Bio character limit enforced.
+  - [ ] Prompts displayed correctly from fixture.
+- [ ] `onboarding/prompts_screen_test.dart`
+  - [ ] Renders prompt options correctly.
+  - [ ] Selection state persists across pump/restart.
+
+### Profile edit screens
+- [ ] `profile/edit_basic_info_screen_test.dart`
+  - [ ] Fields pre-populated from current user data.
+  - [ ] Save disabled until a field actually changes.
+  - [ ] Successful save → navigates back with updated profile.
+  - [ ] Validation errors shown inline.
+- [ ] `profile/edit_interests_screen_test.dart`
+  - [ ] Interest chips pre-selected from current user data.
+  - [ ] Toggle chips → selection updates.
+  - [ ] Save persists changes.
+- [ ] `profile/edit_photos_screen_test.dart`
+  - [ ] Photo grid renders current photos.
+  - [ ] Add/remove photos works.
+  - [ ] Primary photo toggle works.
+- [ ] `profile/edit_profile_details_screen_test.dart`
+  - [ ] Bio and prompts pre-populated.
+  - [ ] Save persists changes.
+- [ ] `profile/edit_prompts_screen_test.dart`
+  - [ ] Prompt options rendered and pre-selected.
+  - [ ] Selection persists on save.
+
+### Chat screens
+- [ ] `test/widget/screens/chats/` — already covered: `chat_list`, `login_screen`
+- [ ] `chat_detail_screen_test.dart`
+  - [ ] Sent vs received bubbles aligned right/left with distinct styling (`isMine` from real stored user id).
+  - [ ] Typing indicator shows on `typing` event, hides on `typing_stopped`/5s timeout.
+  - [ ] Auto-scroll to bottom on new incoming message.
+  - [ ] Send text clears input and adds optimistic bubble, then replaces it with the server `message` object on success.
+  - [ ] Failed send removes the optimistic bubble and shows error.
+  - [ ] Photo attach callback → picker → `sendPhoto` (mock picker; assert `sendPhoto` called and media bubble renders from `mediaUrl`).
+  - [ ] Voice send → `sendVoice` called with path+duration.
+  - [ ] Reply flow: long-press → Reply → banner shows quoted content → send includes `reply_to_id`.
+  - [ ] App bar reflects live `isOtherUserOnline` (flips on `user_online`/`user_offline` WS events).
+- [ ] `chats_screen_test.dart`
+  - [ ] Three tabs render (LikedMe / ILiked / Chats).
+  - [ ] `MatchedAvatarStrip` shows **only `kind == "match"`** conversations (not unmatched).
+- [ ] `i_liked_screen_test.dart`
+  - [ ] Renders list of users who liked the current user.
+  - [ ] Tap navigates to their profile detail.
+  - [ ] Empty state shown when no likes yet.
+- [ ] `liked_me_screen_test.dart`
+  - [ ] Renders list of users the current user has liked.
+  - [ ] Tap navigates to their profile detail.
+  - [ ] Empty state shown when no likes yet.
+
+### Discover & search screens
+- [ ] `search_screen_test.dart`
+  - [ ] Search bar renders correctly.
+  - [ ] Typing triggers debounced search (mock `SearchService`).
+  - [ ] Results list renders from fixture `SwipeUser` data.
+  - [ ] Empty results → empty-state UI.
+  - [ ] Error → error banner + retry button.
+- [ ] `discover_screen_test.dart` — already covered (see Phase 3).
+
+### Shared components (`test/widget/components/`)
+- [ ] `chat_app_bar_test.dart` — back button, title, online indicator, action buttons.
+- [ ] `typing_indicator_test.dart` — renders when `isTyping` true, hides when false.
+- [ ] `discover_action_button_test.dart` — like/pass buttons fire correct callbacks; disabled state during swipe animation.
+- [ ] `voice_message_player_test.dart` — **NOT TESTABLE** in widget tests (uses `just_audio` platform channel). Skip or test at E2E level.
+
+### Settings
+- [ ] `settings_screen_test.dart`
+  - [ ] Toggles reflect saved state (`SettingsProvider.darkMode`, language, hide-online, hide-last-seen).
+  - [ ] Premium/subscription status displayed correctly.
+  - [ ] Navigation to each sub-screen works.
+
+---
+
+## 12. PHASE 10 — Additional E2E flows (`integration_test/`, patrol)
+
+> Additional critical user journeys not covered by the Phase 6 E2E suite.
+
+- [ ] `chat_list_navigation_test.dart` — Open chat list from bottom nav → tap a conversation → verify chat detail opens with correct messages.
+- [ ] `search_flow_test.dart` — Open search → type query → verify results appear → tap result → verify profile detail opens.
+- [ ] `onboarding_flow_test.dart` — Fresh install → complete all onboarding steps → verify land on Discover screen.
+- [ ] `edit_profile_flow_test.dart` — Open profile → edit basic info → save → verify changes reflected on profile screen.
+
+## 13. Folder structure (target)
 
 ```
 project_d_mobile/
@@ -312,40 +432,46 @@ project_d_mobile/
 │   │   └── services/chat_websocket_service_test.dart
 │   ├── widget/
 │   │   ├── screens/
-│   │   │   ├── auth/{splash,sign_up,verify_code}_test.dart
+│   │   │   ├── auth/{splash,sign_up,verify_code,login}_test.dart
 │   │   │   ├── discover/{discover_screen,profile_detail}_test.dart
 │   │   │   ├── profile/{profile_screen,search_filter_sheet}_test.dart
-│   │   │   ├── chats/{chat_list,chat_detail,chats_screen}_test.dart
-│   │   │   └── settings/settings_screen_test.dart
-│   │   └── components/{chat_message_bubble,chat_input_bar,online_indicator,matched_avatar_strip,user_card,bottom_nav}_test.dart
+│   │   │   ├── onboarding/{basic_info,interests,photo_upload,profile_details,prompts}_test.dart
+│   │   │   ├── profile_edit/{edit_basic_info,edit_interests,edit_photos,edit_profile_details,edit_prompts}_test.dart
+│   │   │   ├── chats/{chat_list,chat_detail,chats_screen,i_liked,liked_me}_test.dart
+│   │   │   └── search/search_screen_test.dart
+│   │   └── components/{chat_message_bubble,chat_input_bar,chat_app_bar,online_indicator,matched_avatar_strip,user_card,typing_indicator,discover_action_button,bottom_nav}_test.dart
 │   └── goldens/{discover_card,chat_bubble_mine,chat_bubble_other,profile_header,settings_row,empty_chats}.png
 └── integration_test/
     ├── auth_flow_test.dart
     ├── google_oauth_test.dart
     ├── match_and_chat_test.dart
     ├── filter_and_discover_test.dart
-    └── premium_upgrade_test.dart
+    ├── premium_upgrade_test.dart
+    ├── chat_list_navigation_test.dart
+    ├── search_flow_test.dart
+    ├── onboarding_flow_test.dart
+    └── edit_profile_flow_test.dart
 ```
 
 ---
 
-## 11. Phased rollout (solo-dev pace)
+## 14. Phased rollout (solo-dev pace)
 
 1. [x] **Step 0** — deps, seams (`ApiService`, `ChatWebSocketService`, `formatters.dart`), helpers.
-  2. [x] **Phase 1** — unit tests: validators, models, formatters, websocket (fast wins, no widget overhead).
-  3. [x] **Phase 2** — widget tests: auth flow (most bug-prone async states).
-  4. [x] **Phase 3** — widget tests: Discover + Profile.
-  5. [x] **Phase 4** — widget tests: Chats + Settings (validates the shipped chat-repair work).
-  6. [x] **Phase 5** — golden tests for design-system-critical components (OnlineIndicator).
-  7. [x] **Phase 6** — the 5 E2E flows via patrol (auth_flow, google_oauth, match_and_chat, filter_and_discover, premium_upgrade).
-  8. [x] **Phase 7** — GitHub Actions: `flutter_test.yml` (every push) + `flutter_e2e.yml` (nightly).
-  9. [x] **Phase 8** — additional unit tests (OnboardingProvider, ChatWebSocketService edge cases).
-  10. [ ] **Phase 9** — additional widget tests (ChatList, ChatDetail, Chats, ILiked, LikedMe, Login, Search, Onboarding, Edit screens, VoiceMessagePlayer, ChatAppBar, TypingIndicator, DiscoverActionButton).
-  11. [ ] **Phase 10** — additional E2E flows (chat list navigation, search, onboarding, edit profile).
+   2. [x] **Phase 1** — unit tests: validators, models, formatters, websocket (fast wins, no widget overhead).
+   3. [x] **Phase 2** — widget tests: auth flow (most bug-prone async states).
+   4. [x] **Phase 3** — widget tests: Discover + Profile.
+   5. [x] **Phase 4** — widget tests: Chats + Settings (validates the shipped chat-repair work).
+   6. [x] **Phase 5** — golden tests for design-system-critical components (OnlineIndicator).
+   7. [x] **Phase 6** — the 5 E2E flows via patrol (auth_flow, google_oauth, match_and_chat, filter_and_discover, premium_upgrade).
+   8. [x] **Phase 7** — GitHub Actions: `flutter_test.yml` (every push) + `flutter_e2e.yml` (nightly).
+   9. [x] **Phase 8** — additional unit tests (OnboardingProvider, ChatWebSocketService edge cases).
+   10. [ ] **Phase 9** — additional widget tests (ChatDetail, Chats, ILiked, LikedMe, Search, onboarding, edit screens, ChatAppBar, TypingIndicator, DiscoverActionButton).
+   11. [ ] **Phase 10** — additional E2E flows (chat list navigation, search, onboarding, edit profile).
 
 ---
 
-## 12. Traceability checklist (run at the end of each phase)
+## 15. Traceability checklist (run at the end of each phase)
 
 - [ ] `flutter pub get` — resolves clean.
 - [ ] `flutter analyze` — no new issues.
@@ -356,7 +482,7 @@ project_d_mobile/
 
 ---
 
-## 13. Commands cheat-sheet
+## 16. Commands cheat-sheet
 
 ```bash
 flutter pub get
