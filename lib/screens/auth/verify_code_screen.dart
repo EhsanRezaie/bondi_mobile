@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -42,7 +43,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
   // Timer variables
   int _resendTimerSeconds = 300;
   bool _isTimerRunning = true;
-  late VoidCallback _timerCallback;
+  Timer? _resendTimer;
 
   @override
   void initState() {
@@ -55,24 +56,21 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
   }
 
   void _startResendTimer() {
+    _resendTimer?.cancel();
     _isTimerRunning = true;
     _resendTimerSeconds = 300;
-    _timerCallback = () {
+    _resendTimer = Timer.periodic(const Duration(seconds: 1), (_) {
       if (mounted) {
         setState(() {
           if (_resendTimerSeconds > 0) {
             _resendTimerSeconds--;
           } else {
             _isTimerRunning = false;
-            _timerCallback = () {};
+            _resendTimer?.cancel();
+            _resendTimer = null;
           }
         });
       }
-    };
-    Future.doWhile(() async {
-      await Future.delayed(const Duration(seconds: 1));
-      _timerCallback();
-      return _isTimerRunning && mounted;
     });
   }
 
@@ -91,6 +89,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
       node.dispose();
     }
     _referralController.dispose();
+    _resendTimer?.cancel();
     _isTimerRunning = false;
     super.dispose();
   }
