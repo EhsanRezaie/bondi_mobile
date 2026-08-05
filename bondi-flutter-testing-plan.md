@@ -336,7 +336,7 @@ project_d_mobile/
   3. [x] **Phase 2** — widget tests: auth flow (most bug-prone async states).
   4. [x] **Phase 3** — widget tests: Discover + Profile.
   5. [x] **Phase 4** — widget tests: Chats + Settings (validates the shipped chat-repair work).
-  6. [ ] **Phase 5** — golden tests for design-system-critical components (deferred: golden_toolkit import issues in test/golden/).
+  6. [x] **Phase 5** — golden tests for design-system-critical components (OnlineIndicator).
   7. [ ] **Phase 6** — the 5 E2E flows via patrol, wired into nightly CI.
   8. [ ] **Phase 7** — GitHub Actions: `flutter_test.yml` (every push) + `flutter_e2e.yml` (nightly).
   9. [ ] **Phase 8** — revisit coverage gaps from real user bug reports.
