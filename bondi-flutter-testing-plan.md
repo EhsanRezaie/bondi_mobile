@@ -332,14 +332,14 @@ project_d_mobile/
 ## 11. Phased rollout (solo-dev pace)
 
 1. [x] **Step 0** — deps, seams (`ApiService`, `ChatWebSocketService`, `formatters.dart`), helpers.
-2. [x] **Phase 1** — unit tests: validators, models, formatters, websocket (fast wins, no widget overhead).
-3. [~] **Phase 2** — widget tests: auth flow (most bug-prone async states).
-4. [ ] **Phase 3** — widget tests: Discover + Profile.
-5. [ ] **Phase 4** — widget tests: Chats + Settings (validates the shipped chat-repair work).
-6. [ ] **Phase 5** — golden tests for design-system-critical components.
-7. [ ] **Phase 6** — the 5 E2E flows via patrol, wired into nightly CI.
-8. [ ] **Phase 7** — GitHub Actions: `flutter_test.yml` (every push) + `flutter_e2e.yml` (nightly).
-9. [ ] **Phase 8** — revisit coverage gaps from real user bug reports.
+  2. [x] **Phase 1** — unit tests: validators, models, formatters, websocket (fast wins, no widget overhead).
+  3. [x] **Phase 2** — widget tests: auth flow (most bug-prone async states).
+  4. [x] **Phase 3** — widget tests: Discover + Profile.
+  5. [x] **Phase 4** — widget tests: Chats + Settings (validates the shipped chat-repair work).
+  6. [~] **Phase 5** — golden tests for design-system-critical components.
+  7. [ ] **Phase 6** — the 5 E2E flows via patrol, wired into nightly CI.
+  8. [ ] **Phase 7** — GitHub Actions: `flutter_test.yml` (every push) + `flutter_e2e.yml` (nightly).
+  9. [ ] **Phase 8** — revisit coverage gaps from real user bug reports.
 
 ---
 
