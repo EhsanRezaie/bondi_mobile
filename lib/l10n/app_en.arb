@@ -216,6 +216,52 @@
   "chat_liked_me": "Liked Me",
   "chat_i_liked": "I Liked",
   "chat_chats": "Chats",
+  "chat_liked_you": "{name} liked you",
+  "@chat_liked_you": {
+    "description": "Notification: someone liked you",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "chat_you_liked": "You liked {name}",
+  "@chat_you_liked": {
+    "description": "Notification: you liked someone",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "time_just_now": "Just now",
+  "time_minutes_ago": "{count}m ago",
+  "@time_minutes_ago": {
+    "description": "Relative time in minutes",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "time_hours_ago": "{count}h ago",
+  "@time_hours_ago": {
+    "description": "Relative time in hours",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "time_days_ago": "{count}d ago",
+  "@time_days_ago": {
+    "description": "Relative time in days",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "chat_empty_matches": "No matches yet. Start swiping!",
   "chat_empty_liked_me": "No one has liked you yet",
   "chat_empty_i_liked": "You haven't liked anyone yet",

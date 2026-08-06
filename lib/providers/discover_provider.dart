@@ -234,8 +234,10 @@ class DiscoverProvider extends ChangeNotifier {
       bool messageSent = false;
       if (message != null && message.isNotEmpty && !isChatBlocked) {
         try {
-          await DiscoverService.sendFirstMessage(profile.id, message);
-          messageSent = true;
+          final msgResponse =
+              await DiscoverService.sendFirstMessage(profile.id, message);
+          messageSent =
+              msgResponse.statusCode == 200 || msgResponse.statusCode == 201;
         } catch (_) {}
       }
 

@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:dating_app/config/app_theme.dart';
 import 'package:dating_app/generated/app_localizations.dart';
+import 'package:dating_app/models/discover_profile.dart';
 import 'package:dating_app/providers/search_provider.dart';
 import 'package:dating_app/services/onboarding_service.dart';
 import 'package:dating_app/widgets/search_grid_card.dart';
 import 'package:dating_app/widgets/shimmer_avatar.dart';
+import 'package:dating_app/screens/shared/profile_detail_loader.dart';
 import 'search_filter_sheet.dart';
 import 'search_profile_detail.dart';
 
@@ -880,19 +882,22 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
     );
   }
 
-  void _openProfileDetail(dynamic profile) {
+  void _openProfileDetail(DiscoverProfile profile) {
     final provider = Provider.of<SearchProvider>(context, listen: false);
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => SearchProfileDetail(
-          profile: profile,
-          interestIcons: _interestIcons,
-          likesRemaining: provider.likesRemaining,
-          chatsRemaining: provider.chatsRemaining,
-          isPremium: provider.isPremium,
-          onLike: (p) => provider.likeUser(p),
-          onChat: (p, {message}) => provider.chatWithUser(p, message: message),
+        builder: (_) => ProfileDetailLoader(
+          userId: profile.id,
+          builder: (full) => SearchProfileDetail(
+            profile: full,
+            interestIcons: _interestIcons,
+            likesRemaining: provider.likesRemaining,
+            chatsRemaining: provider.chatsRemaining,
+            isPremium: provider.isPremium,
+            onLike: (p) => provider.likeUser(p),
+            onChat: (p, {message}) => provider.chatWithUser(p, message: message),
+          ),
         ),
       ),
     );

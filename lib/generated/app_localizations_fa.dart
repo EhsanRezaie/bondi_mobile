@@ -659,6 +659,34 @@ class AppLocalizationsFa extends AppLocalizations {
   String get chat_chats => 'چت‌ها';
 
   @override
+  String chat_liked_you(String name) {
+    return '$name شما را لایک کرد';
+  }
+
+  @override
+  String chat_you_liked(String name) {
+    return 'شما $name را لایک کردید';
+  }
+
+  @override
+  String get time_just_now => 'همین حالا';
+
+  @override
+  String time_minutes_ago(int count) {
+    return '$count دقیقه پیش';
+  }
+
+  @override
+  String time_hours_ago(int count) {
+    return '$count ساعت پیش';
+  }
+
+  @override
+  String time_days_ago(int count) {
+    return '$count روز پیش';
+  }
+
+  @override
   String get chat_empty_matches => 'هنوز تطابقی نداری. شروع به سوایپ کن!';
 
   @override

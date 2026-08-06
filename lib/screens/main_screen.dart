@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../config/app_theme.dart';
 import '../providers/auth_provider.dart';
+import '../providers/chat_provider.dart';
 import '../providers/discover_provider.dart';
 import '../providers/onboarding_provider.dart';
 import '../providers/profile_provider.dart';
@@ -173,6 +174,12 @@ class _MainScreenState extends State<MainScreen> {
           setState(() {
             _currentIndex = index;
           });
+          if (index == 2) {
+            final chatProvider =
+                Provider.of<ChatProvider>(context, listen: false);
+            chatProvider.loadConversations();
+            chatProvider.refreshLimits();
+          }
         },
         selectedItemColor: primaryColor,
         unselectedItemColor: Colors.grey,

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:dio_cache_interceptor/dio_cache_interceptor.dart';
 import 'package:dating_app/services/api_service.dart';
 
 class ChatService {
@@ -247,6 +248,21 @@ class ChatService {
   static Future<Response> getUserProfile() async {
     try {
       return await ApiService.get('/users/me');
+    } on DioException catch (e) {
+      if (e.response != null) return e.response!;
+      rethrow;
+    }
+  }
+
+  static Future<Response> getPublicProfile(String userId) async {
+    try {
+      return await ApiService.get(
+        '/users/$userId',
+        cacheOptions: ApiService.makeCacheOptions(
+          policy: CachePolicy.request,
+          maxStale: const Duration(minutes: 5),
+        ),
+      );
     } on DioException catch (e) {
       if (e.response != null) return e.response!;
       rethrow;

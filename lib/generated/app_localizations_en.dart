@@ -657,6 +657,34 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chat_chats => 'Chats';
 
   @override
+  String chat_liked_you(String name) {
+    return '$name liked you';
+  }
+
+  @override
+  String chat_you_liked(String name) {
+    return 'You liked $name';
+  }
+
+  @override
+  String get time_just_now => 'Just now';
+
+  @override
+  String time_minutes_ago(int count) {
+    return '${count}m ago';
+  }
+
+  @override
+  String time_hours_ago(int count) {
+    return '${count}h ago';
+  }
+
+  @override
+  String time_days_ago(int count) {
+    return '${count}d ago';
+  }
+
+  @override
   String get chat_empty_matches => 'No matches yet. Start swiping!';
 
   @override

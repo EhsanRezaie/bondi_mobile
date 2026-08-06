@@ -1328,6 +1328,42 @@ abstract class AppLocalizations {
   /// **'Chats'**
   String get chat_chats;
 
+  /// Notification: someone liked you
+  ///
+  /// In en, this message translates to:
+  /// **'{name} liked you'**
+  String chat_liked_you(String name);
+
+  /// Notification: you liked someone
+  ///
+  /// In en, this message translates to:
+  /// **'You liked {name}'**
+  String chat_you_liked(String name);
+
+  /// No description provided for @time_just_now.
+  ///
+  /// In en, this message translates to:
+  /// **'Just now'**
+  String get time_just_now;
+
+  /// Relative time in minutes
+  ///
+  /// In en, this message translates to:
+  /// **'{count}m ago'**
+  String time_minutes_ago(int count);
+
+  /// Relative time in hours
+  ///
+  /// In en, this message translates to:
+  /// **'{count}h ago'**
+  String time_hours_ago(int count);
+
+  /// Relative time in days
+  ///
+  /// In en, this message translates to:
+  /// **'{count}d ago'**
+  String time_days_ago(int count);
+
   /// No description provided for @chat_empty_matches.
   ///
   /// In en, this message translates to:

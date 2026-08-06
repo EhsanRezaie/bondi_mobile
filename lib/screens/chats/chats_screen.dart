@@ -7,6 +7,8 @@ import 'package:dating_app/screens/auth/sign_up_screen.dart';
 import 'package:dating_app/screens/chats/liked_me_screen.dart';
 import 'package:dating_app/screens/chats/i_liked_screen.dart';
 import 'package:dating_app/screens/chats/chat_list_screen.dart';
+import 'package:dating_app/screens/chats/chat_detail_screen.dart';
+import 'package:dating_app/models/match.dart';
 import 'package:dating_app/widgets/matched_avatar_strip.dart';
 import 'package:dating_app/generated/app_localizations.dart';
 
@@ -25,6 +27,7 @@ class _ChatsScreenState extends State<ChatsScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    _tabController.addListener(_onTabChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final authProvider = context.read<AuthProvider>();
       if (authProvider.isAuthenticated) {
@@ -35,10 +38,38 @@ class _ChatsScreenState extends State<ChatsScreen>
     });
   }
 
+  void _onTabChanged() {
+    if (!_tabController.indexIsChanging) return;
+    final chatProvider = context.read<ChatProvider>();
+    if (_tabController.index == 0) {
+      chatProvider.loadLikers();
+    } else if (_tabController.index == 1) {
+      chatProvider.loadLikedUsers();
+    } else if (_tabController.index == 2) {
+      chatProvider.loadConversations();
+    }
+  }
+
   @override
   void dispose() {
+    _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
     super.dispose();
+  }
+
+  void _openChat(Match match) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ChatDetailScreen(
+          identifier: match.id,
+          userName: match.user.name,
+          avatarUrl: match.user.mainPhotoUrl,
+          isOnline: match.user.isOnline ?? false,
+          lastSeenAt: match.user.lastSeenAt,
+        ),
+      ),
+    );
   }
 
   @override
@@ -108,7 +139,18 @@ class _ChatsScreenState extends State<ChatsScreen>
               return MatchedAvatarStrip(
                 matches: provider.conversations,
                 onMatchTap: (matchId) {
-                  _tabController.animateTo(2);
+                  Match? conversation;
+                  for (final c in provider.conversations) {
+                    if (c.id == matchId) {
+                      conversation = c;
+                      break;
+                    }
+                  }
+                  if (conversation != null) {
+                    _openChat(conversation);
+                  } else {
+                    _tabController.animateTo(2);
+                  }
                 },
               );
             },

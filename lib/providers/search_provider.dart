@@ -475,8 +475,10 @@ Future<Map<String, dynamic>?> likeUser(DiscoverProfile profile) async {
       bool messageSent = false;
       if (message != null && message.isNotEmpty && !isChatBlocked) {
         try {
-          await SearchService.sendFirstMessage(profile.id, message);
-          messageSent = true;
+          final msgResponse =
+              await SearchService.sendFirstMessage(profile.id, message);
+          messageSent =
+              msgResponse.statusCode == 200 || msgResponse.statusCode == 201;
         } catch (_) {}
       }
 

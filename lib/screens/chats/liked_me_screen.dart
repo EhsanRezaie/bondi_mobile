@@ -4,8 +4,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dating_app/config/app_theme.dart';
 import 'package:dating_app/providers/chat_provider.dart';
 import 'package:dating_app/models/swipe_user.dart';
-import 'package:dating_app/screens/chats/chat_detail_screen.dart';
+import 'package:dating_app/screens/chats/user_notification_profile_screen.dart';
 import 'package:dating_app/generated/app_localizations.dart';
+import 'package:dating_app/utils/relative_time.dart';
 
 class LikedMeScreen extends StatefulWidget {
   const LikedMeScreen({super.key});
@@ -49,14 +50,13 @@ class _LikedMeScreenState extends State<LikedMeScreen> {
         isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted;
     final borderColor =
         isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
+    final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
 
     return Consumer<ChatProvider>(
       builder: (context, provider, _) {
         if (provider.isLoading && provider.likers.isEmpty) {
           return Center(
-            child: CircularProgressIndicator(
-              color: isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary,
-            ),
+            child: CircularProgressIndicator(color: primaryColor),
           );
         }
 
@@ -83,8 +83,8 @@ class _LikedMeScreenState extends State<LikedMeScreen> {
         return ListView.builder(
           controller: _scrollController,
           padding: const EdgeInsets.symmetric(vertical: 8),
-          itemCount: provider.likers.length +
-              (provider.hasMoreLikers ? 1 : 0),
+          itemCount:
+              provider.likers.length + (provider.hasMoreLikers ? 1 : 0),
           itemBuilder: (context, index) {
             if (index == provider.likers.length) {
               return Center(
@@ -92,12 +92,12 @@ class _LikedMeScreenState extends State<LikedMeScreen> {
                   padding: const EdgeInsets.all(16),
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
-                    color: isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary,
+                    color: primaryColor,
                   ),
                 ),
               );
             }
-            return _buildLikerItem(
+            return _buildNotificationItem(
               provider.likers[index],
               isDark,
               textColor,
@@ -110,80 +110,45 @@ class _LikedMeScreenState extends State<LikedMeScreen> {
     );
   }
 
-  Widget _buildLikerItem(
+  Widget _buildNotificationItem(
     SwipeUser user,
     bool isDark,
     Color textColor,
     Color mutedColor,
     Color borderColor,
   ) {
-    final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
+    final t = AppLocalizations.of(context)!;
 
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      leading: Stack(
-        children: [
-          CircleAvatar(
-            radius: 28,
-            backgroundColor: borderColor,
-            backgroundImage: user.mainPhotoUrl != null &&
-                    user.mainPhotoUrl!.isNotEmpty
-                ? CachedNetworkImageProvider(user.mainPhotoUrl!)
-                : null,
-            child: user.mainPhotoUrl == null || user.mainPhotoUrl!.isEmpty
-                ? Icon(Icons.person, size: 28, color: borderColor)
-                : null,
-          ),
-          if (user.isOnline == true)
-            Positioned(
-              right: 0,
-              bottom: 0,
-              child: Container(
-                width: 14,
-                height: 14,
-                decoration: BoxDecoration(
-                  color: AppTheme.lightSuccess,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: isDark ? AppTheme.darkSurface : AppTheme.lightSurface,
-                    width: 2,
-                  ),
-                ),
-              ),
-            ),
-        ],
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      leading: CircleAvatar(
+        radius: 26,
+        backgroundColor: borderColor,
+        backgroundImage: user.mainPhotoUrl != null &&
+                user.mainPhotoUrl!.isNotEmpty
+            ? CachedNetworkImageProvider(user.mainPhotoUrl!)
+            : null,
+        child: user.mainPhotoUrl == null || user.mainPhotoUrl!.isEmpty
+            ? Icon(Icons.person, size: 26, color: borderColor)
+            : null,
       ),
-      title: Row(
-        children: [
-          Text(
-            '${user.name}, ${user.age}',
-            style: TextStyle(
-              fontFamily: 'Inter',
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: textColor,
-            ),
-          ),
-          if (user.isPremium) ...[
-            const SizedBox(width: 4),
-            Icon(Icons.workspace_premium, size: 16, color: AppTheme.lightWarning),
-          ],
-          if (user.isVerified) ...[
-            const SizedBox(width: 4),
-            Icon(Icons.verified, size: 16, color: primaryColor),
-          ],
-        ],
+      title: Text(
+        t.chat_liked_you(user.name),
+        style: TextStyle(
+          fontFamily: 'Inter',
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+          color: textColor,
+        ),
       ),
-      subtitle: user.distanceKm != null
-          ? Text(
-              '${user.distanceKm!.toStringAsFixed(0)} km away',
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 13,
-                color: mutedColor,
-              ),
-            )
-          : null,
+      subtitle: Text(
+        relativeTime(user.swipedAt, t),
+        style: TextStyle(
+          fontFamily: 'Inter',
+          fontSize: 13,
+          color: mutedColor,
+        ),
+      ),
       trailing: Icon(
         Icons.chevron_right,
         color: mutedColor,
@@ -192,12 +157,17 @@ class _LikedMeScreenState extends State<LikedMeScreen> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => ChatDetailScreen(
-              identifier: user.id,
-              userName: user.name,
-              avatarUrl: user.mainPhotoUrl,
-              isOnline: user.isOnline ?? false,
-              lastSeenAt: user.lastSeenAt,
+            builder: (_) => UserNotificationProfileScreen(
+              userId: user.id,
+              fallback: SwipeStubProfile(
+                id: user.id,
+                name: user.name,
+                age: user.age,
+                mainPhotoUrl: user.mainPhotoUrl,
+                isPremium: user.isPremium,
+                isVerified: user.isVerified,
+                distanceKm: user.distanceKm,
+              ),
             ),
           ),
         );

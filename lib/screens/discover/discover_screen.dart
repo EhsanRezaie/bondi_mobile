@@ -9,6 +9,7 @@ import 'package:dating_app/services/onboarding_service.dart';
 import 'package:dating_app/widgets/user_card.dart';
 import 'package:dating_app/widgets/discover_action_button.dart';
 import 'package:dating_app/screens/discover/profile_detail_screen.dart';
+import 'package:dating_app/screens/shared/profile_detail_loader.dart';
 import 'package:dating_app/widgets/action_toast.dart';
 
 class DiscoverScreen extends StatefulWidget {
@@ -454,21 +455,24 @@ Future<String?> _showChatBottomSheet() async {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => ProfileDetailScreen(
-          profile: profile,
-          interestIcons: _interestIcons,
-          likesRemaining: provider.likesRemaining,
-          chatsRemaining: provider.chatsRemaining,
-          isPremium: provider.isPremium,
-          onSwipeLeft: () async {
-            await _handleSwipeLeft(profile);
-          },
-          onSwipeRight: () async {
-            await _handleSwipeRight(profile);
-          },
-          onChat: () async {
-            await _handleChat(profile);
-          },
+        builder: (_) => ProfileDetailLoader(
+          userId: profile.id,
+          builder: (full) => ProfileDetailScreen(
+            profile: full,
+            interestIcons: _interestIcons,
+            likesRemaining: provider.likesRemaining,
+            chatsRemaining: provider.chatsRemaining,
+            isPremium: provider.isPremium,
+            onSwipeLeft: () async {
+              await _handleSwipeLeft(full);
+            },
+            onSwipeRight: () async {
+              await _handleSwipeRight(full);
+            },
+            onChat: () async {
+              await _handleChat(full);
+            },
+          ),
         ),
       ),
     );

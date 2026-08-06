@@ -63,18 +63,30 @@ class _ChatListScreenState extends State<ChatListScreen> {
         }
 
         if (provider.conversations.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+          return RefreshIndicator(
+            onRefresh: () => context.read<ChatProvider>().loadConversations(),
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
               children: [
-                Icon(Icons.chat_bubble_outline, size: 64, color: borderColor),
-                const SizedBox(height: 16),
-                Text(
-                  t.chat_empty_chats,
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 16,
-                    color: mutedColor,
+                SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.6,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.chat_bubble_outline,
+                            size: 64, color: borderColor),
+                        const SizedBox(height: 16),
+                        Text(
+                          t.chat_empty_chats,
+                          style: TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 16,
+                            color: mutedColor,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -82,32 +94,36 @@ class _ChatListScreenState extends State<ChatListScreen> {
           );
         }
 
-        return ListView.builder(
-          controller: _scrollController,
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          itemCount: provider.conversations.length +
-              (provider.hasMoreConversations ? 1 : 0),
-          itemBuilder: (context, index) {
-            if (index == provider.conversations.length) {
-              return Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(16),
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: primaryColor,
+        return RefreshIndicator(
+          onRefresh: () => context.read<ChatProvider>().loadConversations(),
+          child: ListView.builder(
+            controller: _scrollController,
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            itemCount: provider.conversations.length +
+                (provider.hasMoreConversations ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index == provider.conversations.length) {
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: primaryColor,
+                    ),
                   ),
-                ),
+                );
+              }
+              return _buildChatItem(
+                provider.conversations[index],
+                isDark,
+                textColor,
+                mutedColor,
+                borderColor,
+                primaryColor,
               );
-            }
-            return _buildChatItem(
-              provider.conversations[index],
-              isDark,
-              textColor,
-              mutedColor,
-              borderColor,
-              primaryColor,
-            );
-          },
+            },
+          ),
         );
       },
     );
@@ -216,8 +232,8 @@ class _ChatListScreenState extends State<ChatListScreen> {
           ),
         ],
       ),
-      onTap: () {
-        Navigator.push(
+      onTap: () async {
+        await Navigator.push(
           context,
           MaterialPageRoute(
             builder: (_) => ChatDetailScreen(
@@ -229,6 +245,9 @@ class _ChatListScreenState extends State<ChatListScreen> {
             ),
           ),
         );
+        if (mounted) {
+          context.read<ChatProvider>().loadConversations();
+        }
       },
     );
   }
