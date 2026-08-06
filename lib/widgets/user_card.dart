@@ -63,6 +63,8 @@ class UserCardState extends State<UserCard>
 
   @override
   void dispose() {
+    _currentAnimationCompleter?.complete();
+    _currentAnimationCompleter = null;
     _controller.dispose();
     super.dispose();
   }

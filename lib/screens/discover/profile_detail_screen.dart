@@ -106,6 +106,10 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
       // API failed - snap back
       _snapBack();
       if (!mounted) return;
+    } finally {
+      if (mounted) {
+        _isAnimating = false;
+      }
     }
   }
 
@@ -126,6 +130,10 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
       // API failed - snap back
       _snapBack();
       if (!mounted) return;
+    } finally {
+      if (mounted) {
+        _isAnimating = false;
+      }
     }
   }
 
@@ -146,6 +154,10 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
       // API failed - snap back
       _snapBack();
       if (!mounted) return;
+    } finally {
+      if (mounted) {
+        _isAnimating = false;
+      }
     }
   }
 

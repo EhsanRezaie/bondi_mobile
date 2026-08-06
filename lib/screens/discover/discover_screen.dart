@@ -99,6 +99,15 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     }
   }
 
+  Future<void> _waitForAnimation(Future<void>? future) async {
+    if (future == null) return;
+    try {
+      await future.timeout(const Duration(milliseconds: 600));
+    } catch (_) {
+      // Animation interrupted or disposed — never block the swipe state.
+    }
+  }
+
   Future<void> _onLikePressed(DiscoverProfile profile) async {
     if (_isSwiping || !mounted) return;
     final provider = Provider.of<DiscoverProvider>(context, listen: false);
@@ -119,7 +128,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
 
       if (result != null) {
         // API succeeded - wait for animation to complete
-        await animationFuture;
+        await _waitForAnimation(animationFuture);
         if (!mounted) return;
         if (result['matched'] == true) {
           _showMatchDialog(result, profile);
@@ -129,14 +138,14 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
         }
       } else {
         // API returned null (error) - snap back
-        await _currentCardState?.snapBack();
+        await _waitForAnimation(_currentCardState?.snapBack());
         if (!mounted) return;
         final t = AppLocalizations.of(context)!;
         showActionToast(context, t.error_something_wrong);
       }
     } catch (e) {
       // API threw - snap back
-      await _currentCardState?.snapBack();
+      await _waitForAnimation(_currentCardState?.snapBack());
       if (!mounted) return;
       final t = AppLocalizations.of(context)!;
       showActionToast(context, t.error_something_wrong);
@@ -162,10 +171,10 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       if (!mounted) return;
 
       // API succeeded - wait for animation to complete
-      await animationFuture;
+      await _waitForAnimation(animationFuture);
     } catch (e) {
       // API failed - snap back
-      await _currentCardState?.snapBack();
+      await _waitForAnimation(_currentCardState?.snapBack());
       if (!mounted) return;
       final t = AppLocalizations.of(context)!;
       showActionToast(context, t.error_something_wrong);
@@ -200,7 +209,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
 
       if (result != null) {
         // API succeeded - wait for animation to complete
-        await animationFuture;
+        await _waitForAnimation(animationFuture);
         if (!mounted) return;
         if (result['matched'] == true) {
           _showMatchDialog(result, profile, messageSent: result['message_sent'] == true);
@@ -210,14 +219,14 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
         }
       } else {
         // API returned null (error) - snap back
-        await _currentCardState?.snapBack();
+        await _waitForAnimation(_currentCardState?.snapBack());
         if (!mounted) return;
         final t = AppLocalizations.of(context)!;
         showActionToast(context, t.error_something_wrong);
       }
     } catch (e) {
       // API threw - snap back
-      await _currentCardState?.snapBack();
+      await _waitForAnimation(_currentCardState?.snapBack());
       if (!mounted) return;
       final t = AppLocalizations.of(context)!;
       showActionToast(context, t.error_something_wrong);
