@@ -4,12 +4,9 @@ import 'package:dating_app/config/app_theme.dart';
 import 'package:dating_app/providers/auth_provider.dart';
 import 'package:dating_app/providers/chat_provider.dart';
 import 'package:dating_app/screens/auth/sign_up_screen.dart';
-import 'package:dating_app/screens/chats/liked_me_screen.dart';
-import 'package:dating_app/screens/chats/i_liked_screen.dart';
 import 'package:dating_app/screens/chats/chat_list_screen.dart';
 import 'package:dating_app/screens/chats/chat_detail_screen.dart';
-import 'package:dating_app/models/match.dart';
-import 'package:dating_app/widgets/matched_avatar_strip.dart';
+import 'package:dating_app/models/chat_card.dart';
 import 'package:dating_app/generated/app_localizations.dart';
 
 class ChatsScreen extends StatefulWidget {
@@ -33,6 +30,7 @@ class _ChatsScreenState extends State<ChatsScreen>
       if (authProvider.isAuthenticated) {
         final chatProvider = context.read<ChatProvider>();
         chatProvider.loadConversations();
+        chatProvider.loadPendingIncoming();
         chatProvider.refreshLimits();
       }
     });
@@ -42,11 +40,11 @@ class _ChatsScreenState extends State<ChatsScreen>
     if (!_tabController.indexIsChanging) return;
     final chatProvider = context.read<ChatProvider>();
     if (_tabController.index == 0) {
-      chatProvider.loadLikers();
-    } else if (_tabController.index == 1) {
-      chatProvider.loadLikedUsers();
-    } else if (_tabController.index == 2) {
       chatProvider.loadConversations();
+    } else if (_tabController.index == 1) {
+      chatProvider.loadPendingIncoming();
+    } else if (_tabController.index == 2) {
+      chatProvider.loadPendingIncoming();
     }
   }
 
@@ -57,16 +55,16 @@ class _ChatsScreenState extends State<ChatsScreen>
     super.dispose();
   }
 
-  void _openChat(Match match) {
+  void _openChat(ChatCard chat) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => ChatDetailScreen(
-          identifier: match.id,
-          userName: match.user.name,
-          avatarUrl: match.user.mainPhotoUrl,
-          isOnline: match.user.isOnline ?? false,
-          lastSeenAt: match.user.lastSeenAt,
+          identifier: chat.id,
+          userName: chat.user.name,
+          avatarUrl: chat.user.mainPhotoUrl,
+          isOnline: chat.user.isOnline,
+          lastSeenAt: chat.user.lastSeenAt,
         ),
       ),
     );
@@ -79,8 +77,6 @@ class _ChatsScreenState extends State<ChatsScreen>
     final bgColor = isDark ? AppTheme.darkBackground : AppTheme.lightBackground;
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
     final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
-    final borderColor =
-        isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
 
     final authProvider = context.watch<AuthProvider>();
     if (!authProvider.isAuthenticated) {
@@ -126,45 +122,47 @@ class _ChatsScreenState extends State<ChatsScreen>
             fontWeight: FontWeight.w500,
           ),
           tabs: [
-            Tab(text: t.chat_liked_me),
-            Tab(text: t.chat_i_liked),
             Tab(text: t.chat_chats),
+            Tab(text: t.chat_pending),
+            Tab(text: t.chat_incoming),
           ],
         ),
       ),
-      body: Column(
+      body: TabBarView(
+        controller: _tabController,
         children: [
-          Consumer<ChatProvider>(
-            builder: (context, provider, _) {
-              return MatchedAvatarStrip(
-                matches: provider.conversations,
-                onMatchTap: (matchId) {
-                  Match? conversation;
-                  for (final c in provider.conversations) {
-                    if (c.id == matchId) {
-                      conversation = c;
-                      break;
-                    }
-                  }
-                  if (conversation != null) {
-                    _openChat(conversation);
-                  } else {
-                    _tabController.animateTo(2);
-                  }
-                },
-              );
-            },
+          ChatListScreen(
+            chats: context.watch<ChatProvider>().conversations,
+            isLoading: context.watch<ChatProvider>().isLoading,
+            hasMore: context.watch<ChatProvider>().hasMoreConversations,
+            emptyText: t.chat_empty_chats,
+            onRefresh: () =>
+                context.read<ChatProvider>().loadConversations(),
+            onLoadMore: () =>
+                context.read<ChatProvider>().loadMoreConversations(),
+            onChatTap: _openChat,
           ),
-          Divider(height: 1, color: borderColor),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: const [
-                LikedMeScreen(),
-                ILikedScreen(),
-                ChatListScreen(),
-              ],
-            ),
+          ChatListScreen(
+            chats: context.watch<ChatProvider>().pendingChats,
+            isLoading: context.watch<ChatProvider>().isLoading,
+            hasMore: context.watch<ChatProvider>().hasMorePending,
+            emptyText: t.chat_empty_pending,
+            onRefresh: () =>
+                context.read<ChatProvider>().loadPendingIncoming(),
+            onLoadMore: () =>
+                context.read<ChatProvider>().loadMorePendingIncoming(),
+            onChatTap: _openChat,
+          ),
+          ChatListScreen(
+            chats: context.watch<ChatProvider>().incomingChats,
+            isLoading: context.watch<ChatProvider>().isLoading,
+            hasMore: context.watch<ChatProvider>().hasMoreIncoming,
+            emptyText: t.chat_empty_incoming,
+            onRefresh: () =>
+                context.read<ChatProvider>().loadPendingIncoming(),
+            onLoadMore: () =>
+                context.read<ChatProvider>().loadMorePendingIncoming(),
+            onChatTap: _openChat,
           ),
         ],
       ),

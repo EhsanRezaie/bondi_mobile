@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dating_app/config/app_theme.dart';
 import 'package:dating_app/generated/app_localizations.dart';
 import 'package:dating_app/models/discover_profile.dart';
+import 'package:dating_app/screens/chats/chat_detail_screen.dart';
 import 'package:dating_app/widgets/shimmer_avatar.dart';
 import 'package:dating_app/widgets/discover_action_button.dart';
 import 'package:dating_app/widgets/action_toast.dart';
@@ -777,12 +778,23 @@ profile.currentUserAction == 'matched';
     if (message != null && mounted && widget.onChat != null) {
       final result = await widget.onChat!(profile, message: message);
       if (result != null && mounted) {
-        if (result['matched'] == true) {
-          _showMatchDialog(result);
+        final chatId = (result['chat_id'] ?? result['chatId'] ?? '').toString();
+        if (chatId.isNotEmpty) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute<void>(
+              builder: (_) => ChatDetailScreen(
+                identifier: chatId,
+                userName: profile.name,
+                avatarUrl: profile.mainPhotoUrl,
+                isOnline: profile.isOnline,
+                lastSeenAt: profile.lastSeenAt,
+              ),
+            ),
+          );
         } else {
           final t = AppLocalizations.of(context)!;
-          showActionToast(context, t.toast_like_and_message_sent);
-          Navigator.pop(context);
+          showActionToast(context, t.error_something_wrong);
         }
       } else if (mounted) {
         final t = AppLocalizations.of(context)!;

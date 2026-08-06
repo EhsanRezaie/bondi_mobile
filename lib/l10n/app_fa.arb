@@ -216,6 +216,12 @@
   "chat_liked_me": "منو لایک کردن",
   "chat_i_liked": "لایک کردم",
   "chat_chats": "چت\u200cها",
+  "chat_requests": "درخواست\u200cها",
+  "chat_pending": "در انتظار",
+  "chat_incoming": "ورودی",
+  "chat_empty_pending": "هنوز چتی شروع نکرده\u200cاید",
+  "chat_empty_incoming": "چت ورودی ندارید",
+  "chat_accept": "پذیرش",
   "chat_liked_you": "{name} شما را لایک کرد",
   "@chat_liked_you": {
     "description": "Notification: someone liked you",

@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
+import 'package:dating_app/models/chat_card.dart';
 import 'package:dating_app/models/match.dart';
 import 'package:dating_app/models/message.dart';
 import 'package:dating_app/models/swipe_user.dart';
 import 'package:dating_app/services/chat_service.dart';
 import 'package:dating_app/services/chat_websocket_service.dart';
+import 'package:dating_app/services/chat_list_websocket_service.dart';
 import 'package:dating_app/services/storage_service.dart';
 
 class ChatProvider extends ChangeNotifier {
@@ -13,6 +15,11 @@ class ChatProvider extends ChangeNotifier {
 
   StreamSubscription<bool>? _connectionStateSubscription;
   StreamSubscription<Map<String, dynamic>>? _eventsSubscription;
+  ChatListWebSocketService? _listWsService;
+  StreamSubscription<Map<String, dynamic>>? _listEventsSubscription;
+  StreamSubscription<bool>? _listConnectionStateSubscription;
+  DateTime? _lastListRefetch;
+  static const _listRefetchMinInterval = Duration(seconds: 2);
 
   @override
   void dispose() {
@@ -20,6 +27,9 @@ class ChatProvider extends ChangeNotifier {
     _connectionStateSubscription?.cancel();
     _eventsSubscription?.cancel();
     _wsService?.dispose();
+    _listEventsSubscription?.cancel();
+    _listConnectionStateSubscription?.cancel();
+    _listWsService?.dispose();
     _typingTimer?.cancel();
     super.dispose();
   }
@@ -33,7 +43,9 @@ class ChatProvider extends ChangeNotifier {
 
   // ── State ────────────────────────────────────────────────────────
   List<Match> _matches = [];
-  List<Match> _conversations = [];
+  List<ChatCard> _conversations = [];
+  List<ChatCard> _pendingChats = [];
+  List<ChatCard> _incomingChats = [];
   List<SwipeUser> _likedUsers = [];
   List<SwipeUser> _likers = [];
   List<Message> _messages = [];
@@ -41,6 +53,7 @@ class ChatProvider extends ChangeNotifier {
   ChatWebSocketService? _wsService;
   bool _isConnected = false;
   bool _isOtherUserOnline = false;
+  DateTime? _otherUserLastSeenAt;
   bool _isTyping = false;
   int _chatsRemaining = 0;
   bool _isPremium = false;
@@ -55,23 +68,29 @@ class ChatProvider extends ChangeNotifier {
 
   int _matchesOffset = 0;
   int _conversationsOffset = 0;
+  int _pendingOffset = 0;
   int _likersOffset = 0;
   int _likedOffset = 0;
   bool _hasMoreMatches = true;
   bool _hasMoreConversations = true;
+  bool _hasMorePending = true;
+  bool _hasMoreIncoming = true;
   bool _hasMoreLikers = true;
   bool _hasMoreLiked = true;
   static const _pageSize = 20;
 
   // ── Getters ──────────────────────────────────────────────────────
   List<Match> get matches => _matches;
-  List<Match> get conversations => _conversations;
+  List<ChatCard> get conversations => _conversations;
+  List<ChatCard> get pendingChats => _pendingChats;
+  List<ChatCard> get incomingChats => _incomingChats;
   List<SwipeUser> get likedUsers => _likedUsers;
   List<SwipeUser> get likers => _likers;
   List<Message> get messages => _messages;
   String? get activeMatchId => _activeMatchId;
   bool get isConnected => _isConnected;
   bool get isOtherUserOnline => _isOtherUserOnline;
+  DateTime? get otherUserLastSeenAt => _otherUserLastSeenAt;
   bool get isTyping => _isTyping;
   int get chatsRemaining => _chatsRemaining;
   bool get isPremium => _isPremium;
@@ -81,6 +100,8 @@ class ChatProvider extends ChangeNotifier {
   String? get errorMessage => _errorMessage;
   bool get hasMoreMatches => _hasMoreMatches;
   bool get hasMoreConversations => _hasMoreConversations;
+  bool get hasMorePending => _hasMorePending;
+  bool get hasMoreIncoming => _hasMoreIncoming;
   bool get hasMoreLikers => _hasMoreLikers;
   bool get hasMoreLiked => _hasMoreLiked;
   String? get editingMessageId => _editingMessageId;
@@ -160,17 +181,17 @@ class ChatProvider extends ChangeNotifier {
     _safeNotify();
 
     try {
-      final response = await ChatService.getConversations(
+      final response = await ChatService.getChats(
         limit: _pageSize,
         offset: 0,
+        status: 'accepted',
       );
       final data = response.data;
       if (response.statusCode == 200) {
-        final items =
-            (data['items'] ?? data['conversations'] ?? data ?? []) as List;
-        _conversations = items.map((j) => Match.fromJson(j)).toList();
+        final items = (data['chats'] ?? data ?? []) as List;
+        _conversations = items.map((j) => ChatCard.fromJson(j)).toList();
         _conversationsOffset = _conversations.length;
-        _hasMoreConversations = items.length >= _pageSize;
+        _hasMoreConversations = data['next_offset'] != null;
       } else {
         _errorMessage = data?['detail'] ?? 'Failed to load conversations';
       }
@@ -188,18 +209,92 @@ class ChatProvider extends ChangeNotifier {
     _safeNotify();
 
     try {
-      final response = await ChatService.getConversations(
+      final response = await ChatService.getChats(
         limit: _pageSize,
         offset: _conversationsOffset,
+        status: 'accepted',
       );
       if (response.statusCode == 200) {
         final data = response.data;
-        final items =
-            (data['items'] ?? data['conversations'] ?? data ?? []) as List;
-        final newConversations = items.map((j) => Match.fromJson(j)).toList();
+        final items = (data['chats'] ?? data ?? []) as List;
+        final newConversations = items.map((j) => ChatCard.fromJson(j)).toList();
         _conversations.addAll(newConversations);
         _conversationsOffset += newConversations.length;
-        _hasMoreConversations = items.length >= _pageSize;
+        _hasMoreConversations = data['next_offset'] != null;
+      }
+    } catch (e) {
+      // silent
+    }
+
+    _isLoadingMore = false;
+    _safeNotify();
+  }
+
+  // ── Pending & Incoming ──────────────────────────────────────────
+  /// Loads all pending chats and splits them by direction:
+  /// - Pending = I started the chat (initiator).
+  /// - Incoming = they started it (I'm the recipient).
+  Future<void> loadPendingIncoming() async {
+    _isLoading = true;
+    _errorMessage = null;
+    _pendingOffset = 0;
+    _hasMorePending = true;
+    _hasMoreIncoming = true;
+    _safeNotify();
+
+    try {
+      final myUserId = await _storageService.getUserId();
+      final response = await ChatService.getChats(
+        limit: _pageSize,
+        offset: 0,
+        status: 'pending',
+      );
+      final data = response.data;
+      if (response.statusCode == 200) {
+        final items = (data['chats'] ?? data ?? []) as List;
+        final all = items.map((j) => ChatCard.fromJson(j)).toList();
+        _pendingChats = all.where((c) => c.initiatorId == myUserId).toList();
+        _incomingChats =
+            all.where((c) => c.initiatorId != myUserId).toList();
+        _pendingOffset = _pendingChats.length;
+        _hasMorePending = data['next_offset'] != null;
+        _hasMoreIncoming = data['next_offset'] != null;
+      } else {
+        _errorMessage = data?['detail'] ?? 'Failed to load chats';
+      }
+    } catch (e) {
+      _errorMessage = e.toString();
+    }
+
+    _isLoading = false;
+    _safeNotify();
+  }
+
+  Future<void> loadMorePendingIncoming() async {
+    if (_isLoadingMore || (!_hasMorePending && !_hasMoreIncoming)) return;
+    _isLoadingMore = true;
+    _safeNotify();
+
+    try {
+      final myUserId = await _storageService.getUserId();
+      final response = await ChatService.getChats(
+        limit: _pageSize,
+        offset: _pendingOffset,
+        status: 'pending',
+      );
+      if (response.statusCode == 200) {
+        final data = response.data;
+        final items = (data['chats'] ?? data ?? []) as List;
+        final newChats = items.map((j) => ChatCard.fromJson(j)).toList();
+        final newPending =
+            newChats.where((c) => c.initiatorId == myUserId).toList();
+        final newIncoming =
+            newChats.where((c) => c.initiatorId != myUserId).toList();
+        _pendingChats.addAll(newPending);
+        _incomingChats.addAll(newIncoming);
+        _pendingOffset += newPending.length;
+        _hasMorePending = data['next_offset'] != null;
+        _hasMoreIncoming = data['next_offset'] != null;
       }
     } catch (e) {
       // silent
@@ -646,16 +741,22 @@ class ChatProvider extends ChangeNotifier {
   }
 
   // ── Accept Chat ──────────────────────────────────────────────────
-  Future<void> acceptChat(String matchId) async {
+  /// Accepts a pending chat (moves it from Pending/Incoming to
+  /// Conversations). Callers can refresh lists or rely on real-time events.
+  Future<bool> acceptChat(String chatId) async {
     try {
-      final response = await ChatService.acceptChat(matchId);
+      final response = await ChatService.acceptChat(chatId);
       if (response.statusCode == 200 || response.statusCode == 201) {
-        _isChatAccepted = true;
+        _pendingChats.removeWhere((c) => c.id == chatId);
+        _incomingChats.removeWhere((c) => c.id == chatId);
         _safeNotify();
+        return true;
       }
+      return false;
     } catch (e) {
       _errorMessage = e.toString();
       _safeNotify();
+      return false;
     }
   }
 
@@ -710,6 +811,58 @@ class ChatProvider extends ChangeNotifier {
     _safeNotify();
   }
 
+  /// Connects the global personal-channel socket (/ws/matches) that powers
+  /// real-time chat-list updates (new chat, accepted, chat_updated) and
+  /// notifications. Call once at app start.
+  Future<void> connectGlobalSocket() async {
+    final token = await _storageService.getAccessToken();
+    if (token == null) return;
+
+    await _listWsService?.dispose();
+    _listWsService = ChatListWebSocketService(jwtToken: token);
+
+    _listConnectionStateSubscription = _listWsService!.connectionState.listen((
+      connected,
+    ) {
+      if (!connected) return;
+      // Re-sync page 1 of every bucket on (re)connect so the UI is accurate.
+      _refetchChatLists(debounced: false);
+    });
+
+    _listEventsSubscription = _listWsService!.events.listen((event) {
+      _handleListSocketEvent(event);
+    });
+
+    await _listWsService!.connect();
+  }
+
+  void _handleListSocketEvent(Map<String, dynamic> event) {
+    final type = event['type'] as String?;
+
+    switch (type) {
+      case 'new_chat':
+      case 'chat_updated':
+      case 'chat_accepted':
+        _refetchChatLists(debounced: true);
+        break;
+      default:
+        break;
+    }
+  }
+
+  void _refetchChatLists({required bool debounced}) {
+    if (debounced) {
+      final now = DateTime.now();
+      if (_lastListRefetch != null &&
+          now.difference(_lastListRefetch!) < _listRefetchMinInterval) {
+        return;
+      }
+      _lastListRefetch = now;
+    }
+    loadConversations();
+    loadPendingIncoming();
+  }
+
   void _handleSocketEvent(Map<String, dynamic> event) {
     final type = event['type'] as String?;
     final data = event['data'] as Map<String, dynamic>? ?? {};
@@ -727,6 +880,10 @@ class ChatProvider extends ChangeNotifier {
         break;
       case 'user_offline':
         _isOtherUserOnline = false;
+        final raw = data['last_seen_at'];
+        if (raw is String && raw.isNotEmpty) {
+          _otherUserLastSeenAt = DateTime.tryParse(raw);
+        }
         _safeNotify();
         break;
       case 'typing':
@@ -776,10 +933,9 @@ class ChatProvider extends ChangeNotifier {
 
   void handleNewMatch(Map<String, dynamic> data) {
     try {
-      final match = Match.fromJson(data);
-      _matches.insert(0, match);
-      if (!_conversations.any((c) => c.id == match.id)) {
-        _conversations.insert(0, match);
+      final chat = ChatCard.fromJson(data);
+      if (!_conversations.any((c) => c.id == chat.id)) {
+        _conversations.insert(0, chat);
       }
       _safeNotify();
     } catch (e) {

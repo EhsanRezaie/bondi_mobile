@@ -10,6 +10,8 @@ import 'package:dating_app/widgets/user_card.dart';
 import 'package:dating_app/widgets/discover_action_button.dart';
 import 'package:dating_app/screens/discover/profile_detail_screen.dart';
 import 'package:dating_app/screens/shared/profile_detail_loader.dart';
+import 'package:dating_app/screens/chats/chat_detail_screen.dart';
+import 'package:dating_app/screens/chats/notifications_screen.dart';
 import 'package:dating_app/widgets/action_toast.dart';
 
 class DiscoverScreen extends StatefulWidget {
@@ -91,12 +93,28 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     final result = await provider.swipeAndChat(profile, message: message);
     if (!mounted) return;
 
-    if (result != null && result['matched'] == true) {
-      _showMatchDialog(result, profile, messageSent: result['message_sent'] == true);
-    } else if (result != null) {
+    final chatId = (result?['chat_id'] ?? result?['chatId'] ?? '').toString();
+    if (chatId.isNotEmpty) {
+      _openChat(chatId, profile);
+    } else {
       final t = AppLocalizations.of(context)!;
-      showActionToast(context, t.toast_like_and_message_sent);
+      showActionToast(context, t.error_something_wrong);
     }
+  }
+
+  void _openChat(String chatId, DiscoverProfile profile) {
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(
+        builder: (_) => ChatDetailScreen(
+          identifier: chatId,
+          userName: profile.name,
+          avatarUrl: profile.mainPhotoUrl,
+          isOnline: profile.isOnline,
+          lastSeenAt: profile.lastSeenAt,
+        ),
+      ),
+    );
   }
 
   Future<void> _waitForAnimation(Future<void>? future) async {
@@ -197,44 +215,15 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     if (message == null) return;
     if (!mounted) return;
 
-    _isSwiping = true;
-    if (mounted) setState(() {});
+    final result = await provider.swipeAndChat(profile, message: message);
+    if (!mounted) return;
 
-    // Start animation immediately
-    final animationFuture = _currentCardState?.swipeOut(1);
-
-    try {
-      final result = await provider.swipeAndChat(profile, message: message);
-      if (!mounted) return;
-
-      if (result != null) {
-        // API succeeded - wait for animation to complete
-        await _waitForAnimation(animationFuture);
-        if (!mounted) return;
-        if (result['matched'] == true) {
-          _showMatchDialog(result, profile, messageSent: result['message_sent'] == true);
-        } else {
-          final t = AppLocalizations.of(context)!;
-          showActionToast(context, t.toast_like_and_message_sent);
-        }
-      } else {
-        // API returned null (error) - snap back
-        await _waitForAnimation(_currentCardState?.snapBack());
-        if (!mounted) return;
-        final t = AppLocalizations.of(context)!;
-        showActionToast(context, t.error_something_wrong);
-      }
-    } catch (e) {
-      // API threw - snap back
-      await _waitForAnimation(_currentCardState?.snapBack());
-      if (!mounted) return;
+    final chatId = (result?['chat_id'] ?? result?['chatId'] ?? '').toString();
+    if (chatId.isNotEmpty) {
+      _openChat(chatId, profile);
+    } else {
       final t = AppLocalizations.of(context)!;
       showActionToast(context, t.error_something_wrong);
-    } finally {
-      if (mounted) {
-        _isSwiping = false;
-        setState(() {});
-      }
     }
   }
 
@@ -517,7 +506,14 @@ Future<String?> _showChatBottomSheet() async {
         actions: [
           IconButton(
             icon: Icon(Icons.notifications_outlined, color: onSurfaceColor),
-            onPressed: () {},
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute<void>(
+                  builder: (_) => const NotificationsScreen(),
+                ),
+              );
+            },
           ),
         ],
       ),

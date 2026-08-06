@@ -7,6 +7,7 @@ import 'package:dating_app/models/user.dart';
 import 'package:dating_app/models/photo.dart';
 import 'package:dating_app/models/interest.dart';
 import 'package:dating_app/models/prompt.dart';
+import 'package:dating_app/models/chat_card.dart';
 
 /// Canonical timestamps (fixed so formatter tests stay deterministic).
 const kNowIso = '2026-08-05T12:00:00.000';
@@ -202,6 +203,41 @@ Match match({String kind = 'match', int unreadCount = 0}) =>
           ? jsonMatch(unreadCount: unreadCount)
           : jsonConversation(kind: 'unmatched', unreadCount: unreadCount),
     );
+
+ChatCard chatCard({
+  String id = 'chat-1',
+  String status = 'accepted',
+  String initiatorId = 'user-a',
+  String? name,
+  String? mainPhotoUrl,
+  bool isOnline = false,
+  String? lastMessage,
+  int unreadCount = 0,
+}) =>
+    ChatCard.fromJson({
+      'id': id,
+      'status': status,
+      'initiator_id': initiatorId,
+      'user': {
+        'id': 'user-b',
+        'name': name ?? 'Bob',
+        'age': 28,
+        'main_photo_url': mainPhotoUrl,
+        'is_online': isOnline,
+        'last_seen_at': null,
+      },
+      'last_message': lastMessage == null
+          ? null
+          : {
+              'content': lastMessage,
+              'message_type': 'text',
+              'is_sent': false,
+              'is_read': false,
+              'sent_at': kNowIso,
+            },
+      'unread_count': unreadCount,
+      'updated_at': kNowIso,
+    });
 
 DiscoverProfile discoverProfile({double? distanceKm}) =>
     DiscoverProfile.fromJson(jsonDiscoverProfile(distanceKm: distanceKm));

@@ -1,24 +1,22 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:patrol/patrol.dart';
 
 void main() {
   group('Match and Chat', () {
-    patrolTest('Swipe → match → chat → send message', (patrolTester) async {
-      await patrolTester.app.start();
+    patrolTest('Swipe → match → chat → send message', ($) async {
+      await $.pumpAndSettle();
 
-      await patrolTester.tap(find.byIcon(Icons.favorite_rounded));
-      await patrolTester.pumpWidgetAndSettle();
+      await $(find.byIcon(Icons.favorite_rounded)).tap();
+      await $.pumpAndSettle();
 
-      await patrolTester.tap(find.byIcon(Icons.chat_bubble_rounded));
-      await patrolTester.pumpWidgetAndSettle();
+      await $(find.byIcon(Icons.chat_bubble_rounded)).tap();
+      await $.pumpAndSettle();
 
-      await patrolTester.enterText(
-        find.byType(TextField).first,
-        'Hello!',
-      );
-      await patrolTester.tap(find.byIcon(Icons.send));
+      await $(find.byType(TextField).first).enterText('Hello!');
+      await $(find.byIcon(Icons.send)).tap();
 
-      await patrolTester.pumpWidgetAndSettle();
+      await $.pumpAndSettle();
 
       expect(find.text('Hello!'), findsOneWidget);
     });

@@ -254,7 +254,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         userName: widget.userName,
         avatarUrl: widget.avatarUrl,
         isOnline: context.watch<ChatProvider>().isOtherUserOnline,
-        lastSeenAt: widget.lastSeenAt,
+        lastSeenAt: context
+                .watch<ChatProvider>()
+                .otherUserLastSeenAt
+                ?.toIso8601String() ??
+            widget.lastSeenAt,
       ),
       body: Column(
         children: [
@@ -320,17 +324,6 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 return _buildMessageList(provider, isDark, textColor, mutedColor);
               },
             ),
-          ),
-          Consumer<ChatProvider>(
-            builder: (context, provider, _) {
-              if (provider.isTyping) {
-                return const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                  child: TypingIndicator(),
-                );
-              }
-              return const SizedBox.shrink();
-            },
           ),
           Consumer<ChatProvider>(
             builder: (context, provider, _) {
@@ -403,8 +396,18 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       child: ListView.builder(
         controller: _scrollController,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        itemCount: provider.messages.length,
+        itemCount: provider.messages.length + (provider.isTyping ? 1 : 0),
         itemBuilder: (context, index) {
+          if (index == provider.messages.length) {
+            return Align(
+              alignment: Alignment.centerLeft,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: TypingIndicator(),
+              ),
+            );
+          }
+
           final message = provider.messages[index];
 
           if (message.isDeleted) {

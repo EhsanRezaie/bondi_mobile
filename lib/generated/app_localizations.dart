@@ -1328,6 +1328,42 @@ abstract class AppLocalizations {
   /// **'Chats'**
   String get chat_chats;
 
+  /// No description provided for @chat_requests.
+  ///
+  /// In en, this message translates to:
+  /// **'Requests'**
+  String get chat_requests;
+
+  /// No description provided for @chat_pending.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get chat_pending;
+
+  /// No description provided for @chat_incoming.
+  ///
+  /// In en, this message translates to:
+  /// **'Incoming'**
+  String get chat_incoming;
+
+  /// No description provided for @chat_empty_pending.
+  ///
+  /// In en, this message translates to:
+  /// **'You haven\'t started any chats yet'**
+  String get chat_empty_pending;
+
+  /// No description provided for @chat_empty_incoming.
+  ///
+  /// In en, this message translates to:
+  /// **'You don\'t have any incoming chats yet'**
+  String get chat_empty_incoming;
+
+  /// No description provided for @chat_accept.
+  ///
+  /// In en, this message translates to:
+  /// **'Accept'**
+  String get chat_accept;
+
   /// Notification: someone liked you
   ///
   /// In en, this message translates to:

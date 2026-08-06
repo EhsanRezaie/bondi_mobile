@@ -659,6 +659,24 @@ class AppLocalizationsFa extends AppLocalizations {
   String get chat_chats => 'چت‌ها';
 
   @override
+  String get chat_requests => 'درخواست‌ها';
+
+  @override
+  String get chat_pending => 'در انتظار';
+
+  @override
+  String get chat_incoming => 'ورودی';
+
+  @override
+  String get chat_empty_pending => 'هنوز چتی شروع نکرده‌اید';
+
+  @override
+  String get chat_empty_incoming => 'چت ورودی ندارید';
+
+  @override
+  String get chat_accept => 'پذیرش';
+
+  @override
   String chat_liked_you(String name) {
     return '$name شما را لایک کرد';
   }

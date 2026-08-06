@@ -40,10 +40,12 @@ class MockApi {
     String path, {
     required Object body,
     int statusCode = 200,
+    Object? data,
   }) {
     adapter.onPost(
       path,
       (server) => server.reply(statusCode, body, delay: Duration.zero),
+      data: data,
     );
   }
 
@@ -51,10 +53,12 @@ class MockApi {
     String path, {
     required Object body,
     int statusCode = 200,
+    Object? data,
   }) {
     adapter.onPatch(
       path,
       (server) => server.reply(statusCode, body, delay: Duration.zero),
+      data: data,
     );
   }
 

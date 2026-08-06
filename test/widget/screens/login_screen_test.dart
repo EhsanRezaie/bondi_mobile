@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:dating_app/screens/login_screen.dart';
+import 'package:dating_app/providers/language_provider.dart';
 import 'package:dating_app/providers/settings_provider.dart';
-import '../../../helpers/test_helpers.dart';
+import '../../helpers/test_helpers.dart';
 
 void main() {
   setUpAll(() async {
@@ -17,24 +18,26 @@ void main() {
           const LoginScreen(),
           providers: [
             ChangeNotifierProvider(create: (_) => SettingsProvider()),
+            ChangeNotifierProvider(create: (_) => LanguageProvider()),
           ],
         ),
       );
 
-      expect(find.byType(TextField), findsAtLeast(1));
+      expect(find.byType(TextField), findsNWidgets(2));
     });
 
-    testWidgets('renders Login button', (tester) async {
+    testWidgets('renders Sign In button', (tester) async {
       await tester.pumpWidget(
         buildTestable(
           const LoginScreen(),
           providers: [
             ChangeNotifierProvider(create: (_) => SettingsProvider()),
+            ChangeNotifierProvider(create: (_) => LanguageProvider()),
           ],
         ),
       );
 
-      expect(find.text('Login'), findsOneWidget);
+      expect(find.text('Sign In'), findsOneWidget);
     });
 
     testWidgets('renders Sign Up link', (tester) async {
@@ -43,6 +46,7 @@ void main() {
           const LoginScreen(),
           providers: [
             ChangeNotifierProvider(create: (_) => SettingsProvider()),
+            ChangeNotifierProvider(create: (_) => LanguageProvider()),
           ],
         ),
       );

@@ -1,16 +1,17 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:patrol/patrol.dart';
 
 void main() {
   group('Filter and Discover', () {
-    patrolTest('Apply filters → Discover feed updates', (patrolTester) async {
-      await patrolTester.app.start();
+    patrolTest('Apply filters → Discover feed updates', ($) async {
+      await $.pumpAndSettle();
 
-      await patrolTester.tap(find.byIcon(Icons.wc));
-      await patrolTester.pumpWidgetAndSettle();
+      await $(find.byIcon(Icons.wc)).tap();
+      await $.pumpAndSettle();
 
-      await patrolTester.tap(find.text('Male'));
-      await patrolTester.pumpWidgetAndSettle();
+      await $(find.text('Male')).tap();
+      await $.pumpAndSettle();
 
       expect(find.text('Male'), findsOneWidget);
     });

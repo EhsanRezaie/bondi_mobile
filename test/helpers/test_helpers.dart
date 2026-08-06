@@ -34,17 +34,34 @@ Future<void> initTestEnvironment({
   // without the native plugin.
   const channel = MethodChannel('plugins.it_nomads.com/flutter_secure_storage');
   messenger.setMockMethodCallHandler(channel, (call) async {
-    if (call.method == 'read' || call.method == 'readAll') {
-      final key = call.arguments as String?;
-      if (key != null) return secrets[key];
-      return secrets;
+    // flutter_secure_storage passes method args as a Map for most calls
+    // (e.g. read/write/delete), and no args for readAll/deleteAll.
+    final args = call.arguments;
+    String? key;
+    if (args is String) {
+      key = args;
+    } else if (args is Map) {
+      key = args['key'] as String?;
     }
-    if (call.method == 'delete' || call.method == 'write') return null;
+    if (call.method == 'read') return key != null ? secrets[key] : null;
+    if (call.method == 'readAll') return secrets;
+    if (call.method == 'delete') {
+      if (key != null) (secrets as Map).remove(key);
+      return null;
+    }
+    if (call.method == 'write') {
+      if (key != null && args is Map) {
+        (secrets as Map)[key] = args['value'];
+      }
+      return null;
+    }
     if (call.method == 'deleteAll') {
       (secrets as Map).clear();
       return null;
     }
-    if (call.method == 'containsKey') return secrets.containsKey(call.arguments);
+    if (call.method == 'containsKey') {
+      return key != null && secrets.containsKey(key);
+    }
     return null;
   });
 }
@@ -57,18 +74,22 @@ Widget buildTestable(
   List<SingleChildWidget> providers = const [],
   String locale = 'en',
 }) {
+  final app = MaterialApp(
+    debugShowCheckedModeBanner: false,
+    theme: AppTheme.lightTheme,
+    darkTheme: AppTheme.darkTheme,
+    themeMode: ThemeMode.light,
+    locale: Locale(locale),
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    home: child,
+  );
+
+  if (providers.isEmpty) return app;
+
   return MultiProvider(
     providers: providers,
-    child: MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.light,
-      locale: Locale(locale),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      home: child,
-    ),
+    child: app,
   );
 }
 

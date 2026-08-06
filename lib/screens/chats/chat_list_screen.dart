@@ -1,49 +1,111 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dating_app/config/app_theme.dart';
-import 'package:dating_app/providers/chat_provider.dart';
-import 'package:dating_app/models/match.dart';
-import 'package:dating_app/screens/chats/chat_detail_screen.dart';
-import 'package:dating_app/generated/app_localizations.dart';
+import 'package:dating_app/models/chat_card.dart';
 import 'package:intl/intl.dart';
 
-class ChatListScreen extends StatefulWidget {
-  const ChatListScreen({super.key});
+class ChatListScreen extends StatelessWidget {
+  final List<ChatCard> chats;
+  final bool isLoading;
+  final bool hasMore;
+  final String emptyText;
+  final Future<void> Function() onRefresh;
+  final Future<void> Function() onLoadMore;
+  final void Function(ChatCard chat) onChatTap;
 
-  @override
-  State<ChatListScreen> createState() => _ChatListScreenState();
-}
-
-class _ChatListScreenState extends State<ChatListScreen> {
-  final _scrollController = ScrollController();
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ChatProvider>().loadConversations();
-    });
-    _scrollController.addListener(_onScroll);
-  }
-
-  @override
-  void dispose() {
-    _scrollController.removeListener(_onScroll);
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
-      context.read<ChatProvider>().loadMoreConversations();
-    }
-  }
+  const ChatListScreen({
+    super.key,
+    required this.chats,
+    required this.isLoading,
+    required this.hasMore,
+    required this.emptyText,
+    required this.onRefresh,
+    required this.onLoadMore,
+    required this.onChatTap,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final t = AppLocalizations.of(context)!;
+    final isDark = context.isDarkMode;
+    final mutedColor =
+        isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted;
+    final borderColor =
+        isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
+    final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
+
+    if (isLoading && chats.isEmpty) {
+      return Center(
+        child: CircularProgressIndicator(color: primaryColor),
+      );
+    }
+
+    if (chats.isEmpty) {
+      return RefreshIndicator(
+        onRefresh: onRefresh,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: [
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.6,
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.chat_bubble_outline,
+                        size: 64, color: borderColor),
+                    const SizedBox(height: 16),
+                    Text(
+                      emptyText,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 16,
+                        color: mutedColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (notification) {
+          if (notification.metrics.pixels >=
+              notification.metrics.maxScrollExtent - 200) {
+            onLoadMore();
+          }
+          return false;
+        },
+        child: ListView.builder(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          itemCount: chats.length + (hasMore ? 1 : 0),
+          itemBuilder: (context, index) {
+            if (index == chats.length) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: primaryColor,
+                  ),
+                ),
+              );
+            }
+            return _buildChatItem(context, chats[index]);
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChatItem(BuildContext context, ChatCard chat) {
     final isDark = context.isDarkMode;
     final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
     final mutedColor =
@@ -52,92 +114,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
         isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
 
-    return Consumer<ChatProvider>(
-      builder: (context, provider, _) {
-        if (provider.isLoading && provider.conversations.isEmpty) {
-          return Center(
-            child: CircularProgressIndicator(
-              color: primaryColor,
-            ),
-          );
-        }
-
-        if (provider.conversations.isEmpty) {
-          return RefreshIndicator(
-            onRefresh: () => context.read<ChatProvider>().loadConversations(),
-            child: ListView(
-              physics: const AlwaysScrollableScrollPhysics(),
-              children: [
-                SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.6,
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.chat_bubble_outline,
-                            size: 64, color: borderColor),
-                        const SizedBox(height: 16),
-                        Text(
-                          t.chat_empty_chats,
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 16,
-                            color: mutedColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
-        }
-
-        return RefreshIndicator(
-          onRefresh: () => context.read<ChatProvider>().loadConversations(),
-          child: ListView.builder(
-            controller: _scrollController,
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: provider.conversations.length +
-                (provider.hasMoreConversations ? 1 : 0),
-            itemBuilder: (context, index) {
-              if (index == provider.conversations.length) {
-                return Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: primaryColor,
-                    ),
-                  ),
-                );
-              }
-              return _buildChatItem(
-                provider.conversations[index],
-                isDark,
-                textColor,
-                mutedColor,
-                borderColor,
-                primaryColor,
-              );
-            },
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildChatItem(
-    Match match,
-    bool isDark,
-    Color textColor,
-    Color mutedColor,
-    Color borderColor,
-    Color primaryColor,
-  ) {
-    final lastMsg = match.lastMessage;
+    final lastMsg = chat.lastMessage;
     String subtitle = '';
     if (lastMsg != null) {
       final time = DateFormat('HH:mm').format(lastMsg.sentAt);
@@ -153,16 +130,16 @@ class _ChatListScreenState extends State<ChatListScreen> {
           CircleAvatar(
             radius: 28,
             backgroundColor: borderColor,
-            backgroundImage: match.user.mainPhotoUrl != null &&
-                    match.user.mainPhotoUrl!.isNotEmpty
-                ? CachedNetworkImageProvider(match.user.mainPhotoUrl!)
+            backgroundImage: chat.user.mainPhotoUrl != null &&
+                    chat.user.mainPhotoUrl!.isNotEmpty
+                ? CachedNetworkImageProvider(chat.user.mainPhotoUrl!)
                 : null,
-            child: match.user.mainPhotoUrl == null ||
-                    match.user.mainPhotoUrl!.isEmpty
+            child: chat.user.mainPhotoUrl == null ||
+                    chat.user.mainPhotoUrl!.isEmpty
                 ? Icon(Icons.person, size: 28, color: borderColor)
                 : null,
           ),
-          if (match.user.isOnline == true)
+          if (chat.user.isOnline)
             Positioned(
               right: 0,
               bottom: 0,
@@ -183,7 +160,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
         ],
       ),
       title: Text(
-        match.user.name,
+        chat.user.name,
         style: TextStyle(
           fontFamily: 'Inter',
           fontSize: 16,
@@ -206,7 +183,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (match.unreadCount > 0)
+          if (chat.unreadCount > 0)
             Container(
               margin: const EdgeInsets.only(right: 8),
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -216,7 +193,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
               ),
               constraints: const BoxConstraints(minWidth: 22),
               child: Text(
-                match.unreadCount > 99 ? '99+' : '${match.unreadCount}',
+                chat.unreadCount > 99 ? '99+' : '${chat.unreadCount}',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontFamily: 'Inter',
@@ -232,23 +209,7 @@ class _ChatListScreenState extends State<ChatListScreen> {
           ),
         ],
       ),
-      onTap: () async {
-        await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ChatDetailScreen(
-              identifier: match.id,
-              userName: match.user.name,
-              avatarUrl: match.user.mainPhotoUrl,
-              isOnline: match.user.isOnline ?? false,
-              lastSeenAt: match.user.lastSeenAt,
-            ),
-          ),
-        );
-        if (mounted) {
-          context.read<ChatProvider>().loadConversations();
-        }
-      },
+      onTap: () => onChatTap(chat),
     );
   }
 }

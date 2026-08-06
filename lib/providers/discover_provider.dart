@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:dating_app/models/discover_profile.dart';
 import 'package:dating_app/services/discover_service.dart';
+import 'package:dating_app/services/chat_service.dart';
 
 class DiscoverProvider extends ChangeNotifier {
   bool _disposed = false;
@@ -221,36 +222,24 @@ class DiscoverProvider extends ChangeNotifier {
     } catch (_) {}
   }
 
+  /// Pure chat start — no like is recorded. Creates or reuses the chat for the
+  /// pair (POST /chats) and returns the backend response so the caller can
+  /// redirect to the chat thread.
   Future<Map<String, dynamic>?> swipeAndChat(
     DiscoverProfile profile, {
     String? message,
   }) async {
-    if (isLikeBlocked) return null;
-
     try {
-      final response = await DiscoverService.swipeUser(profile.id, 'like');
-      if (response.statusCode != 200) return null;
+      final response = await ChatService.createChat(
+        profile.id,
+        message ?? '',
+      );
+      if (response.statusCode != 200 && response.statusCode != 201) return null;
 
-      bool messageSent = false;
-      if (message != null && message.isNotEmpty && !isChatBlocked) {
-        try {
-          final msgResponse =
-              await DiscoverService.sendFirstMessage(profile.id, message);
-          messageSent =
-              msgResponse.statusCode == 200 || msgResponse.statusCode == 201;
-        } catch (_) {}
-      }
-
-      _profiles.removeWhere((p) => p.id == profile.id);
       await _refreshLimits(notify: false);
       _safeNotify();
-      _refillIfLow();
 
-      final data = response.data as Map<String, dynamic>;
-      return {
-        ...data,
-        'message_sent': messageSent,
-      };
+      return response.data as Map<String, dynamic>;
     } catch (_) {}
     return null;
   }

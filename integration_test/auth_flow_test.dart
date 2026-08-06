@@ -1,31 +1,23 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:patrol/patrol.dart';
 
 void main() {
   group('Auth Flow', () {
-    patrolTest('Signup → OTP verify → land on Discover', (patrolTester) async {
-      await patrolTester.app.start();
+    patrolTest('Signup → OTP verify → land on Discover', ($) async {
+      await $.pumpAndSettle();
 
-      await patrolTester.tap(find.text('Sign Up'));
-      await patrolTester.enterText(
-        find.byType(TextField).first,
-        'test@example.com',
-      );
-      await patrolTester.tap(find.text('Send Code'));
+      await $(find.text('Sign Up')).tap();
+      await $(find.byType(TextField).first).enterText('test@example.com');
+      await $(find.text('Send Code')).tap();
 
-      await patrolTester.enterText(
-        find.byType(TextField).first,
-        '123456',
-      );
-      await patrolTester.tap(find.text('Verify'));
+      await $(find.byType(TextField).first).enterText('123456');
+      await $(find.text('Verify')).tap();
 
-      await patrolTester.enterText(
-        find.byType(TextField).first,
-        'TestUser',
-      );
-      await patrolTester.tap(find.text('Continue'));
+      await $(find.byType(TextField).first).enterText('TestUser');
+      await $(find.text('Continue')).tap();
 
-      await patrolTester.pumpWidgetAndSettle();
+      await $.pumpAndSettle();
 
       expect(find.text('Discover'), findsOneWidget);
     });

@@ -657,6 +657,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chat_chats => 'Chats';
 
   @override
+  String get chat_requests => 'Requests';
+
+  @override
+  String get chat_pending => 'Pending';
+
+  @override
+  String get chat_incoming => 'Incoming';
+
+  @override
+  String get chat_empty_pending => 'You haven\'t started any chats yet';
+
+  @override
+  String get chat_empty_incoming => 'You don\'t have any incoming chats yet';
+
+  @override
+  String get chat_accept => 'Accept';
+
+  @override
   String chat_liked_you(String name) {
     return '$name liked you';
   }

@@ -3,12 +3,12 @@ import 'package:patrol/patrol.dart';
 
 void main() {
   group('Google OAuth', () {
-    patrolTest('Google OAuth login with mocked provider', (patrolTester) async {
-      await patrolTester.app.start();
+    patrolTest('Google OAuth login with mocked provider', ($) async {
+      await $.pumpAndSettle();
 
-      await patrolTester.tap(find.text('Google Sign-In'));
+      await $(find.text('Google Sign-In')).tap();
 
-      await patrolTester.pumpWidgetAndSettle();
+      await $.pumpAndSettle();
 
       expect(find.text('Discover'), findsOneWidget);
     });

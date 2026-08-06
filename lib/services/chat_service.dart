@@ -27,15 +27,33 @@ class ChatService {
     }
   }
 
-  static Future<Response> getConversations({
+  static Future<Response> getChats({
     int limit = 20,
     int offset = 0,
+    String? status,
   }) async {
     try {
+      final params = <String, dynamic>{'limit': limit, 'offset': offset};
+      if (status != null) params['status'] = status;
       return await ApiService.get(
-        '/conversations',
-        queryParams: {'limit': limit, 'offset': offset},
+        '/chats',
+        queryParams: params,
         cacheOptions: ApiService.noCache,
+      );
+    } on DioException catch (e) {
+      if (e.response != null) return e.response!;
+      rethrow;
+    }
+  }
+
+  static Future<Response> createChat(
+    String userId,
+    String content,
+  ) async {
+    try {
+      return await ApiService.post(
+        '/chats',
+        data: {'user_id': userId, 'content': content},
       );
     } on DioException catch (e) {
       if (e.response != null) return e.response!;
@@ -164,9 +182,9 @@ class ChatService {
     }
   }
 
-  static Future<Response> acceptChat(String matchId) async {
+  static Future<Response> acceptChat(String chatId) async {
     try {
-      return await ApiService.post('/messages/$matchId/accept');
+      return await ApiService.post('/chats/$chatId/accept');
     } on DioException catch (e) {
       if (e.response != null) return e.response!;
       rethrow;
@@ -263,6 +281,43 @@ class ChatService {
           maxStale: const Duration(minutes: 5),
         ),
       );
+    } on DioException catch (e) {
+      if (e.response != null) return e.response!;
+      rethrow;
+    }
+  }
+
+  static Future<Response> getNotifications({
+    int limit = 20,
+    int offset = 0,
+  }) async {
+    try {
+      return await ApiService.get(
+        '/notifications',
+        queryParams: {'limit': limit, 'offset': offset},
+        cacheOptions: ApiService.noCache,
+      );
+    } on DioException catch (e) {
+      if (e.response != null) return e.response!;
+      rethrow;
+    }
+  }
+
+  static Future<Response> markNotificationsRead(List<String> ids) async {
+    try {
+      return await ApiService.post(
+        '/notifications/read',
+        data: {'notification_ids': ids},
+      );
+    } on DioException catch (e) {
+      if (e.response != null) return e.response!;
+      rethrow;
+    }
+  }
+
+  static Future<Response> deleteNotification(String id) async {
+    try {
+      return await ApiService.dio.delete('/notifications/$id');
     } on DioException catch (e) {
       if (e.response != null) return e.response!;
       rethrow;

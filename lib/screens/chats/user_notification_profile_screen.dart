@@ -122,23 +122,15 @@ class _UserNotificationProfileScreenState
     String? message,
   }) async {
     try {
-      final response = await SearchService.swipeUser(profile.id, 'like');
-      if (response.statusCode != 200) return null;
-
-      bool messageSent = false;
-      if (message != null && message.isNotEmpty) {
-        final msgResponse =
-            await SearchService.sendFirstMessage(profile.id, message);
-        messageSent =
-            msgResponse.statusCode == 200 || msgResponse.statusCode == 201;
+      final response = await ChatService.createChat(
+        profile.id,
+        message ?? '',
+      );
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        return null;
       }
-
       _refreshAfterAction();
-      final data = response.data as Map<String, dynamic>;
-      return {
-        ...data,
-        'message_sent': messageSent,
-      };
+      return response.data as Map<String, dynamic>;
     } catch (_) {
       return null;
     }

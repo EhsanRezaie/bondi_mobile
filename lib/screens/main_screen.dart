@@ -91,6 +91,11 @@ class _MainScreenState extends State<MainScreen> {
       if (user != null && user.isProfileComplete) {
         await _checkUserPhotos();
       }
+
+      if (mounted) {
+        Provider.of<ChatProvider>(context, listen: false)
+            .connectGlobalSocket();
+      }
     }
 
     if (mounted) {
@@ -178,6 +183,7 @@ class _MainScreenState extends State<MainScreen> {
             final chatProvider =
                 Provider.of<ChatProvider>(context, listen: false);
             chatProvider.loadConversations();
+            chatProvider.loadPendingIncoming();
             chatProvider.refreshLimits();
           }
         },

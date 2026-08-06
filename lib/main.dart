@@ -12,6 +12,7 @@ import 'providers/onboarding_provider.dart';
 import 'providers/language_provider.dart';
 import 'providers/settings_provider.dart';
 import 'providers/chat_provider.dart';
+import 'providers/notifications_provider.dart';
 import 'screens/splash_screen.dart';
 
 void main() async {
@@ -64,6 +65,7 @@ class MyApp extends StatelessWidget {
         ),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
         ChangeNotifierProvider(create: (_) => ChatProvider()),
+        ChangeNotifierProvider(create: (_) => NotificationsProvider()),
       ],
       child: const AppView(),
     );

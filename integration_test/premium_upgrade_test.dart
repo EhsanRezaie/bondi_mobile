@@ -3,14 +3,14 @@ import 'package:patrol/patrol.dart';
 
 void main() {
   group('Premium Upgrade', () {
-    patrolTest('Free → premium upgrade → unlocked feature visible', (patrolTester) async {
-      await patrolTester.app.start();
+    patrolTest('Free → premium upgrade → unlocked feature visible', ($) async {
+      await $.pumpAndSettle();
 
-      await patrolTester.tap(find.text('Profile'));
-      await patrolTester.pumpWidgetAndSettle();
+      await $(find.text('Profile')).tap();
+      await $.pumpAndSettle();
 
-      await patrolTester.tap(find.text('Upgrade'));
-      await patrolTester.pumpWidgetAndSettle();
+      await $(find.text('Upgrade')).tap();
+      await $.pumpAndSettle();
 
       expect(find.text('Premium'), findsOneWidget);
     });

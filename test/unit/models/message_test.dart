@@ -87,8 +87,8 @@ void main() {
       expect(m.matchId, 'match-1');
       expect(m.content, 'Hey');
       expect(m.isSent, isTrue);
-      expect(m.sentAt.isBefore(after), isTrue);
-      expect(m.sentAt.isAfter(before), isTrue);
+      expect(m.sentAt.isBefore(after) || m.sentAt.isAtSameMomentAs(after), isTrue);
+      expect(m.sentAt.isAfter(before) || m.sentAt.isAtSameMomentAs(before), isTrue);
     });
   });
 
