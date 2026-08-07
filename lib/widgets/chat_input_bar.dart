@@ -79,10 +79,10 @@ class _ChatInputBarState extends State<ChatInputBar> {
 
     if (widget.isEditing) {
       widget.onEditSave?.call(text);
-      _controller.clear();
+      setState(() => _controller.clear());
     } else {
       widget.onSendText(text, replyToId: widget.replyToId);
-      _controller.clear();
+      setState(() => _controller.clear());
     }
   }
 
@@ -360,6 +360,7 @@ class _ChatInputBarState extends State<ChatInputBar> {
               maxLines: 3,
               maxLength: 5000,
               textInputAction: TextInputAction.newline,
+              onChanged: (_) => setState(() {}),
               style: TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 15,

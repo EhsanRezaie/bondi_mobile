@@ -1550,6 +1550,18 @@ abstract class AppLocalizations {
   /// **'Waiting for a reply...'**
   String get chat_waiting_for_reply;
 
+  /// Title above the Accept button in a pending chat for the recipient
+  ///
+  /// In en, this message translates to:
+  /// **'{name} sent you a chat request'**
+  String chat_accept_title(String name);
+
+  /// Shown to the initiator of a pending chat who has used the 2-message limit
+  ///
+  /// In en, this message translates to:
+  /// **'You can\'t send more messages until {name} accepts your chat.'**
+  String chat_waiting_accept(String name);
+
   /// No description provided for @chat_error_loading.
   ///
   /// In en, this message translates to:

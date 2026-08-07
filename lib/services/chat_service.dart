@@ -46,6 +46,18 @@ class ChatService {
     }
   }
 
+  static Future<Response> getChatDetail(String chatId) async {
+    try {
+      return await ApiService.get(
+        '/chats/$chatId',
+        cacheOptions: ApiService.noCache,
+      );
+    } on DioException catch (e) {
+      if (e.response != null) return e.response!;
+      rethrow;
+    }
+  }
+
   static Future<Response> createChat(
     String userId,
     String content,

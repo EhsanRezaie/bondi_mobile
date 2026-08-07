@@ -94,7 +94,7 @@ class _MainScreenState extends State<MainScreen> {
 
       if (mounted) {
         Provider.of<ChatProvider>(context, listen: false)
-            .connectGlobalSocket();
+            .connectSessionSocket();
       }
     }
 

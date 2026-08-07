@@ -786,6 +786,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chat_waiting_for_reply => 'Waiting for a reply...';
 
   @override
+  String chat_accept_title(String name) {
+    return '$name sent you a chat request';
+  }
+
+  @override
+  String chat_waiting_accept(String name) {
+    return 'You can\'t send more messages until $name accepts your chat.';
+  }
+
+  @override
   String get chat_error_loading => 'Failed to load. Please try again.';
 
   @override

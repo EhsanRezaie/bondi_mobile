@@ -1,13 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:uuid/uuid.dart';
 import 'package:dating_app/models/chat_card.dart';
 import 'package:dating_app/models/match.dart';
 import 'package:dating_app/models/message.dart';
 import 'package:dating_app/models/swipe_user.dart';
 import 'package:dating_app/services/chat_service.dart';
-import 'package:dating_app/services/chat_websocket_service.dart';
-import 'package:dating_app/services/chat_list_websocket_service.dart';
+import 'package:dating_app/services/session_socket_service.dart';
 import 'package:dating_app/services/storage_service.dart';
 
 class ChatProvider extends ChangeNotifier {
@@ -15,9 +15,7 @@ class ChatProvider extends ChangeNotifier {
 
   StreamSubscription<bool>? _connectionStateSubscription;
   StreamSubscription<Map<String, dynamic>>? _eventsSubscription;
-  ChatListWebSocketService? _listWsService;
-  StreamSubscription<Map<String, dynamic>>? _listEventsSubscription;
-  StreamSubscription<bool>? _listConnectionStateSubscription;
+  SessionSocketService? _socketService;
   DateTime? _lastListRefetch;
   static const _listRefetchMinInterval = Duration(seconds: 2);
 
@@ -26,16 +24,25 @@ class ChatProvider extends ChangeNotifier {
     _disposed = true;
     _connectionStateSubscription?.cancel();
     _eventsSubscription?.cancel();
-    _wsService?.dispose();
-    _listEventsSubscription?.cancel();
-    _listConnectionStateSubscription?.cancel();
-    _listWsService?.dispose();
+    _socketService?.dispose();
     _typingTimer?.cancel();
     super.dispose();
   }
 
   void _safeNotify() {
-    if (!_disposed) notifyListeners();
+    if (_disposed) return;
+    // If the framework is locked in the middle of a build/layout/paint phase,
+    // calling notifyListeners() throws "setState() or markNeedsBuild() called
+    // when widget tree was locked". Defer to the next frame instead.
+    final phase = WidgetsBinding.instance.schedulerPhase;
+    if (phase == SchedulerPhase.persistentCallbacks ||
+        phase == SchedulerPhase.transientCallbacks) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!_disposed) notifyListeners();
+      });
+    } else {
+      notifyListeners();
+    }
   }
 
   static const _uuid = Uuid();
@@ -50,7 +57,6 @@ class ChatProvider extends ChangeNotifier {
   List<SwipeUser> _likers = [];
   List<Message> _messages = [];
   String? _activeMatchId;
-  ChatWebSocketService? _wsService;
   bool _isConnected = false;
   bool _isOtherUserOnline = false;
   DateTime? _otherUserLastSeenAt;
@@ -63,6 +69,10 @@ class ChatProvider extends ChangeNotifier {
   String? _errorMessage;
   int _sentCountInNewChat = 0;
   bool _isChatAccepted = false;
+  String? _chatStatus;
+  bool _amInitiator = false;
+  bool _isAccepting = false;
+  String? _userId;
   String? _editingMessageId;
   Timer? _typingTimer;
 
@@ -106,13 +116,26 @@ class ChatProvider extends ChangeNotifier {
   bool get hasMoreLiked => _hasMoreLiked;
   String? get editingMessageId => _editingMessageId;
   bool get isChatAccepted => _isChatAccepted;
+  bool get isAccepting => _isAccepting;
+  bool get isInitiator => _amInitiator;
+  bool get isPending => _chatStatus == 'pending';
+  bool get isRecipientWaiting => isPending && !_amInitiator;
+  bool get isInitiatorWaiting => isPending && _amInitiator && isChatBlocked;
+  bool get isChatBlocked => !_isChatAccepted && isPending && _amInitiator && _sentCountInNewChat >= 2;
 
   bool get canSendMessage {
     if (_isPremium) return true;
     if (_isChatAccepted) return true;
-    if (_sentCountInNewChat >= 2) return false;
-    return true;
+    if (_chatStatus == null) {
+      // Status not (yet) confirmed — never hard-block. Allow while under the
+      // cap, or if the other side has already replied (effectively accepted).
+      return _sentCountInNewChat < 2 || _hasReceivedMessage;
+    }
+    if (isPending && _amInitiator) return _sentCountInNewChat < 2;
+    return false;
   }
+
+  bool get _hasReceivedMessage => _messages.any((m) => m.senderId != _userId);
 
   int get sentCountInNewChat => _sentCountInNewChat;
 
@@ -417,14 +440,25 @@ class ChatProvider extends ChangeNotifier {
   }
 
   // ── Messages ─────────────────────────────────────────────────────
-  Future<void> loadMessages(String identifier) async {
+  Future<void> loadMessages(
+    String identifier, {
+    String? initialStatus,
+    String? initialInitiatorId,
+  }) async {
     _isLoading = true;
     _errorMessage = null;
     _messages = [];
     _activeMatchId = identifier;
     _sentCountInNewChat = 0;
-    _isChatAccepted = false;
+    _userId = await _storageService.getUserId();
+    _isChatAccepted = initialStatus == 'accepted';
+    _chatStatus = initialStatus;
+    _amInitiator = _userId != null && initialInitiatorId == _userId;
     _safeNotify();
+
+    // Fetch the authoritative chat status (accepted / pending) + direction.
+    // On success it overwrites the seeded values; on failure the seed stays.
+    await _loadChatDetail(identifier);
 
     try {
       final response = await ChatService.getChatHistory(identifier);
@@ -434,26 +468,18 @@ class ChatProvider extends ChangeNotifier {
             (data['items'] ?? data['messages'] ?? data ?? []) as List;
         _messages = items.map((j) => Message.fromJson(j)).toList();
 
-        // Check if chat is accepted (has messages from both sides or isAccepted)
-        if (_messages.isNotEmpty) {
-          final userId = await _storageService.getUserId();
-          final hasReceivedMessages =
-              _messages.any((m) => m.senderId != userId);
-          final hasAcceptedFlag = _messages.any((m) => m.isAccepted);
-          _isChatAccepted = hasReceivedMessages || hasAcceptedFlag;
-
-          // Count sent messages in new chat if not accepted
-          if (!_isChatAccepted && userId != null) {
-            _sentCountInNewChat =
-                _messages.where((m) => m.senderId == userId).length;
-          }
+        // Count my sent messages when the chat is still pending and I am the
+        // initiator (limit ≤ 2 until it is accepted). For accepted chats the
+        // count is irrelevant — sending is unlimited.
+        if (isPending && _amInitiator) {
+          _sentCountInNewChat =
+              _messages.where((m) => m.senderId == _userId).length;
         }
 
         // Mark unread messages as delivered
-        final userId = await _storageService.getUserId();
-        if (userId != null) {
+        if (_userId != null) {
           final unreadIds = _messages
-              .where((m) => m.receiverId == userId && !m.isDelivered)
+              .where((m) => m.receiverId == _userId && !m.isDelivered)
               .map((m) => m.id)
               .toList();
           if (unreadIds.isNotEmpty) {
@@ -468,6 +494,31 @@ class ChatProvider extends ChangeNotifier {
     }
 
     _isLoading = false;
+    _safeNotify();
+  }
+
+  /// Loads the authoritative chat status + direction from `GET /chats/{id}`.
+  /// Used to decide whether the user can send, must accept, or is waiting.
+  Future<void> _loadChatDetail(String chatId) async {
+    try {
+      final response = await ChatService.getChatDetail(chatId);
+      if (response.statusCode == 200) {
+        final data = response.data;
+        final status = data['status'] as String?;
+        if (status != null) {
+          _chatStatus = status;
+          _isChatAccepted = status == 'accepted';
+        }
+        final initiatorId = data['initiator_id'] as String?;
+        if (initiatorId != null) {
+          _amInitiator = _userId != null && initiatorId == _userId;
+        }
+      }
+      // On failure (or non-200) keep whatever status was seeded so a
+      // transient chat-detail error never disables sending.
+    } catch (e) {
+      // keep seeded status
+    }
     _safeNotify();
   }
 
@@ -744,11 +795,17 @@ class ChatProvider extends ChangeNotifier {
   /// Accepts a pending chat (moves it from Pending/Incoming to
   /// Conversations). Callers can refresh lists or rely on real-time events.
   Future<bool> acceptChat(String chatId) async {
+    if (_isAccepting) return false;
+    _isAccepting = true;
+    _safeNotify();
     try {
       final response = await ChatService.acceptChat(chatId);
       if (response.statusCode == 200 || response.statusCode == 201) {
+        _chatStatus = 'accepted';
+        _isChatAccepted = true;
         _pendingChats.removeWhere((c) => c.id == chatId);
         _incomingChats.removeWhere((c) => c.id == chatId);
+        loadConversations();
         _safeNotify();
         return true;
       }
@@ -757,6 +814,9 @@ class ChatProvider extends ChangeNotifier {
       _errorMessage = e.toString();
       _safeNotify();
       return false;
+    } finally {
+      _isAccepting = false;
+      _safeNotify();
     }
   }
 
@@ -777,76 +837,183 @@ class ChatProvider extends ChangeNotifier {
   }
 
   // ── WebSocket ────────────────────────────────────────────────────
-  Future<void> connectWebSocket(String matchId) async {
-    await disconnectWebSocket();
-
+  /// Opens the single persistent session socket (/ws/stream). Called once at
+  /// app start; stays open until logout/app exit. All realtime events arrive
+  /// here. Opening/changing/leaving a chat just sends subscribe/unsubscribe
+  /// frames on this same connection.
+  Future<void> connectSessionSocket() async {
     final token = await _storageService.getAccessToken();
     if (token == null) return;
 
-    _wsService = ChatWebSocketService(
-      matchId: matchId,
-      jwtToken: token,
-    );
+    await _socketService?.dispose();
+    _socketService = SessionSocketService(jwtToken: token);
 
-    _connectionStateSubscription = _wsService!.connectionState.listen((connected) {
+    _connectionStateSubscription = _socketService!.connectionState.listen((
+      connected,
+    ) {
       _isConnected = connected;
       _safeNotify();
+      if (!connected) return;
+      // Re-sync lists + re-subscribe the open chat on (re)connect.
+      _refetchChatLists(debounced: false);
+      final active = _activeMatchId;
+      if (active != null) {
+        _socketService!.subscribe(active);
+      }
     });
 
-    _eventsSubscription = _wsService!.events.listen((event) {
+    _eventsSubscription = _socketService!.events.listen((event) {
       _handleSocketEvent(event);
     });
 
-    await _wsService!.connect();
+    await _socketService!.connect();
   }
 
-  Future<void> disconnectWebSocket() async {
-    await _wsService?.dispose();
-    _connectionStateSubscription?.cancel();
-    _eventsSubscription?.cancel();
-    _wsService = null;
-    _isConnected = false;
-    _isOtherUserOnline = false;
-    _isTyping = false;
+  /// Opens a chat: subscribes the session socket to its topic and records it
+  /// as the active chat so realtime events are dispatched to it.
+  Future<void> subscribeChat(String chatId) async {
+    _activeMatchId = chatId;
+    _socketService?.subscribe(chatId);
     _safeNotify();
   }
 
-  /// Connects the global personal-channel socket (/ws/matches) that powers
-  /// real-time chat-list updates (new chat, accepted, chat_updated) and
-  /// notifications. Call once at app start.
-  Future<void> connectGlobalSocket() async {
-    final token = await _storageService.getAccessToken();
-    if (token == null) return;
-
-    await _listWsService?.dispose();
-    _listWsService = ChatListWebSocketService(jwtToken: token);
-
-    _listConnectionStateSubscription = _listWsService!.connectionState.listen((
-      connected,
-    ) {
-      if (!connected) return;
-      // Re-sync page 1 of every bucket on (re)connect so the UI is accurate.
-      _refetchChatLists(debounced: false);
-    });
-
-    _listEventsSubscription = _listWsService!.events.listen((event) {
-      _handleListSocketEvent(event);
-    });
-
-    await _listWsService!.connect();
-  }
-
-  void _handleListSocketEvent(Map<String, dynamic> event) {
+  void _handleSocketEvent(Map<String, dynamic> event) {
     final type = event['type'] as String?;
+    final data = event['data'] as Map<String, dynamic>? ?? {};
 
     switch (type) {
-      case 'new_chat':
+      case 'new_message':
+        if (_isEventForActiveChat(event, data)) {
+          _handleNewMessage(data);
+        }
+        break;
+
+      case 'typing':
+        if (_isEventForActiveChat(event, data)) {
+          _isTyping = true;
+          _safeNotify();
+          _resetTypingTimer();
+        }
+        break;
+
+      case 'typing_stopped':
+        if (_isEventForActiveChat(event, data)) {
+          _isTyping = false;
+          _safeNotify();
+        }
+        break;
+
+      case 'user_online':
+        if (_isEventForActiveChat(event, data)) {
+          _isOtherUserOnline = true;
+          _safeNotify();
+        }
+        break;
+
+      case 'user_offline':
+        if (_isEventForActiveChat(event, data)) {
+          _isOtherUserOnline = false;
+          final raw = (event['last_seen_at'] ?? data['last_seen_at']) as String?;
+          if (raw != null && raw.isNotEmpty) {
+            _otherUserLastSeenAt = DateTime.tryParse(raw);
+          }
+          _safeNotify();
+        }
+        break;
+
+      case 'messages_read':
+        if (_isEventForActiveChat(event, data)) {
+          _handleMessagesRead({
+            'message_ids': List<String>.from(
+              event['message_ids'] ?? data['message_ids'] ?? [],
+            ),
+          });
+        }
+        break;
+
       case 'chat_updated':
+        _applyChatUpdated(data);
+        break;
+
+      case 'new_chat':
       case 'chat_accepted':
+        // If the accepted chat is currently open, reflect the new status now.
+        if (type == 'chat_accepted' && _isEventForActiveChat(event, data)) {
+          _chatStatus = 'accepted';
+          _isChatAccepted = true;
+        }
         _refetchChatLists(debounced: true);
         break;
+
+      case 'new_match':
+        handleNewMatch(data);
+        break;
+
       default:
         break;
+    }
+  }
+
+  bool _isEventForActiveChat(Map<String, dynamic> event, Map<String, dynamic> data) {
+    final active = _activeMatchId;
+    if (active == null) return false;
+    final chatId = (event['chat_id'] ?? data['chat_id']) as String?;
+    // Chat-channel events always reference their chat; if present it must
+    // match the open chat. (No chat id → defensive true.)
+    return chatId == null || chatId == active;
+  }
+
+  /// Applies a chat_updated event to the list in place (preview, unread,
+  /// reorder) so the chat list updates without an HTTP refresh.
+  void _applyChatUpdated(Map<String, dynamic> data) {
+    final chatId = data['chat_id'] as String?;
+    if (chatId == null) return;
+
+    final status = data['status'] as String?;
+    final unread = (data['unread_count'] as num?)?.toInt() ?? 0;
+    final updatedAt = DateTime.tryParse(data['updated_at'] as String? ?? '');
+
+    ChatLastMessage? lastMessage;
+    final lm = data['last_message'] as Map<String, dynamic>?;
+    if (lm != null) {
+      lastMessage = ChatLastMessage(
+        content: lm['content'] as String?,
+        messageType: lm['message_type'] as String? ?? 'text',
+        isSent: true,
+        isRead: false,
+        sentAt: DateTime.tryParse(lm['sent_at'] as String? ?? '') ?? DateTime.now(),
+      );
+    }
+
+    bool found = false;
+    void patch(List<ChatCard> list) {
+      final index = list.indexWhere((c) => c.id == chatId);
+      if (index == -1) return;
+      found = true;
+      list[index] = list[index].copyWith(
+        status: status,
+        lastMessage: lastMessage,
+        unreadCount: unread,
+        updatedAt: updatedAt,
+      );
+    }
+
+    patch(_conversations);
+    patch(_pendingChats);
+    patch(_incomingChats);
+
+    int cardTs(ChatCard c) =>
+        (c.updatedAt ?? DateTime.fromMillisecondsSinceEpoch(0))
+            .millisecondsSinceEpoch;
+    _conversations.sort((a, b) => cardTs(b).compareTo(cardTs(a)));
+    _pendingChats.sort((a, b) => cardTs(b).compareTo(cardTs(a)));
+    _incomingChats.sort((a, b) => cardTs(b).compareTo(cardTs(a)));
+
+    _safeNotify();
+
+    if (!found) {
+      // Conversation not loaded yet — fetch to render it accurately.
+      _refetchChatLists(debounced: false);
     }
   }
 
@@ -861,44 +1028,6 @@ class ChatProvider extends ChangeNotifier {
     }
     loadConversations();
     loadPendingIncoming();
-  }
-
-  void _handleSocketEvent(Map<String, dynamic> event) {
-    final type = event['type'] as String?;
-    final data = event['data'] as Map<String, dynamic>? ?? {};
-
-    switch (type) {
-      case 'new_message':
-        _handleNewMessage(data);
-        break;
-      case 'new_match':
-        handleNewMatch(data);
-        break;
-      case 'user_online':
-        _isOtherUserOnline = true;
-        _safeNotify();
-        break;
-      case 'user_offline':
-        _isOtherUserOnline = false;
-        final raw = data['last_seen_at'];
-        if (raw is String && raw.isNotEmpty) {
-          _otherUserLastSeenAt = DateTime.tryParse(raw);
-        }
-        _safeNotify();
-        break;
-      case 'typing':
-        _isTyping = true;
-        _safeNotify();
-        _resetTypingTimer();
-        break;
-      case 'typing_stopped':
-        _isTyping = false;
-        _safeNotify();
-        break;
-      case 'messages_read':
-        _handleMessagesRead(data);
-        break;
-    }
   }
 
   void _handleNewMessage(Map<String, dynamic> data) {
@@ -953,15 +1082,21 @@ class ChatProvider extends ChangeNotifier {
 
   // ── Typing ───────────────────────────────────────────────────────
   void setTyping() {
-    _wsService?.sendTyping();
+    final id = _activeMatchId;
+    if (id != null) _socketService?.sendTyping(id);
   }
 
   void stopTyping() {
-    _wsService?.sendTypingStopped();
+    final id = _activeMatchId;
+    if (id != null) _socketService?.sendTypingStopped(id);
   }
 
   // ── Clear ────────────────────────────────────────────────────────
   void clearActiveChat() {
+    final active = _activeMatchId;
+    if (active != null) {
+      _socketService?.unsubscribe(active);
+    }
     _activeMatchId = null;
     _messages = [];
     _editingMessageId = null;
@@ -969,7 +1104,9 @@ class ChatProvider extends ChangeNotifier {
     _isOtherUserOnline = false;
     _sentCountInNewChat = 0;
     _isChatAccepted = false;
-    disconnectWebSocket();
+    _chatStatus = null;
+    _amInitiator = false;
+    _isAccepting = false;
     _safeNotify();
   }
 }

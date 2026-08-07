@@ -293,6 +293,24 @@
   "chat_initiation_limit": "محدودیت پیام",
   "chat_initiation_limit_explanation": "حداکثر ۲ پیام ارسال کنید. منتظر پاسخ باشید تا ادامه دهید.",
   "chat_waiting_for_reply": "در انتظار پاسخ...",
+  "chat_accept_title": "{name} به شما درخواست چت فرستاده است",
+  "@chat_accept_title": {
+    "description": "عنوان بالای دکمه پذیرش در چت در انتظار برای دریافت‌کننده",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "chat_waiting_accept": "تا زمانی که {name} چت شما را نپذیرد، نمی‌توانید پیام بیشتری ارسال کنید.",
+  "@chat_waiting_accept": {
+    "description": "به شروع‌کنندهٔ چت در انتظار که سقف ۲ پیام را استفاده کرده نشان داده می‌شود",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "chat_error_loading": "بارگذاری ناموفق. دوباره تلاش کنید.",
   "chat_error_sending": "ارسال پیام ناموفق بود",
   "chat_error_retry": "تلاش مجدد",

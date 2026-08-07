@@ -1,38 +1,36 @@
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:dating_app/services/chat_websocket_service.dart';
+import 'package:dating_app/services/session_socket_service.dart';
 import '../../helpers/fake_websocket_channel.dart';
 import '../../helpers/test_helpers.dart';
 
 void main() {
-  late ChatWebSocketService service;
+  late SessionSocketService service;
   late FakeWebSocketChannel fake;
 
   setUpAll(() async {
     await initTestEnvironment();
   });
 
-  ChatWebSocketService buildService({String matchId = 'm1'}) {
+  SessionSocketService buildService({String token = 'test-token'}) {
     fake = FakeWebSocketChannel();
-    service = ChatWebSocketService(
-      matchId: matchId,
-      jwtToken: 'test-token',
+    service = SessionSocketService(
+      jwtToken: token,
       channelFactory: (_) => fake,
     );
     return service;
   }
 
-  tearDown(() {
-    service.dispose();
+  tearDown(() async {
+    await service.dispose();
     fake.dispose();
   });
 
   group('connect()', () {
-    test('opens the channel with the expected URL', () async {
+    test('opens /ws/stream with the token query param', () async {
       Uri? opened;
       fake = FakeWebSocketChannel();
-      service = ChatWebSocketService(
-        matchId: 'm1',
+      service = SessionSocketService(
         jwtToken: 'tok-123',
         channelFactory: (uri) {
           opened = uri;
@@ -45,7 +43,7 @@ void main() {
       await service.connect();
 
       expect(opened, isNotNull);
-      expect(opened!.path, contains('/ws/chat/m1'));
+      expect(opened!.path, contains('/ws/stream'));
       expect(opened!.queryParameters['token'], 'tok-123');
       expect(states, [true]);
     });
@@ -60,21 +58,43 @@ void main() {
     });
   });
 
-  group('send helpers', () {
+  group('heartbeat', () {
+    test('emits a ping every 30s', () {
+      fakeAsync((async) {
+        buildService();
+        service.connect();
+        async.flushMicrotasks();
+        expect(fake.sent, isEmpty);
+
+        async.elapse(const Duration(seconds: 30));
+        async.flushMicrotasks();
+        expect(fake.sent, ['{"type":"ping"}']);
+
+        async.elapse(const Duration(seconds: 30));
+        async.flushMicrotasks();
+        expect(fake.sent.length, 2);
+        expect(fake.sent[1], '{"type":"ping"}');
+      });
+    });
+  });
+
+  group('topic + chat frames', () {
     test('emit the correct JSON envelopes', () async {
       buildService();
       await service.connect();
 
-      service.sendPing();
-      service.sendTyping();
-      service.sendTypingStopped();
-      service.sendReadReceipt(['a', 'b']);
+      service.subscribe('c1');
+      service.unsubscribe('c1');
+      service.sendTyping('c1');
+      service.sendTypingStopped('c1');
+      service.sendReadReceipt('c1', ['a', 'b']);
 
       expect(fake.sent, [
-        '{"type":"ping"}',
-        '{"type":"typing"}',
-        '{"type":"typing_stopped"}',
-        '{"type":"read","message_ids":["a","b"]}',
+        '{"type":"subscribe","chat_id":"c1"}',
+        '{"type":"unsubscribe","chat_id":"c1"}',
+        '{"type":"typing","chat_id":"c1"}',
+        '{"type":"typing_stopped","chat_id":"c1"}',
+        '{"type":"read","chat_id":"c1","message_ids":["a","b"]}',
       ]);
     });
 
@@ -83,7 +103,7 @@ void main() {
       await service.connect();
       await service.dispose();
 
-      service.sendPing();
+      service.sendTyping('c1');
       expect(fake.sent, isEmpty);
     });
   });
@@ -95,11 +115,11 @@ void main() {
       service.events.listen(events.add);
       await service.connect();
 
-      fake.emitIncoming('{"type":"new_message","data":{"id":"m1"}}');
+      fake.emitIncoming('{"type":"new_message","data":{"chat_id":"c1"}}');
       await Future<void>.delayed(Duration.zero);
 
       expect(events, [
-        {'type': 'new_message', 'data': {'id': 'm1'}},
+        {'type': 'new_message', 'data': {'chat_id': 'c1'}},
       ]);
     });
 
@@ -109,7 +129,7 @@ void main() {
       service.events.listen(events.add);
       await service.connect();
 
-      fake.emitIncoming('this is not json');
+      fake.emitIncoming('not json');
       fake.emitIncoming('{"broken":');
 
       expect(events, isEmpty);
@@ -117,11 +137,10 @@ void main() {
   });
 
   group('reconnect', () {
-    test('reconnects 1s after the server closes a healthy connection', () {
+    test('reconnects 1s after the server closes the connection', () {
       fakeAsync((async) {
         final fakes = <FakeWebSocketChannel>[];
-        final svc = ChatWebSocketService(
-          matchId: 'm1',
+        final svc = SessionSocketService(
           jwtToken: 't',
           channelFactory: (_) {
             final f = FakeWebSocketChannel();
@@ -152,11 +171,10 @@ void main() {
       });
     });
 
-    test('backoff grows [1,2,4,8,16,30] when open keeps failing, capped at 6', () {
+    test('backoff grows [1,2,4,8,16,30] capped at 6 retries', () {
       fakeAsync((async) {
         var connectCalls = 0;
-        final svc = ChatWebSocketService(
-          matchId: 'm1',
+        final svc = SessionSocketService(
           jwtToken: 't',
           channelFactory: (_) {
             connectCalls++;
@@ -177,7 +195,6 @@ void main() {
           expectedCalls++;
           expect(connectCalls, expectedCalls);
         }
-        // 1 initial + 6 reconnects = 7; further failures are not retried.
         expect(connectCalls, 7);
 
         async.elapse(const Duration(minutes: 10));
@@ -189,56 +206,40 @@ void main() {
   });
 
   group('dispose()', () {
-    test('closes the channel sink and stops heartbeat timers', () async {
+    test('closes the channel sink and stops timers', () async {
       buildService();
       await service.connect();
       await service.dispose();
       expect(fake.closeCount, 1);
-      // Sending after dispose must be a no-op.
-      service.sendTyping();
+      service.sendTyping('c1');
       expect(fake.sent, isEmpty);
     });
   });
 
   group('edge cases', () {
     test('does not crash when channel factory throws', () {
-      final service = ChatWebSocketService(
-        matchId: 'm1',
+      final svc = SessionSocketService(
         jwtToken: 'test-token',
         channelFactory: (Uri url) {
           throw Exception('Connection refused');
         },
       );
 
-      service.connect();
-      service.dispose();
+      svc.connect();
+      svc.dispose();
     });
 
-    test('ignores malformed frames without crashing', () {
-      final service = ChatWebSocketService(
-        matchId: 'm1',
+    test('does not crash on connect/dispose churn', () {
+      final svc = SessionSocketService(
         jwtToken: 'test-token',
         channelFactory: (Uri url) {
           return FakeWebSocketChannel();
         },
       );
 
-      service.connect();
-      service.dispose();
-    });
-
-    test('does not send after dispose', () {
-      final service = ChatWebSocketService(
-        matchId: 'm1',
-        jwtToken: 'test-token',
-        channelFactory: (Uri url) {
-          return FakeWebSocketChannel();
-        },
-      );
-
-      service.connect();
-      service.dispose();
-      service.sendTyping();
+      svc.connect();
+      svc.dispose();
+      svc.sendTyping('c1');
     });
   });
 }

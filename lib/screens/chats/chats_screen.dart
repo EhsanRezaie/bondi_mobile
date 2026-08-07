@@ -65,6 +65,8 @@ class _ChatsScreenState extends State<ChatsScreen>
           avatarUrl: chat.user.mainPhotoUrl,
           isOnline: chat.user.isOnline,
           lastSeenAt: chat.user.lastSeenAt,
+          initialStatus: chat.status,
+          initialInitiatorId: chat.initiatorId,
         ),
       ),
     );

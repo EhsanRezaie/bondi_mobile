@@ -788,6 +788,16 @@ class AppLocalizationsFa extends AppLocalizations {
   String get chat_waiting_for_reply => 'در انتظار پاسخ...';
 
   @override
+  String chat_accept_title(String name) {
+    return '$name به شما درخواست چت فرستاده است';
+  }
+
+  @override
+  String chat_waiting_accept(String name) {
+    return 'تا زمانی که $name چت شما را نپذیرد، نمی‌توانید پیام بیشتری ارسال کنید.';
+  }
+
+  @override
   String get chat_error_loading => 'بارگذاری ناموفق. دوباره تلاش کنید.';
 
   @override

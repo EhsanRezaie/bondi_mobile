@@ -17,6 +17,8 @@ class ChatDetailScreen extends StatefulWidget {
   final String? avatarUrl;
   final bool isOnline;
   final String? lastSeenAt;
+  final String? initialStatus;
+  final String? initialInitiatorId;
 
   const ChatDetailScreen({
     super.key,
@@ -25,6 +27,8 @@ class ChatDetailScreen extends StatefulWidget {
     this.avatarUrl,
     this.isOnline = false,
     this.lastSeenAt,
+    this.initialStatus,
+    this.initialInitiatorId,
   });
 
   @override
@@ -37,6 +41,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   String? _replyToId;
   String? _replyToContent;
   String? _currentUserId;
+  ChatProvider? _chatProvider;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _chatProvider = Provider.of<ChatProvider>(context, listen: false);
+  }
 
   @override
   void initState() {
@@ -44,9 +55,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       _currentUserId = await _storageService.getUserId();
       if (!mounted) return;
-      final provider = context.read<ChatProvider>();
-      provider.loadMessages(widget.identifier);
-      provider.connectWebSocket(widget.identifier);
+      _chatProvider?.loadMessages(
+        widget.identifier,
+        initialStatus: widget.initialStatus,
+        initialInitiatorId: widget.initialInitiatorId,
+      );
+      _chatProvider?.subscribeChat(widget.identifier);
     });
     _scrollController.addListener(_onScroll);
   }
@@ -55,7 +69,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   void dispose() {
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
-    context.read<ChatProvider>().clearActiveChat();
+    _chatProvider?.clearActiveChat();
     super.dispose();
   }
 
@@ -241,7 +255,6 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final t = AppLocalizations.of(context)!;
     final isDark = context.isDarkMode;
     final bgColor = isDark ? AppTheme.darkBackground : AppTheme.lightBackground;
     final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
@@ -275,58 +288,18 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   );
                 }
 
-                // Chat initiation limit banner
-                if (!provider.canSendMessage) {
-                  return Column(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(12),
-                        margin: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: (isDark
-                                  ? AppTheme.darkPrimary
-                                  : AppTheme.lightPrimary)
-                              .withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.info_outline,
-                              color: isDark
-                                  ? AppTheme.darkPrimary
-                                  : AppTheme.lightPrimary,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                t.chat_initiation_limit_explanation,
-                                style: TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 13,
-                                  color: isDark
-                                      ? AppTheme.darkPrimary
-                                      : AppTheme.lightPrimary,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Expanded(
-                        child: _buildMessageList(provider, isDark, textColor, mutedColor),
-                      ),
-                    ],
-                  );
-                }
-
                 return _buildMessageList(provider, isDark, textColor, mutedColor);
               },
             ),
           ),
           Consumer<ChatProvider>(
             builder: (context, provider, _) {
+              if (provider.isRecipientWaiting) {
+                return _buildAcceptCard(context, provider, isDark);
+              }
+              if (provider.isInitiatorWaiting) {
+                return _buildWaitingBanner(context, isDark, mutedColor);
+              }
               return ChatInputBar(
                 canSend: provider.canSendMessage,
                 replyToId: _replyToId,
@@ -373,6 +346,115 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
             },
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildAcceptCard(
+    BuildContext context,
+    ChatProvider provider,
+    bool isDark,
+  ) {
+    final t = AppLocalizations.of(context)!;
+    final bgColor = isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
+    final borderColor =
+        isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
+    final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
+    final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: bgColor,
+        border: Border(
+          top: BorderSide(color: borderColor, width: 0.5),
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            t.chat_accept_title(widget.userName),
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: 'Inter',
+              fontSize: 13,
+              color: textColor,
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: provider.isAccepting
+                ? Container(
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    alignment: Alignment.center,
+                    child: SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: primaryColor,
+                      ),
+                    ),
+                  )
+                : ElevatedButton(
+                    onPressed: () async {
+                      await provider.acceptChat(widget.identifier);
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: primaryColor,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                    ),
+                    child: Text(
+                      t.chat_accept,
+                      style: const TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWaitingBanner(
+    BuildContext context,
+    bool isDark,
+    Color mutedColor,
+  ) {
+    final t = AppLocalizations.of(context)!;
+    final bgColor = isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
+    final borderColor =
+        isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: bgColor,
+        border: Border(
+          top: BorderSide(color: borderColor, width: 0.5),
+        ),
+      ),
+      child: Text(
+        t.chat_waiting_accept(widget.userName),
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontFamily: 'Inter',
+          fontSize: 13,
+          color: mutedColor,
+          fontStyle: FontStyle.italic,
+        ),
       ),
     );
   }

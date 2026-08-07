@@ -4,8 +4,10 @@ import 'package:stream_channel/stream_channel.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:dating_app/config/app_constants.dart';
 
-class ChatWebSocketService {
-  final String matchId;
+/// Single persistent session socket (`/ws/stream`) held open for the whole app
+/// session. Chat-level events are gated by subscribe/unsubscribe topics, so
+/// opening a chat never creates a second connection.
+class SessionSocketService {
   final String jwtToken;
   final StreamChannel<dynamic> Function(Uri url) channelFactory;
 
@@ -19,8 +21,7 @@ class ChatWebSocketService {
   final _eventsController = StreamController<Map<String, dynamic>>.broadcast();
   final _connectionStateController = StreamController<bool>.broadcast();
 
-  ChatWebSocketService({
-    required this.matchId,
+  SessionSocketService({
     required this.jwtToken,
     StreamChannel<dynamic> Function(Uri url)? channelFactory,
   }) : channelFactory = channelFactory ?? WebSocketChannel.connect;
@@ -33,7 +34,7 @@ class ChatWebSocketService {
 
     try {
       final baseUrl = AppConstants.wsBaseUrl;
-      final url = '$baseUrl/ws/chat/$matchId?token=$jwtToken';
+      final url = '$baseUrl/ws/stream?token=$jwtToken';
 
       _channel = channelFactory(Uri.parse(url));
 
@@ -76,7 +77,7 @@ class ChatWebSocketService {
   void _startHeartbeat() {
     _heartbeatTimer?.cancel();
     _heartbeatTimer = Timer.periodic(const Duration(seconds: 30), (_) {
-      sendPing();
+      _send({'type': 'ping'});
     });
   }
 
@@ -94,21 +95,30 @@ class ChatWebSocketService {
     });
   }
 
-  void sendPing() {
-    _send({'type': 'ping'});
+  // ── Topic control ───────────────────────────────────────────────────
+
+  void subscribe(String chatId) {
+    _send({'type': 'subscribe', 'chat_id': chatId});
   }
 
-  void sendTyping() {
-    _send({'type': 'typing'});
+  void unsubscribe(String chatId) {
+    _send({'type': 'unsubscribe', 'chat_id': chatId});
   }
 
-  void sendTypingStopped() {
-    _send({'type': 'typing_stopped'});
+  // ── Outbound chat frames ────────────────────────────────────────────
+
+  void sendTyping(String chatId) {
+    _send({'type': 'typing', 'chat_id': chatId});
   }
 
-  void sendReadReceipt(List<String> messageIds) {
+  void sendTypingStopped(String chatId) {
+    _send({'type': 'typing_stopped', 'chat_id': chatId});
+  }
+
+  void sendReadReceipt(String chatId, List<String> messageIds) {
     _send({
       'type': 'read',
+      'chat_id': chatId,
       'message_ids': messageIds,
     });
   }

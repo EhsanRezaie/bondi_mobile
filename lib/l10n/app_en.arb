@@ -293,6 +293,24 @@
   "chat_initiation_limit": "Message limit",
   "chat_initiation_limit_explanation": "Send up to 2 messages. Wait for a reply to continue chatting.",
   "chat_waiting_for_reply": "Waiting for a reply...",
+  "chat_accept_title": "{name} sent you a chat request",
+  "@chat_accept_title": {
+    "description": "Title above the Accept button in a pending chat for the recipient",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "chat_waiting_accept": "You can't send more messages until {name} accepts your chat.",
+  "@chat_waiting_accept": {
+    "description": "Shown to the initiator of a pending chat who has used the 2-message limit",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "chat_error_loading": "Failed to load. Please try again.",
   "chat_error_sending": "Failed to send message",
   "chat_error_retry": "Retry",
