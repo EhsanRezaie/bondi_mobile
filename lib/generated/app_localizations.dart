@@ -1562,6 +1562,12 @@ abstract class AppLocalizations {
   /// **'You can\'t send more messages until {name} accepts your chat.'**
   String chat_waiting_accept(String name);
 
+  /// Shown when a chat has been blocked or ended by the other user
+  ///
+  /// In en, this message translates to:
+  /// **'This conversation with {name} is over.'**
+  String chat_conversation_over(String name);
+
   /// No description provided for @chat_error_loading.
   ///
   /// In en, this message translates to:

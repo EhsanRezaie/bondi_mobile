@@ -798,6 +798,11 @@ class AppLocalizationsFa extends AppLocalizations {
   }
 
   @override
+  String chat_conversation_over(String name) {
+    return 'این گفتگو با $name پایان یافته است.';
+  }
+
+  @override
   String get chat_error_loading => 'بارگذاری ناموفق. دوباره تلاش کنید.';
 
   @override

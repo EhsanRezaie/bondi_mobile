@@ -311,6 +311,15 @@
       }
     }
   },
+  "chat_conversation_over": "This conversation with {name} is over.",
+  "@chat_conversation_over": {
+    "description": "Shown when a chat has been blocked or ended by the other user",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "chat_error_loading": "Failed to load. Please try again.",
   "chat_error_sending": "Failed to send message",
   "chat_error_retry": "Retry",

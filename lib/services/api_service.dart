@@ -37,29 +37,43 @@ class ApiService {
           return handler.next(options);
         },
         onError: (error, handler) async {
-          if (error.response?.statusCode == 401) {
-            final refreshToken = await _secureStorage.read(key: 'refresh_token');
-            if (refreshToken != null) {
-              try {
-                final response = await _dio.post(
-                  '${AppConstants.apiBaseUrl}/auth/refresh',
-                  data: {'refresh_token': refreshToken},
-                );
-                if (response.statusCode == 200) {
-                  final newAccessToken = response.data['access_token'];
-                  final newRefreshToken = response.data['refresh_token'];
-                  await _secureStorage.write(key: 'access_token', value: newAccessToken);
-                  await _secureStorage.write(key: 'refresh_token', value: newRefreshToken);
-
-                  error.requestOptions.headers['Authorization'] = 'Bearer $newAccessToken';
-                  return handler.resolve(await _dio.fetch(error.requestOptions));
-                }
-              } catch (e) {
-                await _secureStorage.deleteAll();
-              }
-            }
+          if (error.response?.statusCode != 401) {
+            return handler.next(error);
           }
-          return handler.next(error);
+
+          // Never try to refresh tokens while the refresh call itself is being
+          // rejected — otherwise a revoked/expired refresh token causes an
+          // infinite refresh loop and the app hangs on a blank splash.
+          final isRefreshCall =
+              error.requestOptions.path.contains('/auth/refresh');
+
+          final refreshToken = await _secureStorage.read(key: 'refresh_token');
+
+          if (isRefreshCall || refreshToken == null) {
+            await _secureStorage.deleteAll();
+            return handler.next(error);
+          }
+
+          try {
+            final response = await _dio.post(
+              '${AppConstants.apiBaseUrl}/auth/refresh',
+              data: {'refresh_token': refreshToken},
+            );
+            if (response.statusCode == 200) {
+              final newAccessToken = response.data['access_token'];
+              final newRefreshToken = response.data['refresh_token'];
+              await _secureStorage.write(key: 'access_token', value: newAccessToken);
+              await _secureStorage.write(key: 'refresh_token', value: newRefreshToken);
+
+              error.requestOptions.headers['Authorization'] = 'Bearer $newAccessToken';
+              return handler.resolve(await _dio.fetch(error.requestOptions));
+            }
+            await _secureStorage.deleteAll();
+            return handler.next(error);
+          } catch (e) {
+            await _secureStorage.deleteAll();
+            return handler.next(error);
+          }
         },
       ),
     );

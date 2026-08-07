@@ -18,6 +18,7 @@ class Message {
   final DateTime? deliveredAt;
   final DateTime? readAt;
   final bool isEdited;
+  final DateTime? editedAt;
   final bool isDeleted;
 
   Message({
@@ -38,6 +39,7 @@ class Message {
     this.deliveredAt,
     this.readAt,
     this.isEdited = false,
+    this.editedAt,
     this.isDeleted = false,
   });
 
@@ -66,6 +68,9 @@ class Message {
           ? DateTime.tryParse(json['read_at'])
           : null,
       isEdited: json['is_edited'] ?? false,
+      editedAt: json['edited_at'] != null
+          ? DateTime.tryParse(json['edited_at'])
+          : null,
       isDeleted: json['is_deleted'] ?? false,
     );
   }
@@ -89,6 +94,9 @@ class Message {
       isAccepted: data['is_accepted'] ?? false,
       sentAt: DateTime.tryParse(data['sent_at'] ?? '') ?? DateTime.now(),
       isEdited: data['is_edited'] ?? false,
+      editedAt: data['edited_at'] != null
+          ? DateTime.tryParse(data['edited_at'])
+          : null,
       isDeleted: data['is_deleted'] ?? false,
     );
   }
@@ -133,6 +141,7 @@ class Message {
       'delivered_at': deliveredAt?.toIso8601String(),
       'read_at': readAt?.toIso8601String(),
       'is_edited': isEdited,
+      'edited_at': editedAt?.toIso8601String(),
       'is_deleted': isDeleted,
     };
   }
@@ -173,6 +182,7 @@ class Message {
       deliveredAt: deliveredAt,
       readAt: readAt,
       isEdited: isEdited ?? this.isEdited,
+      editedAt: (isEdited ?? false) ? DateTime.now() : editedAt,
       isDeleted: isDeleted ?? this.isDeleted,
     );
   }

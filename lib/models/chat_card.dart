@@ -36,6 +36,23 @@ class ChatUser {
       'last_seen_at': lastSeenAt,
     };
   }
+
+  ChatUser copyWith({
+    String? name,
+    int? age,
+    String? mainPhotoUrl,
+    bool? isOnline,
+    String? lastSeenAt,
+  }) {
+    return ChatUser(
+      id: id,
+      name: name ?? this.name,
+      age: age ?? this.age,
+      mainPhotoUrl: mainPhotoUrl ?? this.mainPhotoUrl,
+      isOnline: isOnline ?? this.isOnline,
+      lastSeenAt: lastSeenAt ?? this.lastSeenAt,
+    );
+  }
 }
 
 class ChatLastMessage {
@@ -82,6 +99,8 @@ class ChatCard {
   final ChatLastMessage? lastMessage;
   final int unreadCount;
   final DateTime? updatedAt;
+  final bool isBlocked;
+  final bool isEnded;
 
   ChatCard({
     required this.id,
@@ -91,6 +110,8 @@ class ChatCard {
     this.lastMessage,
     this.unreadCount = 0,
     this.updatedAt,
+    this.isBlocked = false,
+    this.isEnded = false,
   });
 
   factory ChatCard.fromJson(Map<String, dynamic> json) {
@@ -106,6 +127,8 @@ class ChatCard {
       updatedAt: json['updated_at'] != null
           ? DateTime.tryParse(json['updated_at'])
           : null,
+      isBlocked: json['is_blocked'] ?? false,
+      isEnded: json['is_ended'] ?? false,
     );
   }
 
@@ -118,23 +141,30 @@ class ChatCard {
       'last_message': lastMessage?.toJson(),
       'unread_count': unreadCount,
       'updated_at': updatedAt?.toIso8601String(),
+      'is_blocked': isBlocked,
+      'is_ended': isEnded,
     };
   }
 
   ChatCard copyWith({
     String? status,
+    ChatUser? user,
     ChatLastMessage? lastMessage,
     int? unreadCount,
     DateTime? updatedAt,
+    bool? isBlocked,
+    bool? isEnded,
   }) {
     return ChatCard(
       id: id,
       status: status ?? this.status,
       initiatorId: initiatorId,
-      user: user,
+      user: user ?? this.user,
       lastMessage: lastMessage ?? this.lastMessage,
       unreadCount: unreadCount ?? this.unreadCount,
       updatedAt: updatedAt ?? this.updatedAt,
+      isBlocked: isBlocked ?? this.isBlocked,
+      isEnded: isEnded ?? this.isEnded,
     );
   }
 }

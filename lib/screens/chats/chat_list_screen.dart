@@ -12,6 +12,7 @@ class ChatListScreen extends StatelessWidget {
   final Future<void> Function() onRefresh;
   final Future<void> Function() onLoadMore;
   final void Function(ChatCard chat) onChatTap;
+  final void Function(ChatCard chat)? onChatLongPress;
 
   const ChatListScreen({
     super.key,
@@ -22,6 +23,7 @@ class ChatListScreen extends StatelessWidget {
     required this.onRefresh,
     required this.onLoadMore,
     required this.onChatTap,
+    this.onChatLongPress,
   });
 
   @override
@@ -210,6 +212,7 @@ class ChatListScreen extends StatelessWidget {
         ],
       ),
       onTap: () => onChatTap(chat),
+      onLongPress: onChatLongPress == null ? null : () => onChatLongPress!(chat),
     );
   }
 }

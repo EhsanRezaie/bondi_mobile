@@ -796,6 +796,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String chat_conversation_over(String name) {
+    return 'This conversation with $name is over.';
+  }
+
+  @override
   String get chat_error_loading => 'Failed to load. Please try again.';
 
   @override

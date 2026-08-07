@@ -162,6 +162,298 @@ void main() {
       expect(provider.conversations, hasLength(1));
     });
   });
+
+  group('chat detail flags (blocked / ended)', () {
+    test('marks chat as ended from detail and disables sending', () async {
+      api.onGet('/chats/chat-1', body: {
+        'id': 'chat-1',
+        'status': 'accepted',
+        'initiator_id': 'user-a',
+        'user': {'id': 'user-b'},
+        'is_blocked': false,
+        'is_ended': true,
+      });
+      api.onGet('/messages/chat-1', body: {'items': []});
+      api.install();
+
+      await provider.loadMessages('chat-1');
+
+      expect(provider.isEnded, isTrue);
+      expect(provider.conversationIsOver, isTrue);
+      expect(provider.canSendMessage, isFalse);
+    });
+
+    test('marks chat as blocked from detail', () async {
+      api.onGet('/chats/chat-1', body: {
+        'id': 'chat-1',
+        'status': 'accepted',
+        'initiator_id': 'user-a',
+        'user': {'id': 'user-b'},
+        'is_blocked': true,
+        'is_ended': false,
+      });
+      api.onGet('/messages/chat-1', body: {'items': []});
+      api.install();
+
+      await provider.loadMessages('chat-1');
+
+      expect(provider.isBlocked, isTrue);
+      expect(provider.conversationIsOver, isTrue);
+      expect(provider.canSendMessage, isFalse);
+    });
+  });
+
+  group('blockUser / unblockUser', () {
+    test('blockUser sets isBlocked and ends the conversation', () async {
+      api.onPost('/blocks/user-b/block', body: {}, statusCode: 204);
+      api.install();
+
+      final ok = await provider.blockUser('user-b');
+
+      expect(ok, isTrue);
+      expect(provider.isBlocked, isTrue);
+      expect(provider.conversationIsOver, isTrue);
+    });
+
+    test('blockUser failure reports error and keeps state', () async {
+      api.onPost(
+        '/blocks/user-b/block',
+        body: {'detail': 'Block failed'},
+        statusCode: 400,
+      );
+      api.install();
+
+      final ok = await provider.blockUser('user-b');
+
+      expect(ok, isFalse);
+      expect(provider.isBlocked, isFalse);
+      expect(provider.errorMessage, isNotNull);
+    });
+
+    test('unblockUser clears isBlocked', () async {
+      api.onPost(
+        '/blocks/user-b/unblock',
+        body: {},
+        statusCode: 204,
+      );
+      api.install();
+
+      final ok = await provider.unblockUser('user-b');
+
+      expect(ok, isTrue);
+      expect(provider.isBlocked, isFalse);
+      expect(provider.conversationIsOver, isFalse);
+    });
+  });
+
+  group('deleteChat', () {
+    test('calls the API and removes the card', () async {
+      api.onGet('/chats', body: chatJson(status: 'accepted'));
+      api.install();
+      await provider.loadConversations();
+      expect(provider.conversations, hasLength(1));
+
+      api.onDelete('/chats/chat-1', statusCode: 204);
+      final ok = await provider.deleteChat('chat-1');
+
+      expect(ok, isTrue);
+      expect(provider.conversations, isEmpty);
+      expect(provider.isEnded, isTrue);
+      api.expectCalled('/chats/chat-1');
+    });
+  });
+
+  group('report', () {
+    test('reportMessage returns true on 201', () async {
+      api.onPost(
+        '/reports/message/msg-1',
+        body: {},
+        statusCode: 201,
+        data: {'reason': 'Spam or inappropriate'},
+      );
+      api.install();
+
+      final ok = await provider.reportMessage(
+        'msg-1',
+        reason: 'Spam or inappropriate',
+      );
+
+      expect(ok, isTrue);
+    });
+
+    test('reportMessage failure sets errorMessage', () async {
+      api.onPost(
+        '/reports/message/msg-1',
+        body: {'detail': 'Already reported'},
+        statusCode: 400,
+        data: {'reason': 'Spam or inappropriate'},
+      );
+      api.install();
+
+      final ok = await provider.reportMessage(
+        'msg-1',
+        reason: 'Spam or inappropriate',
+      );
+
+      expect(ok, isFalse);
+      expect(provider.errorMessage, isNotNull);
+    });
+
+    test('reportUser returns true on 201', () async {
+      api.onPost(
+        '/reports/user-1',
+        body: {'reason': 'Spam'},
+        statusCode: 201,
+        data: {'reason': 'Spam'},
+      );
+      api.install();
+
+      final ok = await provider.reportUser('user-1', 'Spam');
+
+      expect(ok, isTrue);
+    });
+  });
+
+  group('editMessage', () {
+    test('updates the message content and edited flag', () async {
+      api.onGet('/chats/chat-1', body: {
+        'id': 'chat-1',
+        'status': 'accepted',
+        'initiator_id': 'user-a',
+        'user': {'id': 'user-b'},
+      });
+      api.onGet('/messages/chat-1', body: {'items': [jsonMessage(id: 'msg-1')]});
+      api.install();
+      await provider.loadMessages('chat-1');
+      expect(provider.messages.first.content, 'Hello');
+
+      api.onPut(
+        '/messages/msg-1',
+        body: jsonMessage(id: 'msg-1', content: 'Edited!'),
+        data: {'content': 'Edited!'},
+      );
+      final ok = await provider.editMessage('msg-1', 'Edited!');
+
+      expect(ok, isTrue);
+      expect(provider.messages.first.content, 'Edited!');
+      expect(provider.messages.first.isEdited, isTrue);
+    });
+  });
+
+  group('deleteMessage', () {
+    Future<void> seed() async {
+      api.onGet('/chats/chat-1', body: {
+        'id': 'chat-1',
+        'status': 'accepted',
+        'initiator_id': 'user-a',
+        'user': {'id': 'user-b'},
+      });
+      api.onGet('/messages/chat-1', body: {'items': [jsonMessage(id: 'msg-1')]});
+      api.install();
+      await provider.loadMessages('chat-1');
+    }
+
+    test('delete for self removes the message', () async {
+      await seed();
+      api.onDelete('/messages/msg-1', statusCode: 204);
+
+      final ok = await provider.deleteMessage('msg-1');
+
+      expect(ok, isTrue);
+      expect(provider.messages, isEmpty);
+    });
+
+    test('delete for all marks the message deleted instead of removing', () async {
+      await seed();
+      api.onDelete('/messages/msg-1', statusCode: 204);
+
+      final ok = await provider.deleteMessage('msg-1', deleteForAll: true);
+
+      expect(ok, isTrue);
+      expect(provider.messages, hasLength(1));
+      expect(provider.messages.first.isDeleted, isTrue);
+    });
+  });
+
+  group('WebSocket event handlers (state transitions)', () {
+    Future<void> seed({bool blocked = false, bool ended = false}) async {
+      api.onGet('/chats/chat-1', body: {
+        'id': 'chat-1',
+        'status': 'accepted',
+        'initiator_id': 'user-a',
+        'user': {'id': 'user-b'},
+        'is_blocked': blocked,
+        'is_ended': ended,
+      });
+      api.onGet('/messages/chat-1', body: {'items': [jsonMessage(id: 'msg-1')]});
+      api.install();
+      await provider.loadMessages('chat-1');
+    }
+
+    test('blocked event for the peer marks the chat blocked', () async {
+      await seed();
+      expect(provider.isBlocked, isFalse);
+
+      provider.applyBlockedEvent(
+        {'user_id': 'user-b'},
+        {},
+      );
+
+      expect(provider.isBlocked, isTrue);
+      expect(provider.conversationIsOver, isTrue);
+    });
+
+    test('blocked event for a different user is ignored', () async {
+      await seed();
+
+      provider.applyBlockedEvent({'user_id': 'user-other'}, {});
+
+      expect(provider.isBlocked, isFalse);
+    });
+
+    test('chat_ended event for the active chat ends the conversation', () async {
+      await seed();
+      expect(provider.isEnded, isFalse);
+
+      provider.applyChatEndedEvent({'chat_id': 'chat-1'}, {});
+
+      expect(provider.isEnded, isTrue);
+      expect(provider.conversationIsOver, isTrue);
+      expect(provider.canSendMessage, isFalse);
+    });
+
+    test('chat_ended event for a different chat is ignored', () async {
+      await seed();
+
+      provider.applyChatEndedEvent({'chat_id': 'chat-999'}, {});
+
+      expect(provider.isEnded, isFalse);
+    });
+
+    test('message_edited updates content and marks isEdited', () async {
+      await seed();
+      expect(provider.messages.first.isEdited, isFalse);
+
+      provider.applyMessageEdited({
+        'id': 'msg-1',
+        'content': 'Updated via WS',
+        'is_edited': true,
+      });
+
+      expect(provider.messages.first.content, 'Updated via WS');
+      expect(provider.messages.first.isEdited, isTrue);
+    });
+
+    test('message_edited for an unknown id is a no-op', () async {
+      await seed();
+      final before = provider.messages.first.content;
+
+      provider.applyMessageEdited({'id': 'nope', 'content': 'x', 'is_edited': true});
+
+      expect(provider.messages.first.content, before);
+      expect(provider.messages.first.isEdited, isFalse);
+    });
+  });
 }
 
 Map<String, dynamic> chatCardJson({

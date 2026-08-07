@@ -62,6 +62,19 @@ class MockApi {
     );
   }
 
+  void onPut(
+    String path, {
+    required Object body,
+    int statusCode = 200,
+    Object? data,
+  }) {
+    adapter.onPut(
+      path,
+      (server) => server.reply(statusCode, body, delay: Duration.zero),
+      data: data,
+    );
+  }
+
   void onDelete(String path, {int statusCode = 204}) {
     adapter.onDelete(
       path,
@@ -84,3 +97,4 @@ class MockApi {
   /// Decode a raw JSON-encoded request body string.
   Map<String, dynamic> decodeBody(String raw) => jsonDecode(raw);
 }
+

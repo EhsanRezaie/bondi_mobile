@@ -56,6 +56,7 @@ class _ChatsScreenState extends State<ChatsScreen>
   }
 
   void _openChat(ChatCard chat) {
+    final chatProvider = context.read<ChatProvider>();
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -67,9 +68,12 @@ class _ChatsScreenState extends State<ChatsScreen>
           lastSeenAt: chat.user.lastSeenAt,
           initialStatus: chat.status,
           initialInitiatorId: chat.initiatorId,
+          peerId: chat.user.id,
         ),
       ),
-    );
+    ).then((_) {
+      chatProvider.loadConversations();
+    });
   }
 
   @override
@@ -143,6 +147,7 @@ class _ChatsScreenState extends State<ChatsScreen>
             onLoadMore: () =>
                 context.read<ChatProvider>().loadMoreConversations(),
             onChatTap: _openChat,
+            onChatLongPress: _showChatActions,
           ),
           ChatListScreen(
             chats: context.watch<ChatProvider>().pendingChats,
@@ -154,6 +159,7 @@ class _ChatsScreenState extends State<ChatsScreen>
             onLoadMore: () =>
                 context.read<ChatProvider>().loadMorePendingIncoming(),
             onChatTap: _openChat,
+            onChatLongPress: _showChatActions,
           ),
           ChatListScreen(
             chats: context.watch<ChatProvider>().incomingChats,
@@ -165,9 +171,74 @@ class _ChatsScreenState extends State<ChatsScreen>
             onLoadMore: () =>
                 context.read<ChatProvider>().loadMorePendingIncoming(),
             onChatTap: _openChat,
+            onChatLongPress: _showChatActions,
           ),
         ],
       ),
     );
+  }
+
+  void _showChatActions(ChatCard chat) {
+    final isDark = context.isDarkMode;
+    final surfaceColor =
+        isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
+    final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: surfaceColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 12),
+            ListTile(
+              leading: const Icon(Icons.delete_outline),
+              title: Text(
+                'Delete Chat',
+                style: TextStyle(fontFamily: 'Inter', color: textColor),
+              ),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                _confirmDeleteChat(chat);
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _confirmDeleteChat(ChatCard chat) async {
+    final isDark = context.isDarkMode;
+    final surfaceColor =
+        isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: surfaceColor,
+        title: const Text('Delete Chat', style: TextStyle(fontFamily: 'Inter')),
+        content: const Text(
+          'This hides the chat on your side.',
+          style: TextStyle(fontFamily: 'Inter'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel', style: TextStyle(fontFamily: 'Inter')),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Delete', style: TextStyle(fontFamily: 'Inter')),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    await context.read<ChatProvider>().deleteChat(chat.id);
   }
 }

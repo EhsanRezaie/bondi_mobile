@@ -75,6 +75,10 @@ class ChatProvider extends ChangeNotifier {
   String? _userId;
   String? _editingMessageId;
   Timer? _typingTimer;
+  final Set<String> _sentReadIds = {};
+  bool _isBlocked = false;
+  bool _isEnded = false;
+  String? _peerId;
 
   int _matchesOffset = 0;
   int _conversationsOffset = 0;
@@ -117,6 +121,13 @@ class ChatProvider extends ChangeNotifier {
   String? get editingMessageId => _editingMessageId;
   bool get isChatAccepted => _isChatAccepted;
   bool get isAccepting => _isAccepting;
+  bool get isBlocked => _isBlocked;
+  bool get isEnded => _isEnded;
+  String? get peerId => _peerId;
+
+  /// Whether this conversation is over (blocked or ended) — the UI shows a
+  /// "This conversation is over" banner and disables the composer.
+  bool get conversationIsOver => _isBlocked || _isEnded;
   bool get isInitiator => _amInitiator;
   bool get isPending => _chatStatus == 'pending';
   bool get isRecipientWaiting => isPending && !_amInitiator;
@@ -124,6 +135,7 @@ class ChatProvider extends ChangeNotifier {
   bool get isChatBlocked => !_isChatAccepted && isPending && _amInitiator && _sentCountInNewChat >= 2;
 
   bool get canSendMessage {
+    if (conversationIsOver) return false;
     if (_isPremium) return true;
     if (_isChatAccepted) return true;
     if (_chatStatus == null) {
@@ -495,6 +507,10 @@ class ChatProvider extends ChangeNotifier {
 
     _isLoading = false;
     _safeNotify();
+
+    // Opening the chat means the peer's messages are visible → mark read,
+    // push a realtime read receipt, and clear the list unread badge.
+    markVisibleMessagesRead();
   }
 
   /// Loads the authoritative chat status + direction from `GET /chats/{id}`.
@@ -513,6 +529,12 @@ class ChatProvider extends ChangeNotifier {
         if (initiatorId != null) {
           _amInitiator = _userId != null && initiatorId == _userId;
         }
+        final other = data['user'] as Map<String, dynamic>?;
+        if (other != null) {
+          _peerId = other['id'] as String?;
+        }
+        _isBlocked = data['is_blocked'] == true;
+        _isEnded = data['is_ended'] == true;
       }
       // On failure (or non-200) keep whatever status was seeded so a
       // transient chat-detail error never disables sending.
@@ -774,6 +796,106 @@ class ChatProvider extends ChangeNotifier {
     }
   }
 
+  // ── Block / Report / Delete chat ─────────────────────────────────
+  Future<bool> blockUser(String userId) async {
+    try {
+      final response = await ChatService.blockUser(userId);
+      if (response.statusCode == 204 || response.statusCode == 200) {
+        _isBlocked = true;
+        _safeNotify();
+        return true;
+      }
+      _errorMessage = response.data['detail'] ?? 'Block failed';
+      _safeNotify();
+      return false;
+    } catch (e) {
+      _errorMessage = e.toString();
+      _safeNotify();
+      return false;
+    }
+  }
+
+  Future<bool> unblockUser(String userId) async {
+    try {
+      final response = await ChatService.unblockUser(userId);
+      if (response.statusCode == 204 || response.statusCode == 200) {
+        _isBlocked = false;
+        _safeNotify();
+        return true;
+      }
+      _errorMessage = response.data['detail'] ?? 'Unblock failed';
+      _safeNotify();
+      return false;
+    } catch (e) {
+      _errorMessage = e.toString();
+      _safeNotify();
+      return false;
+    }
+  }
+
+  Future<bool> reportMessage(
+    String messageId, {
+    required String reason,
+    String? description,
+  }) async {
+    try {
+      final response = await ChatService.reportMessage(
+        messageId,
+        reason,
+        description: description,
+      );
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        return true;
+      }
+      _errorMessage = response.data['detail'] ?? 'Report failed';
+      _safeNotify();
+      return false;
+    } catch (e) {
+      _errorMessage = e.toString();
+      _safeNotify();
+      return false;
+    }
+  }
+
+  Future<bool> reportUser(String userId, String reason) async {
+    try {
+      final response = await ChatService.reportUser(userId, reason);
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        return true;
+      }
+      _errorMessage = response.data['detail'] ?? 'Report failed';
+      _safeNotify();
+      return false;
+    } catch (e) {
+      _errorMessage = e.toString();
+      _safeNotify();
+      return false;
+    }
+  }
+
+  /// Deletes a chat for the current user and refreshes the lists so the card
+  /// disappears (the other side keeps it, marked ended).
+  Future<bool> deleteChat(String chatId) async {
+    try {
+      final response = await ChatService.deleteChat(chatId);
+      if (response.statusCode == 204 || response.statusCode == 200) {
+        _conversations.removeWhere((c) => c.id == chatId);
+        _pendingChats.removeWhere((c) => c.id == chatId);
+        _incomingChats.removeWhere((c) => c.id == chatId);
+        _isEnded = true;
+        _safeNotify();
+        return true;
+      }
+      _errorMessage = response.data['detail'] ?? 'Delete chat failed';
+      _safeNotify();
+      return false;
+    } catch (e) {
+      _errorMessage = e.toString();
+      _safeNotify();
+      return false;
+    }
+  }
+
   // ── Read ─────────────────────────────────────────────────────────
   Future<void> markMessagesRead(List<String> messageIds) async {
     if (messageIds.isEmpty) return;
@@ -791,7 +913,83 @@ class ChatProvider extends ChangeNotifier {
     }
   }
 
-  // ── Accept Chat ──────────────────────────────────────────────────
+  /// Marks the peer's unread messages in the currently-open chat as read:
+  /// persists via HTTP, pushes a realtime `read` frame over WS (so the sender
+  /// sees the blue check immediately), updates local state, and clears the
+  /// chat's unread badge in the list. Idempotent — each message id is sent
+  /// once so bursts don't re-fire on every frame.
+  Future<void> markVisibleMessagesRead() async {
+    final active = _activeMatchId;
+    if (active == null) return;
+    final userId = await _storageService.getUserId();
+    if (userId == null) return;
+
+    final newlyRead = _messages
+        .where((m) =>
+            m.receiverId == userId && !m.isRead && !_sentReadIds.contains(m.id))
+        .toList();
+    if (newlyRead.isEmpty) return;
+    final ids = newlyRead.map((m) => m.id).toList();
+
+    for (final m in newlyRead) {
+      final index = _messages.indexWhere((e) => e.id == m.id);
+      if (index != -1) {
+        _messages[index] = _messages[index].copyWith(isRead: true);
+      }
+    }
+    _sentReadIds.addAll(ids);
+    _safeNotify();
+
+    _socketService?.sendReadReceipt(active, ids);
+    _resetChatUnread(active);
+    try {
+      await ChatService.markRead(ids);
+    } catch (e) {
+      // silent
+    }
+  }
+
+  /// Resets a chat card's unread badge to zero (its messages were just read).
+  void _resetChatUnread(String chatId) {
+    void patch(List<ChatCard> list) {
+      final index = list.indexWhere((c) => c.id == chatId);
+      if (index != -1) {
+        list[index] = list[index].copyWith(unreadCount: 0);
+      }
+    }
+
+    patch(_conversations);
+    patch(_pendingChats);
+    patch(_incomingChats);
+    _safeNotify();
+  }
+
+  /// Keeps conversation-card online state live by forwarding a peer's
+  /// user_online/user_offline presence event onto the matching card.
+  void _applyUserPresence(
+    String userId, {
+    required bool isOnline,
+    String? lastSeenAt,
+  }) {
+    void patch(List<ChatCard> list) {
+      for (var i = 0; i < list.length; i++) {
+        final card = list[i];
+        if (card.user.id == userId) {
+          list[i] = card.copyWith(
+            user: card.user.copyWith(
+              isOnline: isOnline,
+              lastSeenAt: lastSeenAt,
+            ),
+          );
+          _safeNotify();
+        }
+      }
+    }
+
+    patch(_conversations);
+    patch(_pendingChats);
+    patch(_incomingChats);
+  }
   /// Accepts a pending chat (moves it from Pending/Incoming to
   /// Conversations). Callers can refresh lists or rely on real-time events.
   Future<bool> acceptChat(String chatId) async {
@@ -904,6 +1102,10 @@ class ChatProvider extends ChangeNotifier {
         break;
 
       case 'user_online':
+        final onlineUserId = (event['user_id'] ?? data['user_id']) as String?;
+        if (onlineUserId != null) {
+          _applyUserPresence(onlineUserId, isOnline: true);
+        }
         if (_isEventForActiveChat(event, data)) {
           _isOtherUserOnline = true;
           _safeNotify();
@@ -911,6 +1113,11 @@ class ChatProvider extends ChangeNotifier {
         break;
 
       case 'user_offline':
+        final offlineUserId = (event['user_id'] ?? data['user_id']) as String?;
+        if (offlineUserId != null) {
+          final raw = (event['last_seen_at'] ?? data['last_seen_at']) as String?;
+          _applyUserPresence(offlineUserId, isOnline: false, lastSeenAt: raw);
+        }
         if (_isEventForActiveChat(event, data)) {
           _isOtherUserOnline = false;
           final raw = (event['last_seen_at'] ?? data['last_seen_at']) as String?;
@@ -947,6 +1154,18 @@ class ChatProvider extends ChangeNotifier {
 
       case 'new_match':
         handleNewMatch(data);
+        break;
+
+      case 'blocked':
+        _handleBlockedEvent(event, data);
+        break;
+
+      case 'chat_ended':
+        _handleChatEndedEvent(event, data);
+        break;
+
+      case 'message_edited':
+        _handleMessageEdited(data);
         break;
 
       default:
@@ -1047,6 +1266,48 @@ class ChatProvider extends ChangeNotifier {
       });
     }
     _safeNotify();
+
+    // The chat is open/visible → immediately mark the peer's message as
+    // read and push a realtime read receipt + clear the list unread badge.
+    if (message.senderId != _userId) {
+      markVisibleMessagesRead();
+    }
+  }
+
+  void _handleBlockedEvent(
+    Map<String, dynamic> event,
+    Map<String, dynamic> data,
+  ) {
+    final userId = (event['user_id'] ?? data['user_id']) as String?;
+    if (userId != null && peerId != null && userId == peerId) {
+      _isBlocked = true;
+    }
+    _safeNotify();
+    _refetchChatLists(debounced: true);
+  }
+
+  void _handleChatEndedEvent(
+    Map<String, dynamic> event,
+    Map<String, dynamic> data,
+  ) {
+    final chatId = (event['chat_id'] ?? data['chat_id']) as String?;
+    if (chatId != null && chatId == _activeMatchId) {
+      _isEnded = true;
+    }
+    _safeNotify();
+    _refetchChatLists(debounced: true);
+  }
+
+  void _handleMessageEdited(Map<String, dynamic> data) {
+    final messageId = data['id'] as String?;
+    if (messageId == null) return;
+    final index = _messages.indexWhere((m) => m.id == messageId);
+    if (index == -1) return;
+    _messages[index] = _messages[index].copyWith(
+      content: data['content'] as String? ?? _messages[index].content,
+      isEdited: (data['is_edited'] as bool?) ?? true,
+    );
+    _safeNotify();
   }
 
   void _handleMessagesRead(Map<String, dynamic> data) {
@@ -1059,6 +1320,24 @@ class ChatProvider extends ChangeNotifier {
     }
     _safeNotify();
   }
+
+  @visibleForTesting
+  void applyBlockedEvent(
+    Map<String, dynamic> event,
+    Map<String, dynamic> data,
+  ) =>
+      _handleBlockedEvent(event, data);
+
+  @visibleForTesting
+  void applyChatEndedEvent(
+    Map<String, dynamic> event,
+    Map<String, dynamic> data,
+  ) =>
+      _handleChatEndedEvent(event, data);
+
+  @visibleForTesting
+  void applyMessageEdited(Map<String, dynamic> data) =>
+      _handleMessageEdited(data);
 
   void handleNewMatch(Map<String, dynamic> data) {
     try {
@@ -1107,6 +1386,9 @@ class ChatProvider extends ChangeNotifier {
     _chatStatus = null;
     _amInitiator = false;
     _isAccepting = false;
+    _isBlocked = false;
+    _isEnded = false;
+    _peerId = null;
     _safeNotify();
   }
 }

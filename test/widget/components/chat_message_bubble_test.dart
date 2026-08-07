@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:dating_app/widgets/chat_message_bubble.dart';
+import 'package:dating_app/widgets/voice_message_player.dart';
 import 'package:dating_app/models/message.dart';
 import 'package:dating_app/providers/settings_provider.dart';
 import '../../helpers/test_helpers.dart';
@@ -48,14 +49,16 @@ void main() {
 
       await tester.pumpWidget(
         buildTestable(
-          ChatMessageBubble(message: msg, isMine: false),
+          Material(
+            child: ChatMessageBubble(message: msg, isMine: false),
+          ),
           providers: [
             ChangeNotifierProvider(create: (_) => SettingsProvider()),
           ],
         ),
       );
 
-      expect(find.text('12s'), findsOneWidget);
+      expect(find.byType(VoiceMessagePlayer), findsOneWidget);
     });
 
     testWidgets('mine-aligned right, other-aligned left', (tester) async {
@@ -97,6 +100,75 @@ void main() {
       );
 
       expect(find.text('edited'), findsOneWidget);
+    });
+
+    testWidgets('tap fires onTap', (tester) async {
+      var tapped = false;
+      final msg = message();
+
+      await tester.pumpWidget(
+        buildTestable(
+          ChatMessageBubble(
+            message: msg,
+            isMine: false,
+            onTap: () => tapped = true,
+          ),
+          providers: [
+            ChangeNotifierProvider(create: (_) => SettingsProvider()),
+          ],
+        ),
+      );
+
+      await tester.tap(find.text('Hello'));
+      expect(tapped, isTrue);
+    });
+
+    testWidgets('long-press fires onLongPress for mine', (tester) async {
+      var longPressed = false;
+      final msg = message();
+
+      await tester.pumpWidget(
+        buildTestable(
+          ChatMessageBubble(
+            message: msg,
+            isMine: true,
+            onLongPress: () => longPressed = true,
+          ),
+          providers: [
+            ChangeNotifierProvider(create: (_) => SettingsProvider()),
+          ],
+        ),
+      );
+
+      await tester.longPress(find.text('Hello'));
+      expect(longPressed, isTrue);
+    });
+
+    testWidgets('swipe right fires reply callback', (tester) async {
+      var replied = false;
+      final msg = message();
+
+      await tester.pumpWidget(
+        buildTestable(
+          ChatMessageBubble(
+            message: msg,
+            isMine: false,
+            onReplyTap: () => replied = true,
+          ),
+          providers: [
+            ChangeNotifierProvider(create: (_) => SettingsProvider()),
+          ],
+        ),
+      );
+
+      await tester.fling(
+        find.text('Hello'),
+        const Offset(320, 0),
+        500,
+      );
+      await tester.pump();
+
+      expect(replied, isTrue);
     });
   });
 }

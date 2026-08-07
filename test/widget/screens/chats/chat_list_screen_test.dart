@@ -73,6 +73,56 @@ void main() {
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
+
+    testWidgets('tap fires onChatTap with the card', (tester) async {
+      final c = chatCard(name: 'Bob');
+      ChatCard? tapped;
+
+      await tester.pumpWidget(
+        buildTestable(
+          Material(
+            child: ChatListScreen(
+              chats: [c],
+              isLoading: false,
+              hasMore: false,
+              emptyText: 'No chats',
+              onRefresh: () async {},
+              onLoadMore: () async {},
+              onChatTap: (chat) => tapped = chat,
+              onChatLongPress: (_) {},
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Bob'));
+      expect(tapped?.id, c.id);
+    });
+
+    testWidgets('long-press fires onChatLongPress with the card', (tester) async {
+      final c = chatCard(name: 'Bob');
+      ChatCard? longPressed;
+
+      await tester.pumpWidget(
+        buildTestable(
+          Material(
+            child: ChatListScreen(
+              chats: [c],
+              isLoading: false,
+              hasMore: false,
+              emptyText: 'No chats',
+              onRefresh: () async {},
+              onLoadMore: () async {},
+              onChatTap: (_) {},
+              onChatLongPress: (chat) => longPressed = chat,
+            ),
+          ),
+        ),
+      );
+
+      await tester.longPress(find.text('Bob'));
+      expect(longPressed?.id, c.id);
+    });
   });
 }
 

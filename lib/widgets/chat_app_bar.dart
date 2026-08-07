@@ -10,6 +10,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String? lastSeenAt;
   final VoidCallback? onBackPressed;
   final VoidCallback? onMenuPressed;
+  final VoidCallback? onAvatarTap;
 
   const ChatAppBar({
     super.key,
@@ -19,6 +20,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.lastSeenAt,
     this.onBackPressed,
     this.onMenuPressed,
+    this.onAvatarTap,
   });
 
   @override
@@ -44,38 +46,22 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       title: Row(
         children: [
-          Stack(
-            children: [
-              CircleAvatar(
-                radius: 18,
-                backgroundColor: borderColor,
-                backgroundImage: avatarUrl != null && avatarUrl!.isNotEmpty
-                    ? CachedNetworkImageProvider(avatarUrl!)
-                    : null,
-                child: avatarUrl == null || avatarUrl!.isEmpty
-                    ? Icon(Icons.person, size: 18, color: borderColor)
-                    : null,
-              ),
-              if (isOnline)
-                Positioned(
-                  right: 0,
-                  bottom: 0,
-                  child: Container(
-                    width: 12,
-                    height: 12,
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? AppTheme.darkSuccess
-                          : AppTheme.lightSuccess,
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: bgColor,
-                        width: 2,
-                      ),
-                    ),
-                  ),
+          GestureDetector(
+            onTap: onAvatarTap,
+            child: Stack(
+              children: [
+                CircleAvatar(
+                  radius: 18,
+                  backgroundColor: borderColor,
+                  backgroundImage: avatarUrl != null && avatarUrl!.isNotEmpty
+                      ? CachedNetworkImageProvider(avatarUrl!)
+                      : null,
+                  child: avatarUrl == null || avatarUrl!.isEmpty
+                      ? Icon(Icons.person, size: 18, color: borderColor)
+                      : null,
                 ),
-            ],
+              ],
+            ),
           ),
           const SizedBox(width: 10),
           Expanded(

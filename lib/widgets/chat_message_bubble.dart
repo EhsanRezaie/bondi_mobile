@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dating_app/config/app_theme.dart';
 import 'package:dating_app/models/message.dart';
+import 'package:dating_app/utils/media_url.dart';
+import 'package:dating_app/widgets/voice_message_player.dart';
 import 'package:intl/intl.dart';
 
 class ChatMessageBubble extends StatelessWidget {
   final Message message;
   final bool isMine;
   final VoidCallback? onLongPress;
+  final VoidCallback? onTap;
   final VoidCallback? onReplyTap;
 
   const ChatMessageBubble({
@@ -15,6 +18,7 @@ class ChatMessageBubble extends StatelessWidget {
     required this.message,
     required this.isMine,
     this.onLongPress,
+    this.onTap,
     this.onReplyTap,
   });
 
@@ -32,6 +36,14 @@ class ChatMessageBubble extends StatelessWidget {
       alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
       child: GestureDetector(
         onLongPress: isMine ? onLongPress : null,
+        onTap: onTap,
+        onHorizontalDragEnd: (details) {
+          if (onReplyTap != null &&
+              details.primaryVelocity != null &&
+              details.primaryVelocity! > 250) {
+            onReplyTap!();
+          }
+        },
         child: Container(
           constraints: BoxConstraints(
             maxWidth: MediaQuery.of(context).size.width * 0.78,
@@ -65,7 +77,7 @@ class ChatMessageBubble extends StatelessWidget {
                           width: 1,
                         ),
                 ),
-                child: _buildContent(isDark, textColor, mutedColor),
+                child: _buildContent(context, isDark, textColor, mutedColor),
               ),
               const SizedBox(height: 2),
               _buildTimestampAndStatus(isDark, mutedColor, successColor),
@@ -118,12 +130,12 @@ class ChatMessageBubble extends StatelessWidget {
     );
   }
 
-  Widget _buildContent(bool isDark, Color textColor, Color mutedColor) {
+  Widget _buildContent(BuildContext context, bool isDark, Color textColor, Color mutedColor) {
     switch (message.messageType) {
       case MessageType.text:
         return _buildTextContent(textColor);
       case MessageType.photo:
-        return _buildPhotoContent();
+        return _buildPhotoContent(context);
       case MessageType.voice:
         return _buildVoiceContent(textColor, mutedColor);
     }
@@ -161,57 +173,51 @@ class ChatMessageBubble extends StatelessWidget {
     );
   }
 
-  Widget _buildPhotoContent() {
+  Widget _buildPhotoContent(BuildContext context) {
+    final url = mediaUrlForDisplay(message.mediaUrl);
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
-      child: message.mediaUrl != null
-          ? CachedNetworkImage(
-              imageUrl: message.mediaUrl!,
-              width: 220,
-              height: 220,
-              fit: BoxFit.cover,
-              placeholder: (context, url) => Container(
-                width: 220,
-                height: 220,
-                color: Colors.grey.shade300,
-                child: const Center(child: CircularProgressIndicator()),
-              ),
-              errorWidget: (context, url, error) => Container(
-                width: 220,
-                height: 220,
-                color: Colors.grey.shade300,
-                child: const Icon(Icons.broken_image, size: 40),
-              ),
-            )
-          : Container(
-              width: 220,
-              height: 220,
-              color: Colors.grey.shade300,
-              child: const Icon(Icons.image, size: 40),
+      child: GestureDetector(
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (_) => _PhotoLightbox(imageUrl: url),
             ),
+          );
+        },
+        child: url.isNotEmpty
+            ? CachedNetworkImage(
+                imageUrl: url,
+                width: 220,
+                height: 220,
+                fit: BoxFit.cover,
+                placeholder: (context, url) => Container(
+                  width: 220,
+                  height: 220,
+                  color: Colors.grey.shade300,
+                  child: const Center(child: CircularProgressIndicator()),
+                ),
+                errorWidget: (context, url, error) => Container(
+                  width: 220,
+                  height: 220,
+                  color: Colors.grey.shade300,
+                  child: const Icon(Icons.broken_image, size: 40),
+                ),
+              )
+            : Container(
+                width: 220,
+                height: 220,
+                color: Colors.grey.shade300,
+                child: const Icon(Icons.image, size: 40),
+              ),
+      ),
     );
   }
 
   Widget _buildVoiceContent(Color textColor, Color mutedColor) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          Icons.mic,
-          size: 20,
-          color: isMine ? Colors.white : textColor,
-        ),
-        const SizedBox(width: 8),
-        if (message.mediaDuration != null)
-          Text(
-            '${message.mediaDuration}s',
-            style: TextStyle(
-              fontFamily: 'Inter',
-              fontSize: 13,
-              color: isMine ? Colors.white : mutedColor,
-            ),
-          ),
-      ],
+    return VoiceMessagePlayer(
+      audioUrl: mediaUrlForDisplay(message.mediaUrl),
+      isMine: isMine,
     );
   }
 
@@ -244,6 +250,44 @@ class ChatMessageBubble extends StatelessWidget {
           ),
         ],
       ],
+    );
+  }
+}
+
+/// Full-screen, zoomable photo viewer opened when tapping a photo message.
+class _PhotoLightbox extends StatelessWidget {
+  final String imageUrl;
+
+  const _PhotoLightbox({required this.imageUrl});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.black,
+      appBar: AppBar(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.white,
+        elevation: 0,
+      ),
+      body: InteractiveViewer(
+        maxScale: 5,
+        child: Center(
+          child: imageUrl.isNotEmpty
+              ? CachedNetworkImage(
+                  imageUrl: imageUrl,
+                  fit: BoxFit.contain,
+                  placeholder: (context, url) => const Center(
+                    child: CircularProgressIndicator(color: Colors.white),
+                  ),
+                  errorWidget: (context, url, error) => const Icon(
+                    Icons.broken_image,
+                    size: 64,
+                    color: Colors.white54,
+                  ),
+                )
+              : const Icon(Icons.image, size: 64, color: Colors.white54),
+        ),
+      ),
     );
   }
 }

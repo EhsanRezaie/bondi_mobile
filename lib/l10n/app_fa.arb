@@ -311,6 +311,15 @@
       }
     }
   },
+  "chat_conversation_over": "این گفتگو با {name} پایان یافته است.",
+  "@chat_conversation_over": {
+    "description": "هنگامی که چت توسط طرف مقابل مسدود یا پایان یافته است نمایش داده می‌شود",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "chat_error_loading": "بارگذاری ناموفق. دوباره تلاش کنید.",
   "chat_error_sending": "ارسال پیام ناموفق بود",
   "chat_error_retry": "تلاش مجدد",

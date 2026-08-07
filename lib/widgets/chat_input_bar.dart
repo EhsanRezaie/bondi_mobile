@@ -17,6 +17,8 @@ class ChatInputBar extends StatefulWidget {
   final bool isEditing;
   final VoidCallback? onCancelEdit;
   final Function(String)? onEditSave;
+  final VoidCallback? onTyping;
+  final VoidCallback? onTypingStopped;
 
   const ChatInputBar({
     super.key,
@@ -31,6 +33,8 @@ class ChatInputBar extends StatefulWidget {
     this.isEditing = false,
     this.onCancelEdit,
     this.onEditSave,
+    this.onTyping,
+    this.onTypingStopped,
   });
 
   @override
@@ -44,6 +48,8 @@ class _ChatInputBarState extends State<ChatInputBar> {
   int _recordSeconds = 0;
   AudioRecorder? _recorder;
   bool _disposed = false;
+  DateTime? _lastTypingSent;
+  static const _typingThrottle = Duration(milliseconds: 800);
 
   @override
   void initState() {
@@ -83,6 +89,17 @@ class _ChatInputBarState extends State<ChatInputBar> {
     } else {
       widget.onSendText(text, replyToId: widget.replyToId);
       setState(() => _controller.clear());
+    }
+    widget.onTypingStopped?.call();
+    _lastTypingSent = null;
+  }
+
+  void _sendTypingThrottled() {
+    final now = DateTime.now();
+    if (_lastTypingSent == null ||
+        now.difference(_lastTypingSent!) >= _typingThrottle) {
+      _lastTypingSent = now;
+      widget.onTyping?.call();
     }
   }
 
@@ -331,22 +348,30 @@ class _ChatInputBarState extends State<ChatInputBar> {
     Color mutedColor,
   ) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        if (!widget.isEditing && !kIsWeb)
-          IconButton(
-            onPressed: _isRecording ? null : _startRecording,
-            icon: Icon(
-              Icons.mic,
-              color: _isRecording ? AppTheme.lightError : mutedColor,
+        if (!widget.isEditing)
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: bgColor,
+              shape: BoxShape.circle,
+              border: Border.all(color: borderColor, width: 1),
+            ),
+            child: IconButton(
+              padding: EdgeInsets.zero,
+              onPressed: _showAttachSheet,
+              icon: Icon(Icons.add, color: primaryColor),
             ),
           ),
-        if (!widget.isEditing)
-          IconButton(
-            onPressed: widget.onAttachPhoto,
-            icon: Icon(Icons.camera_alt, color: mutedColor),
-          ),
+        const SizedBox(width: 6),
         Expanded(
           child: Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 8,
+            ),
             decoration: BoxDecoration(
               color: isDark
                   ? AppTheme.darkBackground
@@ -358,9 +383,17 @@ class _ChatInputBarState extends State<ChatInputBar> {
               controller: _controller,
               focusNode: _focusNode,
               maxLines: 3,
+              minLines: 1,
               maxLength: 5000,
               textInputAction: TextInputAction.newline,
-              onChanged: (_) => setState(() {}),
+              onChanged: (value) {
+                setState(() {});
+                if (value.trim().isNotEmpty) {
+                  _sendTypingThrottled();
+                } else {
+                  widget.onTypingStopped?.call();
+                }
+              },
               style: TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 15,
@@ -369,38 +402,101 @@ class _ChatInputBarState extends State<ChatInputBar> {
               decoration: InputDecoration(
                 counterText: '',
                 border: InputBorder.none,
-                hintText: widget.isEditing ? 'Edit message...' : 'Type a message...',
+                isDense: true,
+                hintText:
+                    widget.isEditing ? 'Edit message...' : 'Type a message...',
                 hintStyle: TextStyle(
                   fontFamily: 'Inter',
                   fontSize: 15,
                   color: mutedColor,
                 ),
-                contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16, vertical: 10),
               ),
             ),
           ),
         ),
-        const SizedBox(width: 4),
-        GestureDetector(
-          onTap: _controller.text.trim().isEmpty ? null : _sendText,
-          child: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: _controller.text.trim().isEmpty
-                  ? mutedColor.withValues(alpha: 0.3)
-                  : primaryColor,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              widget.isEditing ? Icons.check : Icons.send,
-              color: Colors.white,
-              size: 18,
-            ),
+        const SizedBox(width: 6),
+        if (!_isRecording && _controller.text.trim().isNotEmpty)
+          _roundAction(Icons.send, () => _sendText(), primaryColor)
+        else if (!_isRecording)
+          _roundAction(
+            Icons.mic,
+            widget.canSend ? _startRecording : null,
+            primaryColor,
           ),
-        ),
+        if (_isRecording)
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              GestureDetector(
+                onTap: _cancelRecording,
+                child: Icon(Icons.close, color: AppTheme.lightError),
+              ),
+              const SizedBox(width: 8),
+              GestureDetector(
+                onTap: _stopRecording,
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: const BoxDecoration(
+                    color: AppTheme.lightError,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.send, color: Colors.white, size: 18),
+                ),
+              ),
+            ],
+          ),
       ],
+    );
+  }
+
+  Widget _roundAction(
+    IconData icon,
+    VoidCallback? onPressed,
+    Color color,
+  ) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: onPressed == null ? Colors.grey.shade300 : color,
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: Colors.white, size: 18),
+      ),
+    );
+  }
+
+  void _showAttachSheet() {
+    showModalBottomSheet(
+      context: context,
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 12),
+            ListTile(
+              leading: const Icon(Icons.photo_library_outlined),
+              title: const Text('Gallery', style: TextStyle(fontFamily: 'Inter')),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                widget.onAttachPhoto();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.photo_camera_outlined),
+              title: const Text('Camera', style: TextStyle(fontFamily: 'Inter')),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                widget.onAttachPhoto();
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
     );
   }
 }

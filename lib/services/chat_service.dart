@@ -242,6 +242,69 @@ class ChatService {
     }
   }
 
+  /// Deletes a chat for the current user (hides your side; peers see ended).
+  static Future<Response> deleteChat(String chatId) async {
+    try {
+      return await ApiService.dio.delete('/chats/$chatId');
+    } on DioException catch (e) {
+      if (e.response != null) return e.response!;
+      rethrow;
+    }
+  }
+
+  static Future<Response> blockUser(String userId) async {
+    try {
+      return await ApiService.post('/blocks/$userId/block');
+    } on DioException catch (e) {
+      if (e.response != null) return e.response!;
+      rethrow;
+    }
+  }
+
+  static Future<Response> unblockUser(String userId) async {
+    try {
+      return await ApiService.post('/blocks/$userId/unblock');
+    } on DioException catch (e) {
+      if (e.response != null) return e.response!;
+      rethrow;
+    }
+  }
+
+  static Future<Response> getBlocks() async {
+    try {
+      return await ApiService.get('/blocks');
+    } on DioException catch (e) {
+      if (e.response != null) return e.response!;
+      rethrow;
+    }
+  }
+
+  static Future<Response> reportUser(String userId, String reason) async {
+    try {
+      return await ApiService.post('/reports/$userId', data: {'reason': reason});
+    } on DioException catch (e) {
+      if (e.response != null) return e.response!;
+      rethrow;
+    }
+  }
+
+  static Future<Response> reportMessage(
+    String messageId,
+    String reason, {
+    String? description,
+  }) async {
+    try {
+      return await ApiService.post(
+        '/reports/message/$messageId',
+        data: {'reason': reason, 'description': description},
+      );
+    } on DioException catch (e) {
+      if (e.response != null) return e.response!;
+      rethrow;
+    }
+  }
+
+  // ── Read ─────────────────────────────────────────────────────────
   static Future<Response> markDelivered(List<String> messageIds) async {
     try {
       return await ApiService.post(

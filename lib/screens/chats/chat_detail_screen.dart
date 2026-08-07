@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:dating_app/config/app_theme.dart';
@@ -9,6 +10,9 @@ import 'package:dating_app/widgets/chat_app_bar.dart';
 import 'package:dating_app/widgets/chat_message_bubble.dart';
 import 'package:dating_app/widgets/chat_input_bar.dart';
 import 'package:dating_app/widgets/typing_indicator.dart';
+import 'package:dating_app/utils/media_url.dart';
+import 'package:dating_app/screens/shared/profile_detail_loader.dart';
+import 'package:dating_app/screens/search/search_profile_detail.dart';
 import 'package:dating_app/generated/app_localizations.dart';
 
 class ChatDetailScreen extends StatefulWidget {
@@ -19,6 +23,7 @@ class ChatDetailScreen extends StatefulWidget {
   final String? lastSeenAt;
   final String? initialStatus;
   final String? initialInitiatorId;
+  final String? peerId;
 
   const ChatDetailScreen({
     super.key,
@@ -29,6 +34,7 @@ class ChatDetailScreen extends StatefulWidget {
     this.lastSeenAt,
     this.initialStatus,
     this.initialInitiatorId,
+    this.peerId,
   });
 
   @override
@@ -118,6 +124,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
     final errorColor = isDark ? AppTheme.darkError : AppTheme.lightError;
 
+    final isMine = message.senderId == _currentUserId;
+
     showModalBottomSheet(
       context: context,
       backgroundColor: surfaceColor,
@@ -137,7 +145,25 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            if (message.isSent) ...[
+            if (message.messageType == MessageType.text && message.content != null) ...[
+              ListTile(
+                leading: Icon(Icons.copy, color: primaryColor),
+                title: Text(
+                  'Copy',
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    color: textColor,
+                  ),
+                ),
+                onTap: () async {
+                  await Clipboard.setData(
+                    ClipboardData(text: message.content!),
+                  );
+                  if (context.mounted) Navigator.pop(context);
+                },
+              ),
+            ],
+            if (message.isSent && isMine) ...[
               ListTile(
                 leading: Icon(Icons.edit, color: primaryColor),
                 title: Text(
@@ -184,10 +210,95 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 });
               },
             ),
+            ListTile(
+              leading: Icon(Icons.flag, color: errorColor),
+              title: Text(
+                'Report',
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  color: textColor,
+                ),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                _showReportDialog(message);
+              },
+            ),
           ],
         ),
       ),
     );
+  }
+
+  void _setReplyFromSwipeRight(Message message) {
+    setState(() {
+      _replyToId = message.id;
+      _replyToContent = message.content;
+    });
+  }
+
+  void _showReportDialog(Message message) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surfaceColor =
+        isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
+    final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
+    final controller = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: surfaceColor,
+        title: Text(
+          'Report Message',
+          style: TextStyle(
+            fontFamily: 'Inter',
+            color: textColor,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        content: TextField(
+          controller: controller,
+          maxLines: 3,
+          maxLength: 2000,
+          autofocus: true,
+          decoration: InputDecoration(
+            hintText: 'Tell us what went wrong...',
+            border: const OutlineInputBorder(),
+            hintStyle: TextStyle(fontFamily: 'Inter', color: textColor),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(
+              'Cancel',
+              style: TextStyle(fontFamily: 'Inter', color: textColor),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              if (controller.text.trim().length < 5) return;
+              Navigator.pop(dialogContext, controller.text.trim());
+            },
+            child: Text(
+              'Send',
+              style: TextStyle(fontFamily: 'Inter', color: textColor),
+            ),
+          ),
+        ],
+      ),
+    ).then((reason) async {
+      if (reason is String && reason.isNotEmpty && mounted) {
+        await context
+            .read<ChatProvider>()
+            .reportMessage(message.id, reason: reason);
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Message reported')),
+          );
+        }
+      }
+    });
   }
 
   void _showDeleteDialog(Message message) {
@@ -196,59 +307,194 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
     final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
     final errorColor = isDark ? AppTheme.darkError : AppTheme.lightError;
+    bool deleteForAll = false;
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
+      builder: (dialogContext) => Dialog(
         backgroundColor: surfaceColor,
-        title: Text(
-          'Delete Message',
-          style: TextStyle(
-            fontFamily: 'Inter',
-            color: textColor,
-            fontWeight: FontWeight.w600,
+        child: StatefulBuilder(
+          builder: (dialogContext, setDialogState) => Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Delete Message',
+                  style: TextStyle(
+                    fontFamily: 'Inter',
+                    color: textColor,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                CheckboxListTile(
+                  value: deleteForAll,
+                  onChanged: (value) {
+                    setDialogState(() => deleteForAll = value ?? false);
+                  },
+                  title: Text(
+                    'Delete for ${widget.userName} too',
+                    style: TextStyle(fontFamily: 'Inter', color: textColor),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(dialogContext),
+                      child: Text(
+                        'Cancel',
+                        style: TextStyle(fontFamily: 'Inter', color: textColor),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.pop(dialogContext);
+                        context
+                            .read<ChatProvider>()
+                            .deleteMessage(message.id, deleteForAll: deleteForAll);
+                      },
+                      child: Text(
+                        'Delete',
+                        style:
+                            TextStyle(fontFamily: 'Inter', color: errorColor),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         ),
-        content: Text(
-          'Choose how to delete this message.',
-          style: TextStyle(
-            fontFamily: 'Inter',
-            color: textColor,
+      ),
+    );
+  }
+
+  void _openPeerProfile() {
+    final provider = context.read<ChatProvider>();
+    final peerId = widget.peerId ?? provider.peerId;
+    if (peerId == null || peerId.isEmpty) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ProfileDetailLoader(
+          userId: peerId,
+          builder: (profile) => SearchProfileDetail(
+            profile: profile,
+            viewOnly: true,
           ),
+        ),
+      ),
+    );
+  }
+
+  void _openChatMenu() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surfaceColor =
+        isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
+    final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: surfaceColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 12),
+            ListTile(
+              leading: const Icon(Icons.person_outline),
+              title: Text(
+                'View Profile',
+                style: TextStyle(fontFamily: 'Inter', color: textColor),
+              ),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                _openPeerProfile();
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.delete_outline),
+              title: Text(
+                'Delete Chat',
+                style: TextStyle(fontFamily: 'Inter', color: textColor),
+              ),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                _confirmDeleteChat();
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _confirmDeleteChat() async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surfaceColor =
+        isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: surfaceColor,
+        title: const Text('Delete Chat', style: TextStyle(fontFamily: 'Inter')),
+        content: const Text(
+          'This deletes the chat on your side.',
+          style: TextStyle(fontFamily: 'Inter'),
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: TextStyle(fontFamily: 'Inter', color: textColor),
-            ),
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel', style: TextStyle(fontFamily: 'Inter')),
           ),
           TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              context
-                  .read<ChatProvider>()
-                  .deleteMessage(message.id, deleteForAll: false);
-            },
-            child: Text(
-              'Delete for me',
-              style: TextStyle(fontFamily: 'Inter', color: errorColor),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              context
-                  .read<ChatProvider>()
-                  .deleteMessage(message.id, deleteForAll: true);
-            },
-            child: Text(
-              'Delete for everyone',
-              style: TextStyle(fontFamily: 'Inter', color: errorColor),
-            ),
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Delete', style: TextStyle(fontFamily: 'Inter')),
           ),
         ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    await context.read<ChatProvider>().deleteChat(widget.identifier);
+    if (mounted) Navigator.pop(context);
+  }
+
+  Widget _buildConversationOverBanner(
+    BuildContext context,
+    bool isDark,
+    Color mutedColor,
+  ) {
+    final t = AppLocalizations.of(context)!;
+    final bgColor = isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
+    final borderColor =
+        isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: bgColor,
+        border: Border(
+          top: BorderSide(color: borderColor, width: 0.5),
+        ),
+      ),
+      child: Text(
+        t.chat_conversation_over(widget.userName),
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontFamily: 'Inter',
+          fontSize: 13,
+          color: mutedColor,
+          fontStyle: FontStyle.italic,
+        ),
       ),
     );
   }
@@ -265,13 +511,15 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       backgroundColor: bgColor,
       appBar: ChatAppBar(
         userName: widget.userName,
-        avatarUrl: widget.avatarUrl,
+        avatarUrl: mediaUrlForDisplay(widget.avatarUrl),
         isOnline: context.watch<ChatProvider>().isOtherUserOnline,
         lastSeenAt: context
                 .watch<ChatProvider>()
                 .otherUserLastSeenAt
                 ?.toIso8601String() ??
             widget.lastSeenAt,
+        onAvatarTap: _openPeerProfile,
+        onMenuPressed: _openChatMenu,
       ),
       body: Column(
         children: [
@@ -300,6 +548,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               if (provider.isInitiatorWaiting) {
                 return _buildWaitingBanner(context, isDark, mutedColor);
               }
+              if (provider.conversationIsOver) {
+                return _buildConversationOverBanner(context, isDark, mutedColor);
+              }
               return ChatInputBar(
                 canSend: provider.canSendMessage,
                 replyToId: _replyToId,
@@ -321,6 +572,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 onEditSave: (content) {
                   provider.editMessage(provider.editingMessageId!, content);
                 },
+                onTyping: () => provider.setTyping(),
+                onTypingStopped: () => provider.stopTyping(),
                 onSendText: (text, {replyToId}) async {
                   final success = await provider.sendText(
                     widget.identifier,
@@ -514,6 +767,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
             message: message,
             isMine: message.senderId == userId,
             onLongPress: () => _showMessageOptions(message),
+            onTap: () => _showMessageOptions(message),
+            onReplyTap: () => _setReplyFromSwipeRight(message),
           );
         },
       ),

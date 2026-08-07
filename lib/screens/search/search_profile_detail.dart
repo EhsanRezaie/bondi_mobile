@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dating_app/config/app_theme.dart';
 import 'package:dating_app/generated/app_localizations.dart';
 import 'package:dating_app/models/discover_profile.dart';
+import 'package:dating_app/providers/chat_provider.dart';
 import 'package:dating_app/screens/chats/chat_detail_screen.dart';
 import 'package:dating_app/widgets/shimmer_avatar.dart';
 import 'package:dating_app/widgets/discover_action_button.dart';
@@ -14,6 +16,7 @@ class SearchProfileDetail extends StatefulWidget {
   final int? likesRemaining;
   final int? chatsRemaining;
   final bool isPremium;
+  final bool viewOnly;
   final Future<Map<String, dynamic>?> Function(DiscoverProfile)? onLike;
   final Future<Map<String, dynamic>?> Function(DiscoverProfile, {String? message})? onChat;
 
@@ -24,6 +27,7 @@ class SearchProfileDetail extends StatefulWidget {
     this.likesRemaining,
     this.chatsRemaining,
     this.isPremium = false,
+    this.viewOnly = false,
     this.onLike,
     this.onChat,
   });
@@ -97,7 +101,7 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                 ],
               ),
             ),
-            _buildBottomActionBar(t, isDark),
+            if (!widget.viewOnly) _buildBottomActionBar(t, isDark),
           ],
         ),
       ),
@@ -166,6 +170,22 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.close, color: Colors.white, size: 22),
+                ),
+              ),
+            ),
+            Positioned(
+              top: 8,
+              right: 8,
+              child: GestureDetector(
+                onTap: _openProfileMenu,
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.4),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.flag, color: Colors.white, size: 20),
                 ),
               ),
             ),
@@ -742,6 +762,128 @@ profile.currentUserAction == 'matched';
         ],
       ),
     );
+  }
+
+    void _openProfileMenu() {
+    final isDark = context.isDarkMode;
+    final surfaceColor = isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
+    final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
+    final errorColor = isDark ? AppTheme.darkError : AppTheme.lightError;
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: surfaceColor,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (sheetContext) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 12),
+            ListTile(
+              leading: Icon(Icons.flag, color: errorColor),
+              title: Text(
+                'Report Profile',
+                style: TextStyle(fontFamily: 'Inter', color: textColor),
+              ),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                _reportProfile();
+              },
+            ),
+            if (widget.viewOnly)
+              ListTile(
+                leading: Icon(Icons.block, color: errorColor),
+                title: Text(
+                  'Block User',
+                  style: TextStyle(fontFamily: 'Inter', color: textColor),
+                ),
+                onTap: () {
+                  Navigator.pop(sheetContext);
+                  _confirmBlock();
+                },
+              ),
+            const SizedBox(height: 8),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _reportProfile() async {
+    final provider = Provider.of<ChatProvider>(context, listen: false);
+    final t = AppLocalizations.of(context)!;
+    final controller = TextEditingController();
+    final reported = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: Theme.of(dialogContext).brightness == Brightness.dark
+            ? AppTheme.darkSurface
+            : AppTheme.lightSurface,
+        title: const Text('Report Profile',
+            style: TextStyle(fontFamily: 'Inter')),
+        content: TextField(
+          controller: controller,
+          maxLines: 3,
+          maxLength: 500,
+          decoration: const InputDecoration(
+            hintText: 'Tell us what went wrong...',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel', style: TextStyle(fontFamily: 'Inter')),
+          ),
+          TextButton(
+            onPressed: () {
+              if (controller.text.trim().length < 5) return;
+              Navigator.pop(dialogContext, true);
+            },
+            child: const Text('Send', style: TextStyle(fontFamily: 'Inter')),
+          ),
+        ],
+      ),
+    );
+    if (reported != true || !mounted) return;
+    final ok = await provider.reportUser(profile.id, controller.text.trim());
+    if (!mounted) return;
+    showActionToast(context, ok ? 'Reported' : t.error_something_wrong);
+  }
+
+  Future<void> _confirmBlock() async {
+    final provider = Provider.of<ChatProvider>(context, listen: false);
+    final t = AppLocalizations.of(context)!;
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: Theme.of(dialogContext).brightness == Brightness.dark
+            ? AppTheme.darkSurface
+            : AppTheme.lightSurface,
+        title: const Text('Block User',
+            style: TextStyle(fontFamily: 'Inter')),
+        content: const Text(
+          'You will no longer see each other. Their messages will stop.',
+          style: TextStyle(fontFamily: 'Inter'),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel', style: TextStyle(fontFamily: 'Inter')),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Block', style: TextStyle(fontFamily: 'Inter')),
+          ),
+        ],
+      ),
+    );
+    if (confirm != true || !mounted) return;
+    final ok = await provider.blockUser(profile.id);
+    if (!mounted) return;
+    showActionToast(context, ok ? 'Blocked' : t.error_something_wrong);
   }
 
   Future<void> _handleLike() async {
