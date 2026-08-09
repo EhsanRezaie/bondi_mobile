@@ -319,12 +319,14 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
   Widget _buildLoadingGrid(bool isDark) {
     return Padding(
       padding: const EdgeInsets.all(8),
-      child: GridView.count(
-        crossAxisCount: 3,
-        mainAxisSpacing: 6,
-        crossAxisSpacing: 6,
+      child: GridView(
+        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+          maxCrossAxisExtent: 160,
+          mainAxisSpacing: 6,
+          crossAxisSpacing: 6,
+          childAspectRatio: 0.58,
+        ),
         physics: const NeverScrollableScrollPhysics(),
-        childAspectRatio: 0.58,
         children: List.generate(9, (index) {
           return Container(
             decoration: BoxDecoration(
@@ -438,8 +440,10 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
     return GridView.builder(
       controller: _scrollController,
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        // Auto-switches column count with width (3 on phones -> more on
+        // tablets) while keeping cards a usable size.
+        maxCrossAxisExtent: 160,
         mainAxisSpacing: 6,
         crossAxisSpacing: 6,
         childAspectRatio: 0.58,

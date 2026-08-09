@@ -7,6 +7,7 @@ import 'package:dating_app/generated/app_localizations.dart';
 import 'package:dating_app/models/photo.dart';
 import 'package:dating_app/providers/profile_provider.dart';
 import 'package:dating_app/services/photo_service.dart';
+import 'package:dating_app/utils/responsive.dart';
 import 'package:dating_app/widgets/action_toast.dart';
 import 'package:dating_app/widgets/shimmer_avatar.dart';
 
@@ -59,11 +60,15 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
       photos.sort((a, b) => a.order.compareTo(b.order));
 
       setState(() {
-        _items = photos.map((p) => _EditablePhoto(
-          key: 'server_${p.id}',
-          serverPhoto: p,
-          isMain: p.isMain,
-        )).toList();
+        _items = photos
+            .map(
+              (p) => _EditablePhoto(
+                key: 'server_${p.id}',
+                serverPhoto: p,
+                isMain: p.isMain,
+              ),
+            )
+            .toList();
         _isLoading = false;
       });
     } catch (e) {
@@ -100,12 +105,14 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
         final finalFile = await PhotoService.convertToJpeg(file);
 
         setState(() {
-          _items.add(_EditablePhoto(
-            key: 'new_${DateTime.now().millisecondsSinceEpoch}',
-            localFile: finalFile,
-            isNew: true,
-            isMain: _items.isEmpty,
-          ));
+          _items.add(
+            _EditablePhoto(
+              key: 'new_${DateTime.now().millisecondsSinceEpoch}',
+              localFile: finalFile,
+              isNew: true,
+              isMain: _items.isEmpty,
+            ),
+          );
           _errorMessage = null;
         });
       }
@@ -166,7 +173,9 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
 
     if (_items.any((i) => i.serverPhoto != null && i.isMain)) {
       final mainItem = _items.firstWhere((i) => i.isMain);
-      if (mainItem.serverPhoto != null && !mainItem.serverPhoto!.isMain) return true;
+      if (mainItem.serverPhoto != null && !mainItem.serverPhoto!.isMain) {
+        return true;
+      }
     }
 
     final serverItems = _items.where((i) => i.serverPhoto != null).toList();
@@ -184,7 +193,9 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Discard changes?'),
-        content: const Text('You have unsaved changes. Are you sure you want to go back?'),
+        content: const Text(
+          'You have unsaved changes. Are you sure you want to go back?',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context, false),
@@ -231,19 +242,21 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
             });
             return;
           }
-          uploadedItems.add(_EditablePhoto(
-            key: 'server_${result.id}',
-            serverPhoto: PhotoResponse(
-              id: result.id,
-              userId: '',
-              url: result.url,
-              order: 999,
+          uploadedItems.add(
+            _EditablePhoto(
+              key: 'server_${result.id}',
+              serverPhoto: PhotoResponse(
+                id: result.id,
+                userId: '',
+                url: result.url,
+                order: 999,
+                isMain: item.isMain,
+                status: result.status,
+                faceVerified: false,
+              ),
               isMain: item.isMain,
-              status: result.status,
-              faceVerified: false,
             ),
-            isMain: item.isMain,
-          ));
+          );
         } else if (item.serverPhoto != null) {
           uploadedItems.add(item);
         }
@@ -254,19 +267,22 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
         orElse: () => uploadedItems.first,
       );
       if (mainItem.serverPhoto != null) {
-        final originalMain = _items.where(
-          (i) => i.serverPhoto != null && i.serverPhoto!.isMain,
-        ).toList();
+        final originalMain = _items
+            .where((i) => i.serverPhoto != null && i.serverPhoto!.isMain)
+            .toList();
 
         bool needsSetMain = true;
-        if (originalMain.isNotEmpty && originalMain.first.serverPhoto!.id == mainItem.serverPhoto!.id) {
+        if (originalMain.isNotEmpty &&
+            originalMain.first.serverPhoto!.id == mainItem.serverPhoto!.id) {
           if (!_items.any((i) => i.isNew)) {
             needsSetMain = false;
           }
         }
 
         if (needsSetMain) {
-          final result = await PhotoService.setMainPhoto(mainItem.serverPhoto!.id);
+          final result = await PhotoService.setMainPhoto(
+            mainItem.serverPhoto!.id,
+          );
           if (result == null) {
             setState(() {
               _errorMessage = 'Failed to set main photo';
@@ -277,7 +293,9 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
         }
       }
 
-      final serverItems = uploadedItems.where((i) => i.serverPhoto != null).toList();
+      final serverItems = uploadedItems
+          .where((i) => i.serverPhoto != null)
+          .toList();
       bool orderChanged = false;
       for (int i = 0; i < serverItems.length; i++) {
         if (serverItems[i].serverPhoto!.order != i) {
@@ -323,7 +341,9 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
     final bgColor = isDark ? AppTheme.darkBackground : AppTheme.lightBackground;
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
-    final textMutedColor = isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted;
+    final textMutedColor = isDark
+        ? AppTheme.darkTextMuted
+        : AppTheme.lightTextMuted;
     final onSurfaceColor = colors.onSurface;
     final errorColor = AppTheme.lightError;
 
@@ -367,176 +387,239 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
           centerTitle: true,
         ),
         body: _isLoading
-          ? Center(
-              child: CircularProgressIndicator(
-                color: primaryColor,
-              ),
-            )
-          : SafeArea(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  return CustomScrollView(
-                    slivers: [
-                      SliverPadding(
-                        padding: const EdgeInsets.fromLTRB(24.0, 12.0, 24.0, 0),
-                        sliver: SliverToBoxAdapter(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Manage your photos. Add new ones, reorder, or set a main photo.',
-                                style: TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 15,
-                                  color: textMutedColor,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Row(
+            ? Center(child: CircularProgressIndicator(color: primaryColor))
+            : SafeArea(
+                child: AppLayout.box(
+                  context: context,
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return CustomScrollView(
+                        slivers: [
+                          SliverPadding(
+                            padding: const EdgeInsets.fromLTRB(
+                              24.0,
+                              12.0,
+                              24.0,
+                              0,
+                            ),
+                            sliver: SliverToBoxAdapter(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    '${_items.length} / $maxPhotos photos',
+                                    'Manage your photos. Add new ones, reorder, or set a main photo.',
                                     style: TextStyle(
                                       fontFamily: 'Inter',
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                      color: onSurfaceColor,
+                                      fontSize: 15,
+                                      color: textMutedColor,
                                     ),
                                   ),
-                                  if (_items.length < minPhotos) ...[
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      '(${minPhotos - _items.length} more required)',
-                                      style: TextStyle(
-                                        fontFamily: 'Inter',
-                                        fontSize: 12,
-                                        color: errorColor,
-                                      ),
-                                    ),
-                                  ],
-                                ],
-                              ),
-                              const SizedBox(height: 10),
-
-                              if (_errorMessage != null)
-                                Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                                  margin: const EdgeInsets.only(bottom: 8),
-                                  decoration: BoxDecoration(
-                                    color: errorColor.withValues(alpha: 0.08),
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(color: errorColor.withValues(alpha: 0.2)),
-                                  ),
-                                  child: Row(
+                                  const SizedBox(height: 8),
+                                  Row(
                                     children: [
-                                      Icon(Icons.error_outline, color: errorColor, size: 20),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Text(
-                                          _errorMessage!,
+                                      Text(
+                                        '${_items.length} / $maxPhotos photos',
+                                        style: TextStyle(
+                                          fontFamily: 'Inter',
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w600,
+                                          color: onSurfaceColor,
+                                        ),
+                                      ),
+                                      if (_items.length < minPhotos) ...[
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          '(${minPhotos - _items.length} more required)',
                                           style: TextStyle(
                                             fontFamily: 'Inter',
-                                            fontSize: 14,
+                                            fontSize: 12,
                                             color: errorColor,
-                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                  const SizedBox(height: 10),
+
+                                  if (_errorMessage != null)
+                                    Container(
+                                      width: double.infinity,
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 16,
+                                        vertical: 14,
+                                      ),
+                                      margin: const EdgeInsets.only(bottom: 8),
+                                      decoration: BoxDecoration(
+                                        color: errorColor.withValues(
+                                          alpha: 0.08,
+                                        ),
+                                        borderRadius: BorderRadius.circular(16),
+                                        border: Border.all(
+                                          color: errorColor.withValues(
+                                            alpha: 0.2,
                                           ),
                                         ),
                                       ),
-                                    ],
-                                  ),
-                                ),
-
-                              const SizedBox(height: 8),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      SliverPadding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                        sliver: SliverToBoxAdapter(
-                          child: _buildPhotoGrid(primaryColor, borderColor, textMutedColor, onSurfaceColor),
-                        ),
-                      ),
-
-                      // Tips row
-                      SliverPadding(
-                        padding: const EdgeInsets.fromLTRB(24.0, 8.0, 24.0, 4.0),
-                        sliver: SliverToBoxAdapter(
-                          child: Row(
-                            children: [
-                              Icon(Icons.drag_handle, size: 14, color: textMutedColor),
-                              const SizedBox(width: 6),
-                              Text(
-                                'Drag to reorder',
-                                style: TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 11,
-                                  color: textMutedColor,
-                                ),
-                              ),
-                              const SizedBox(width: 16),
-                              Text(
-                                'Drag to first slot to set as main',
-                                style: TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 11,
-                                  color: textMutedColor,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      SliverFillRemaining(
-                        hasScrollBody: false,
-                        child: Container(
-                          alignment: Alignment.bottomCenter,
-                          padding: const EdgeInsets.only(left: 24.0, right: 24.0, bottom: 24.0, top: 16.0),
-                          child: SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: (_isSaving || !canSave) ? null : _handleSave,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: canSave ? primaryColor : primaryColor.withValues(alpha: 0.3),
-                                foregroundColor: canSave ? Colors.white : primaryColor.withValues(alpha: 0.5),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                elevation: 0,
-                                minimumSize: const Size(double.infinity, 56),
-                              ),
-                              child: _isSaving
-                                ? const SizedBox(
-                                    height: 24,
-                                    width: 24,
-                                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                                  )
-                                : Text(
-                                    _items.length < minPhotos ? 'Add ${minPhotos - _items.length} more' : (canSave ? 'Save' : 'No changes'),
-                                    style: TextStyle(
-                                      fontFamily: 'Inter',
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      color: canSave ? Colors.white : primaryColor.withValues(alpha: 0.5),
+                                      child: Row(
+                                        children: [
+                                          Icon(
+                                            Icons.error_outline,
+                                            color: errorColor,
+                                            size: 20,
+                                          ),
+                                          const SizedBox(width: 12),
+                                          Expanded(
+                                            child: Text(
+                                              _errorMessage!,
+                                              style: TextStyle(
+                                                fontFamily: 'Inter',
+                                                fontSize: 14,
+                                                color: errorColor,
+                                                fontWeight: FontWeight.w500,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
-                                  ),
+
+                                  const SizedBox(height: 8),
+                                ],
+                              ),
                             ),
                           ),
-                        ),
-                      ),
-                    ],
-                  );
-                },
+
+                          SliverPadding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24.0,
+                            ),
+                            sliver: SliverToBoxAdapter(
+                              child: _buildPhotoGrid(
+                                primaryColor,
+                                borderColor,
+                                textMutedColor,
+                                onSurfaceColor,
+                              ),
+                            ),
+                          ),
+
+                          // Tips row
+                          SliverPadding(
+                            padding: const EdgeInsets.fromLTRB(
+                              24.0,
+                              8.0,
+                              24.0,
+                              4.0,
+                            ),
+                            sliver: SliverToBoxAdapter(
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.drag_handle,
+                                    size: 14,
+                                    color: textMutedColor,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    'Drag to reorder',
+                                    style: TextStyle(
+                                      fontFamily: 'Inter',
+                                      fontSize: 11,
+                                      color: textMutedColor,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Text(
+                                    'Drag to first slot to set as main',
+                                    style: TextStyle(
+                                      fontFamily: 'Inter',
+                                      fontSize: 11,
+                                      color: textMutedColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          SliverFillRemaining(
+                            hasScrollBody: false,
+                            child: Container(
+                              alignment: Alignment.bottomCenter,
+                              padding: const EdgeInsets.only(
+                                left: 24.0,
+                                right: 24.0,
+                                bottom: 24.0,
+                                top: 16.0,
+                              ),
+                              child: SizedBox(
+                                width: double.infinity,
+                                child: ElevatedButton(
+                                  onPressed: (_isSaving || !canSave)
+                                      ? null
+                                      : _handleSave,
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: canSave
+                                        ? primaryColor
+                                        : primaryColor.withValues(alpha: 0.3),
+                                    foregroundColor: canSave
+                                        ? Colors.white
+                                        : primaryColor.withValues(alpha: 0.5),
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    elevation: 0,
+                                    minimumSize: const Size(
+                                      double.infinity,
+                                      56,
+                                    ),
+                                  ),
+                                  child: _isSaving
+                                      ? const SizedBox(
+                                          height: 24,
+                                          width: 24,
+                                          child: CircularProgressIndicator(
+                                            strokeWidth: 2,
+                                            color: Colors.white,
+                                          ),
+                                        )
+                                      : Text(
+                                          _items.length < minPhotos
+                                              ? 'Add ${minPhotos - _items.length} more'
+                                              : (canSave
+                                                    ? 'Save'
+                                                    : 'No changes'),
+                                          style: TextStyle(
+                                            fontFamily: 'Inter',
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                            color: canSave
+                                                ? Colors.white
+                                                : primaryColor.withValues(
+                                                    alpha: 0.5,
+                                                  ),
+                                          ),
+                                        ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
               ),
-            ),
       ),
     );
   }
 
-  Widget _buildPhotoGrid(Color primaryColor, Color borderColor, Color textMutedColor, Color onSurfaceColor) {
+  Widget _buildPhotoGrid(
+    Color primaryColor,
+    Color borderColor,
+    Color textMutedColor,
+    Color onSurfaceColor,
+  ) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final double width = constraints.maxWidth;
@@ -609,18 +692,72 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
                 // Row 2: 3 small
                 Row(
                   children: [
-                    _buildSmallSlot(3, displayItems, primaryColor, borderColor, textMutedColor, onSurfaceColor, gap),
-                    _buildSmallSlot(4, displayItems, primaryColor, borderColor, textMutedColor, onSurfaceColor, gap),
-                    _buildSmallSlot(5, displayItems, primaryColor, borderColor, textMutedColor, onSurfaceColor, gap),
+                    _buildSmallSlot(
+                      3,
+                      displayItems,
+                      primaryColor,
+                      borderColor,
+                      textMutedColor,
+                      onSurfaceColor,
+                      gap,
+                      width,
+                    ),
+                    _buildSmallSlot(
+                      4,
+                      displayItems,
+                      primaryColor,
+                      borderColor,
+                      textMutedColor,
+                      onSurfaceColor,
+                      gap,
+                      width,
+                    ),
+                    _buildSmallSlot(
+                      5,
+                      displayItems,
+                      primaryColor,
+                      borderColor,
+                      textMutedColor,
+                      onSurfaceColor,
+                      gap,
+                      width,
+                    ),
                   ],
                 ),
                 SizedBox(height: gap),
                 // Row 3: 3 small
                 Row(
                   children: [
-                    _buildSmallSlot(6, displayItems, primaryColor, borderColor, textMutedColor, onSurfaceColor, gap),
-                    _buildSmallSlot(7, displayItems, primaryColor, borderColor, textMutedColor, onSurfaceColor, gap),
-                    _buildSmallSlot(8, displayItems, primaryColor, borderColor, textMutedColor, onSurfaceColor, gap),
+                    _buildSmallSlot(
+                      6,
+                      displayItems,
+                      primaryColor,
+                      borderColor,
+                      textMutedColor,
+                      onSurfaceColor,
+                      gap,
+                      width,
+                    ),
+                    _buildSmallSlot(
+                      7,
+                      displayItems,
+                      primaryColor,
+                      borderColor,
+                      textMutedColor,
+                      onSurfaceColor,
+                      gap,
+                      width,
+                    ),
+                    _buildSmallSlot(
+                      8,
+                      displayItems,
+                      primaryColor,
+                      borderColor,
+                      textMutedColor,
+                      onSurfaceColor,
+                      gap,
+                      width,
+                    ),
                   ],
                 ),
               ],
@@ -631,9 +768,17 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
     );
   }
 
-  Widget _buildSmallSlot(int index, List<_EditablePhoto> displayItems, Color primaryColor, Color borderColor, Color textMutedColor, Color onSurfaceColor, double gap) {
-    final double totalWidth = MediaQuery.of(context).size.width - 48;
-    final double smallItemWidth = (totalWidth - gap * 2) / 3;
+  Widget _buildSmallSlot(
+    int index,
+    List<_EditablePhoto> displayItems,
+    Color primaryColor,
+    Color borderColor,
+    Color textMutedColor,
+    Color onSurfaceColor,
+    double gap,
+    double width,
+  ) {
+    final double smallItemWidth = (width - gap * 2) / 3;
     final double smallItemHeight = smallItemWidth * 1.1;
 
     return SizedBox(
@@ -700,15 +845,17 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(13),
                 child: item?.localFile != null
-                  ? Image.file(item!.localFile!, fit: BoxFit.cover)
-                  : (item?.serverPhoto != null
-                      ? CachedNetworkImage(
-                          imageUrl: item!.serverPhoto!.displayUrl,
-                          fit: BoxFit.cover,
-                          placeholder: (_, _) => Container(color: Colors.grey.shade200),
-                          errorWidget: (_, _, _) => const Icon(Icons.broken_image),
-                        )
-                      : Container()),
+                    ? Image.file(item!.localFile!, fit: BoxFit.cover)
+                    : (item?.serverPhoto != null
+                          ? CachedNetworkImage(
+                              imageUrl: item!.serverPhoto!.displayUrl,
+                              fit: BoxFit.cover,
+                              placeholder: (_, _) =>
+                                  Container(color: Colors.grey.shade200),
+                              errorWidget: (_, _, _) =>
+                                  const Icon(Icons.broken_image),
+                            )
+                          : Container()),
               ),
             ),
           ),
@@ -776,7 +923,11 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
             fit: StackFit.expand,
             children: [
               if (hasItem && item.localFile != null)
-                Image.file(item.localFile!, fit: BoxFit.cover, errorBuilder: (_, _, _) => _imageErrorWidget())
+                Image.file(
+                  item.localFile!,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) => _imageErrorWidget(),
+                )
               else if (hasItem && item.serverPhoto != null)
                 CachedNetworkImage(
                   imageUrl: item.serverPhoto!.displayUrl,
@@ -786,7 +937,11 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
                 )
               else
                 Center(
-                  child: Icon(Icons.add, size: isBig ? 40 : 28, color: Colors.grey.shade400),
+                  child: Icon(
+                    Icons.add,
+                    size: isBig ? 40 : 28,
+                    color: Colors.grey.shade400,
+                  ),
                 ),
 
               if (hasItem && item.isMain)
@@ -794,7 +949,10 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
                   top: 5,
                   right: 5,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
                       color: primaryColor,
                       borderRadius: BorderRadius.circular(8),
@@ -833,7 +991,11 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
                         color: Colors.black54,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.close, color: Colors.white, size: 12),
+                      child: const Icon(
+                        Icons.close,
+                        color: Colors.white,
+                        size: 12,
+                      ),
                     ),
                   ),
                 ),
@@ -848,7 +1010,11 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
                       color: Colors.black54,
                       borderRadius: BorderRadius.circular(4),
                     ),
-                    child: Icon(Icons.drag_handle, color: Colors.white70, size: 14),
+                    child: Icon(
+                      Icons.drag_handle,
+                      color: Colors.white70,
+                      size: 14,
+                    ),
                   ),
                 ),
 
@@ -870,7 +1036,11 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
     );
   }
 
-  Widget _buildStatusBadge(_EditablePhoto item, Color textMutedColor, Color primaryColor) {
+  Widget _buildStatusBadge(
+    _EditablePhoto item,
+    Color textMutedColor,
+    Color primaryColor,
+  ) {
     final t = AppLocalizations.of(context)!;
     if (item.serverPhoto == null) return const SizedBox.shrink();
 

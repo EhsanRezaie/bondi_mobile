@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dating_app/config/app_theme.dart';
 import 'package:dating_app/models/chat_card.dart';
+import 'package:dating_app/utils/responsive.dart';
 import 'package:intl/intl.dart';
 
 class ChatListScreen extends StatelessWidget {
@@ -29,16 +30,14 @@ class ChatListScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = context.isDarkMode;
-    final mutedColor =
-        isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted;
-    final borderColor =
-        isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
+    final mutedColor = isDark
+        ? AppTheme.darkTextMuted
+        : AppTheme.lightTextMuted;
+    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
 
     if (isLoading && chats.isEmpty) {
-      return Center(
-        child: CircularProgressIndicator(color: primaryColor),
-      );
+      return Center(child: CircularProgressIndicator(color: primaryColor));
     }
 
     if (chats.isEmpty) {
@@ -53,8 +52,11 @@ class ChatListScreen extends StatelessWidget {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.chat_bubble_outline,
-                        size: 64, color: borderColor),
+                    Icon(
+                      Icons.chat_bubble_outline,
+                      size: 64,
+                      color: borderColor,
+                    ),
                     const SizedBox(height: 16),
                     Text(
                       emptyText,
@@ -110,10 +112,10 @@ class ChatListScreen extends StatelessWidget {
   Widget _buildChatItem(BuildContext context, ChatCard chat) {
     final isDark = context.isDarkMode;
     final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
-    final mutedColor =
-        isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted;
-    final borderColor =
-        isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
+    final mutedColor = isDark
+        ? AppTheme.darkTextMuted
+        : AppTheme.lightTextMuted;
+    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
 
     final lastMsg = chat.lastMessage;
@@ -130,15 +132,21 @@ class ChatListScreen extends StatelessWidget {
       leading: Stack(
         children: [
           CircleAvatar(
-            radius: 28,
+            radius: AppLayout.s(context, 28),
             backgroundColor: borderColor,
-            backgroundImage: chat.user.mainPhotoUrl != null &&
+            backgroundImage:
+                chat.user.mainPhotoUrl != null &&
                     chat.user.mainPhotoUrl!.isNotEmpty
                 ? CachedNetworkImageProvider(chat.user.mainPhotoUrl!)
                 : null,
-            child: chat.user.mainPhotoUrl == null ||
+            child:
+                chat.user.mainPhotoUrl == null ||
                     chat.user.mainPhotoUrl!.isEmpty
-                ? Icon(Icons.person, size: 28, color: borderColor)
+                ? Icon(
+                    Icons.person,
+                    size: AppLayout.s(context, 28),
+                    color: borderColor,
+                  )
                 : null,
           ),
           if (chat.user.isOnline)
@@ -146,14 +154,15 @@ class ChatListScreen extends StatelessWidget {
               right: 0,
               bottom: 0,
               child: Container(
-                width: 14,
-                height: 14,
+                width: AppLayout.s(context, 14),
+                height: AppLayout.s(context, 14),
                 decoration: BoxDecoration(
                   color: AppTheme.lightSuccess,
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color:
-                        isDark ? AppTheme.darkSurface : AppTheme.lightSurface,
+                    color: isDark
+                        ? AppTheme.darkSurface
+                        : AppTheme.lightSurface,
                     width: 2,
                   ),
                 ),
@@ -205,14 +214,13 @@ class ChatListScreen extends StatelessWidget {
                 ),
               ),
             ),
-          Icon(
-            Icons.chevron_right,
-            color: mutedColor,
-          ),
+          Icon(Icons.chevron_right, color: mutedColor),
         ],
       ),
       onTap: () => onChatTap(chat),
-      onLongPress: onChatLongPress == null ? null : () => onChatLongPress!(chat),
+      onLongPress: onChatLongPress == null
+          ? null
+          : () => onChatLongPress!(chat),
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dating_app/config/app_theme.dart';
+import 'package:dating_app/utils/responsive.dart';
 import 'package:dating_app/widgets/online_indicator.dart';
 
 class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -51,19 +52,20 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
             child: Stack(
               children: [
                 CircleAvatar(
-                  radius: 18,
+                  radius: AppLayout.s(context, 18),
                   backgroundColor: borderColor,
                   backgroundImage: avatarUrl != null && avatarUrl!.isNotEmpty
                       ? CachedNetworkImageProvider(avatarUrl!)
                       : null,
                   child: avatarUrl == null || avatarUrl!.isEmpty
-                      ? Icon(Icons.person, size: 18, color: borderColor)
+                      ? Icon(Icons.person,
+                          size: AppLayout.s(context, 18), color: borderColor)
                       : null,
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 10),
+          SizedBox(width: AppLayout.s(context, 10)),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

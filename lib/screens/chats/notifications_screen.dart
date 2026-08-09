@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:dating_app/config/app_theme.dart';
 import 'package:dating_app/models/notification.dart';
 import 'package:dating_app/providers/notifications_provider.dart';
+import 'package:dating_app/utils/responsive.dart';
 import 'package:intl/intl.dart';
 
 class NotificationsScreen extends StatefulWidget {
@@ -27,10 +28,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     final bgColor = isDark ? AppTheme.darkBackground : AppTheme.lightBackground;
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
     final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
-    final mutedColor =
-        isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted;
-    final borderColor =
-        isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
+    final mutedColor = isDark
+        ? AppTheme.darkTextMuted
+        : AppTheme.lightTextMuted;
+    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -69,8 +70,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.notifications_none,
-                              size: 64, color: borderColor),
+                          Icon(
+                            Icons.notifications_none,
+                            size: 64,
+                            color: borderColor,
+                          ),
                           const SizedBox(height: 16),
                           Text(
                             'No notifications yet',
@@ -103,8 +107,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               child: ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.symmetric(vertical: 4),
-                itemCount: provider.notifications.length +
-                    (provider.hasMore ? 1 : 0),
+                itemCount:
+                    provider.notifications.length + (provider.hasMore ? 1 : 0),
                 itemBuilder: (context, index) {
                   if (index == provider.notifications.length) {
                     return Center(
@@ -131,13 +135,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Widget _buildItem(BuildContext context, AppNotification item) {
     final isDark = context.isDarkMode;
     final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
-    final mutedColor =
-        isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted;
-    final borderColor =
-        isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
+    final mutedColor = isDark
+        ? AppTheme.darkTextMuted
+        : AppTheme.lightTextMuted;
+    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
 
-    final time = DateFormat('HH:mm')
-        .format(item.createdAt.toLocal());
+    final time = DateFormat('HH:mm').format(item.createdAt.toLocal());
 
     return Dismissible(
       key: ValueKey(item.id),
@@ -156,11 +159,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         leading: Stack(
           children: [
             CircleAvatar(
-              radius: 22,
+              radius: AppLayout.s(context, 22),
               backgroundColor: borderColor,
               child: Icon(
                 _iconFor(item.type),
-                size: 22,
+                size: AppLayout.s(context, 22),
                 color: _iconColorFor(item.type, isDark),
               ),
             ),
@@ -169,14 +172,15 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 right: 0,
                 bottom: 0,
                 child: Container(
-                  width: 12,
-                  height: 12,
+                  width: AppLayout.s(context, 12),
+                  height: AppLayout.s(context, 12),
                   decoration: BoxDecoration(
                     color: AppTheme.lightSuccess,
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color:
-                          isDark ? AppTheme.darkSurface : AppTheme.lightSurface,
+                      color: isDark
+                          ? AppTheme.darkSurface
+                          : AppTheme.lightSurface,
                       width: 2,
                     ),
                   ),

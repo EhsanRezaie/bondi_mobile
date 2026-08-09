@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dating_app/config/app_theme.dart';
 import 'package:dating_app/models/match.dart';
+import 'package:dating_app/utils/responsive.dart';
 
 class MatchedAvatarStrip extends StatelessWidget {
   final List<Match> matches;
@@ -23,11 +24,18 @@ class MatchedAvatarStrip extends StatelessWidget {
     final borderColor =
         isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
 
+    // Scale the strip and avatar sizes modestly on larger screens and
+    // bound the name text so very long names can't force overflow in the
+    // horizontal list.
+    final avatarRadius = AppLayout.s(context, 28);
+    final stripHeight = 90.0 + (avatarRadius - 28);
+    final itemWidth = avatarRadius * 2 + 16;
+
     final displayMatches =
         matches.where((m) => m.kind == 'match').take(5).toList();
 
     return SizedBox(
-      height: 90,
+      height: stripHeight,
       child: displayMatches.isEmpty
           ? const SizedBox.shrink()
           : NotificationListener<ScrollNotification>(
@@ -74,7 +82,7 @@ class MatchedAvatarStrip extends StatelessWidget {
                               child: Stack(
                                 children: [
                                   CircleAvatar(
-                                    radius: 28,
+                                    radius: avatarRadius,
                                     backgroundColor: borderColor,
                                     backgroundImage:
                                         match.user.mainPhotoUrl != null &&
@@ -87,7 +95,7 @@ class MatchedAvatarStrip extends StatelessWidget {
                                             match.user.mainPhotoUrl!.isEmpty
                                         ? Icon(
                                             Icons.person,
-                                            size: 28,
+                                            size: avatarRadius,
                                             color: borderColor,
                                           )
                                         : null,
@@ -114,17 +122,22 @@ class MatchedAvatarStrip extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 4),
-                          Text(
-                            match.user.name,
-                            style: TextStyle(
-                              fontFamily: 'Inter',
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500,
-                              color: isDark
-                                  ? AppTheme.darkText
-                                  : AppTheme.lightText,
+                          ConstrainedBox(
+                            constraints:
+                                BoxConstraints(maxWidth: itemWidth),
+                            child: Text(
+                              match.user.name,
+                              maxLines: 1,
+                              style: TextStyle(
+                                fontFamily: 'Inter',
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: isDark
+                                    ? AppTheme.darkText
+                                    : AppTheme.lightText,
+                              ),
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            overflow: TextOverflow.ellipsis,
                           ),
                         ],
                       ),

@@ -4,8 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:dating_app/screens/auth/sign_up_screen.dart';
 import "package:dating_app/providers/auth_provider.dart";
 import "package:dating_app/providers/language_provider.dart";
-import 'package:dating_app/providers/onboarding_provider.dart';
-import 'package:dating_app/screens/auth/verify_code_screen.dart';
 import 'package:dating_app/screens/login_screen.dart';
 import '../../../helpers/test_helpers.dart';
 
@@ -27,7 +25,9 @@ void main() {
   });
 
   group('SignUpScreen', () {
-    testWidgets('shows validation errors for empty fields on submit', (tester) async {
+    testWidgets('shows validation errors for empty fields on submit', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildTestable(
           const SignUpScreen(),
@@ -65,7 +65,9 @@ void main() {
       expect(find.text('Please enter a valid email'), findsOneWidget);
     });
 
-    testWidgets('shows error for password shorter than 8 characters', (tester) async {
+    testWidgets('shows error for password shorter than 8 characters', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildTestable(
           const SignUpScreen(),
@@ -80,7 +82,10 @@ void main() {
       await tester.enterText(find.byType(TextFormField).at(1), 'short');
       await tester.pump();
 
-      expect(find.text('Password must be at least 8 characters'), findsOneWidget);
+      expect(
+        find.text('Password must be at least 8 characters'),
+        findsOneWidget,
+      );
     });
 
     testWidgets('shows error when passwords do not match', (tester) async {

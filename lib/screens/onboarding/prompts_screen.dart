@@ -7,8 +7,8 @@ import '../../providers/onboarding_provider.dart';
 import '../../providers/language_provider.dart';
 import '../../services/onboarding_service.dart';
 import '../../models/prompt.dart';
+import '../../utils/responsive.dart';
 import 'photo_upload_screen.dart';
-
 
 class PromptsScreen extends StatefulWidget {
   const PromptsScreen({super.key});
@@ -52,7 +52,10 @@ class _PromptsScreenState extends State<PromptsScreen> {
   Future<void> _loadPrompts() async {
     setState(() => _isLoading = true);
     try {
-      final languageProvider = Provider.of<LanguageProvider>(context, listen: false);
+      final languageProvider = Provider.of<LanguageProvider>(
+        context,
+        listen: false,
+      );
       final languageCode = languageProvider.locale.languageCode;
 
       final prompts = await OnboardingService.getPrompts(
@@ -91,7 +94,9 @@ class _PromptsScreenState extends State<PromptsScreen> {
 
   String _formatCategory(String category) {
     final parts = category.split('_');
-    return parts.map((part) => part[0].toUpperCase() + part.substring(1)).join(' ');
+    return parts
+        .map((part) => part[0].toUpperCase() + part.substring(1))
+        .join(' ');
   }
 
   void _toggleCategory(String category) {
@@ -119,10 +124,7 @@ class _PromptsScreenState extends State<PromptsScreen> {
           });
           return;
         }
-        _selectedPrompts.add({
-          'prompt_id': prompt.id,
-          'answer': '',
-        });
+        _selectedPrompts.add({'prompt_id': prompt.id, 'answer': ''});
         _answerControllers[prompt.id] = TextEditingController();
         _errorMessage = null;
       }
@@ -131,7 +133,9 @@ class _PromptsScreenState extends State<PromptsScreen> {
 
   void _updateAnswer(String promptId, String answer) {
     setState(() {
-      final index = _selectedPrompts.indexWhere((p) => p['prompt_id'] == promptId);
+      final index = _selectedPrompts.indexWhere(
+        (p) => p['prompt_id'] == promptId,
+      );
       if (index != -1) {
         _selectedPrompts[index]['answer'] = answer;
       }
@@ -195,7 +199,8 @@ class _PromptsScreenState extends State<PromptsScreen> {
       );
     } else if (mounted) {
       setState(() {
-        _errorMessage = authProvider.errorMessage ?? 'Failed to complete profile';
+        _errorMessage =
+            authProvider.errorMessage ?? 'Failed to complete profile';
       });
     }
   }
@@ -216,12 +221,15 @@ class _PromptsScreenState extends State<PromptsScreen> {
     final bgColor = isDark ? AppTheme.darkBackground : AppTheme.lightBackground;
     final surfaceColor = isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
-    final textMutedColor = isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted;
+    final textMutedColor = isDark
+        ? AppTheme.darkTextMuted
+        : AppTheme.lightTextMuted;
     final onSurfaceColor = colors.onSurface;
     final errorColor = AppTheme.lightError;
 
     final int selectedCount = _selectedPrompts.length;
-    final bool isComplete = selectedCount == 0 || (selectedCount > 0 && _isFormValid());
+    final bool isComplete =
+        selectedCount == 0 || (selectedCount > 0 && _isFormValid());
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -270,293 +278,346 @@ class _PromptsScreenState extends State<PromptsScreen> {
         centerTitle: true,
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            // Fixed header
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24.0, 16.0, 24.0, 8.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Answer up to 3 questions',
-                    style: AppTheme.headlineMedium.copyWith(
-                      color: onSurfaceColor,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 28,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'Choose prompts and write your answers',
-                    style: AppTheme.bodyLarge.copyWith(
-                      color: textMutedColor,
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                    decoration: BoxDecoration(
-                      color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade50,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: borderColor,
-                        width: 0.5,
+        child: AppLayout.box(
+          context: context,
+          child: Column(
+            children: [
+              // Fixed header
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24.0, 16.0, 24.0, 8.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Answer up to 3 questions',
+                      style: AppTheme.headlineMedium.copyWith(
+                        color: onSurfaceColor,
+                        fontWeight: FontWeight.w800,
+                        fontSize: 28,
                       ),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'Selected: $selectedCount / 3',
-                          style: AppTheme.labelLarge.copyWith(
-                            color: selectedCount > 0 ? primaryColor : textMutedColor,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 16,
-                          ),
-                        ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: selectedCount > 0 ? primaryColor : Colors.grey.shade400,
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Text(
-                            '$selectedCount',
-                            style: TextStyle(
-                              fontFamily: 'Inter',
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      ],
+                    const SizedBox(height: 8),
+                    Text(
+                      'Choose prompts and write your answers',
+                      style: AppTheme.bodyLarge.copyWith(
+                        color: textMutedColor,
+                        fontSize: 16,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
+                    const SizedBox(height: 16),
 
-                  if (_errorMessage != null)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
                       decoration: BoxDecoration(
-                        color: errorColor.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: errorColor.withValues(alpha: 0.2)),
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.05)
+                            : Colors.grey.shade50,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: borderColor, width: 0.5),
                       ),
                       child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Icon(Icons.error_outline, color: errorColor, size: 20),
-                          const SizedBox(width: 12),
-                          Expanded(
+                          Text(
+                            'Selected: $selectedCount / 3',
+                            style: AppTheme.labelLarge.copyWith(
+                              color: selectedCount > 0
+                                  ? primaryColor
+                                  : textMutedColor,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16,
+                            ),
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: selectedCount > 0
+                                  ? primaryColor
+                                  : Colors.grey.shade400,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
                             child: Text(
-                              _errorMessage!,
+                              '$selectedCount',
                               style: TextStyle(
                                 fontFamily: 'Inter',
                                 fontSize: 14,
-                                color: errorColor,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  if (_errorMessage != null) const SizedBox(height: 8),
-                ],
-              ),
-            ),
-
-            // Scrollable content
-            Expanded(
-              child: _isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : _groupedPrompts.isEmpty
-                      ? Center(
-                          child: Text(
-                            'No prompts available',
-                            style: AppTheme.bodyLarge.copyWith(
-                              color: textMutedColor,
-                              fontSize: 16,
-                            ),
-                          ),
-                        )
-                      : SingleChildScrollView(
-                          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                          child: Column(
-                            children: _groupedPrompts.keys.map((category) {
-                              final prompts = _groupedPrompts[category]!;
-                              final isExpanded = _expandedCategories.contains(category);
-                              final selectedInCategory = prompts.where((p) => _isPromptSelected(p.id)).length;
-
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  GestureDetector(
-                                    onTap: () => _toggleCategory(category),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(vertical: 12),
-                                      decoration: BoxDecoration(
-                                        border: Border(
-                                          bottom: BorderSide(
-                                            color: borderColor,
-                                            width: 0.5,
-                                          ),
-                                        ),
-                                      ),
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Expanded(
-                                            child: Text(
-                                              category,
-                                              style: AppTheme.titleMedium.copyWith(
-                                                color: onSurfaceColor,
-                                                fontWeight: FontWeight.w600,
-                                                fontSize: 18,
-                                              ),
-                                            ),
-                                          ),
-                                          if (selectedInCategory > 0)
-                                            Container(
-                                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                              margin: const EdgeInsets.only(right: 8),
-                                              decoration: BoxDecoration(
-                                                color: primaryColor.withValues(alpha: 0.15),
-                                                borderRadius: BorderRadius.circular(12),
-                                              ),
-                                              child: Text(
-                                                '$selectedInCategory',
-                                                style: TextStyle(
-                                                  fontFamily: 'Inter',
-                                                  fontSize: 13,
-                                                  fontWeight: FontWeight.w600,
-                                                  color: primaryColor,
-                                                ),
-                                              ),
-                                            ),
-                                          Icon(
-                                            isExpanded ? Icons.expand_less : Icons.expand_more,
-                                            color: textMutedColor,
-                                            size: 24,
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  if (isExpanded)
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(vertical: 8),
-                                      child: Column(
-                                        children: prompts.map((prompt) {
-                                          final isSelected = _isPromptSelected(prompt.id);
-                                          final answer = _getAnswer(prompt.id);
-                                          return Padding(
-                                            padding: const EdgeInsets.only(bottom: 8),
-                                            child: _buildPromptItem(
-                                              prompt,
-                                              isSelected,
-                                              answer,
-                                              primaryColor,
-                                              surfaceColor,
-                                              borderColor,
-                                              textMutedColor,
-                                              onSurfaceColor,
-                                              isDark,
-                                              errorColor,
-                                            ),
-                                          );
-                                        }).toList(),
-                                      ),
-                                    ),
-                                  const SizedBox(height: 2),
-                                ],
-                              );
-                            }).toList(),
-                          ),
-                        ),
-            ),
-
-            // Bottom buttons
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: OutlinedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: OutlinedButton.styleFrom(
-                        side: BorderSide(color: borderColor, width: 1.5),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                        minimumSize: const Size(double.infinity, 52),
-                        foregroundColor: onSurfaceColor,
-                      ),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.arrow_back, size: 20, color: onSurfaceColor),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Back',
-                            style: AppTheme.buttonText.copyWith(
-                              color: onSurfaceColor,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: ElevatedButton(
-                      onPressed: _isSubmitting ? null : _handleSubmit,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: isComplete ? primaryColor : Colors.grey.shade400,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        elevation: 0,
-                        minimumSize: const Size(double.infinity, 52),
-                      ),
-                      child: _isSubmitting
-                          ? const SizedBox(
-                              height: 24,
-                              width: 24,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
+                                fontWeight: FontWeight.w600,
                                 color: Colors.white,
                               ),
-                            )
-                          : Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    if (_errorMessage != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: errorColor.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: errorColor.withValues(alpha: 0.2),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.error_outline,
+                              color: errorColor,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                _errorMessage!,
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 14,
+                                  color: errorColor,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    if (_errorMessage != null) const SizedBox(height: 8),
+                  ],
+                ),
+              ),
+
+              // Scrollable content
+              Expanded(
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _groupedPrompts.isEmpty
+                    ? Center(
+                        child: Text(
+                          'No prompts available',
+                          style: AppTheme.bodyLarge.copyWith(
+                            color: textMutedColor,
+                            fontSize: 16,
+                          ),
+                        ),
+                      )
+                    : SingleChildScrollView(
+                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                        child: Column(
+                          children: _groupedPrompts.keys.map((category) {
+                            final prompts = _groupedPrompts[category]!;
+                            final isExpanded = _expandedCategories.contains(
+                              category,
+                            );
+                            final selectedInCategory = prompts
+                                .where((p) => _isPromptSelected(p.id))
+                                .length;
+
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  'Continue',
-                                  style: AppTheme.buttonText.copyWith(
-                                    color: isComplete ? Colors.white : Colors.white.withValues(alpha: 0.7),
-                                    fontSize: 16,
+                                GestureDetector(
+                                  onTap: () => _toggleCategory(category),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 12,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      border: Border(
+                                        bottom: BorderSide(
+                                          color: borderColor,
+                                          width: 0.5,
+                                        ),
+                                      ),
+                                    ),
+                                    child: Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Expanded(
+                                          child: Text(
+                                            category,
+                                            style: AppTheme.titleMedium
+                                                .copyWith(
+                                                  color: onSurfaceColor,
+                                                  fontWeight: FontWeight.w600,
+                                                  fontSize: 18,
+                                                ),
+                                          ),
+                                        ),
+                                        if (selectedInCategory > 0)
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 10,
+                                              vertical: 4,
+                                            ),
+                                            margin: const EdgeInsets.only(
+                                              right: 8,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: primaryColor.withValues(
+                                                alpha: 0.15,
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(12),
+                                            ),
+                                            child: Text(
+                                              '$selectedInCategory',
+                                              style: TextStyle(
+                                                fontFamily: 'Inter',
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w600,
+                                                color: primaryColor,
+                                              ),
+                                            ),
+                                          ),
+                                        Icon(
+                                          isExpanded
+                                              ? Icons.expand_less
+                                              : Icons.expand_more,
+                                          color: textMutedColor,
+                                          size: 24,
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
-                                const SizedBox(width: 8),
-                                Icon(Icons.arrow_forward, size: 20, color: Colors.white),
+                                if (isExpanded)
+                                  Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 8,
+                                    ),
+                                    child: Column(
+                                      children: prompts.map((prompt) {
+                                        final isSelected = _isPromptSelected(
+                                          prompt.id,
+                                        );
+                                        final answer = _getAnswer(prompt.id);
+                                        return Padding(
+                                          padding: const EdgeInsets.only(
+                                            bottom: 8,
+                                          ),
+                                          child: _buildPromptItem(
+                                            prompt,
+                                            isSelected,
+                                            answer,
+                                            primaryColor,
+                                            surfaceColor,
+                                            borderColor,
+                                            textMutedColor,
+                                            onSurfaceColor,
+                                            isDark,
+                                            errorColor,
+                                          ),
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ),
+                                const SizedBox(height: 2),
                               ],
-                            ),
-                    ),
-                  ),
-                ],
+                            );
+                          }).toList(),
+                        ),
+                      ),
               ),
-            ),
-          ],
+
+              // Bottom buttons
+              Padding(
+                padding: const EdgeInsets.all(20.0),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: borderColor, width: 1.5),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          minimumSize: const Size(double.infinity, 52),
+                          foregroundColor: onSurfaceColor,
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.arrow_back,
+                              size: 20,
+                              color: onSurfaceColor,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Back',
+                              style: AppTheme.buttonText.copyWith(
+                                color: onSurfaceColor,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: _isSubmitting ? null : _handleSubmit,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: isComplete
+                              ? primaryColor
+                              : Colors.grey.shade400,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                          elevation: 0,
+                          minimumSize: const Size(double.infinity, 52),
+                        ),
+                        child: _isSubmitting
+                            ? const SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  color: Colors.white,
+                                ),
+                              )
+                            : Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    'Continue',
+                                    style: AppTheme.buttonText.copyWith(
+                                      color: isComplete
+                                          ? Colors.white
+                                          : Colors.white.withValues(alpha: 0.7),
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Icon(
+                                    Icons.arrow_forward,
+                                    size: 20,
+                                    color: Colors.white,
+                                  ),
+                                ],
+                              ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -583,7 +644,9 @@ class _PromptsScreenState extends State<PromptsScreen> {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          color: isSelected ? primaryColor.withValues(alpha: 0.08) : surfaceColor,
+          color: isSelected
+              ? primaryColor.withValues(alpha: 0.08)
+              : surfaceColor,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
             color: isSelected ? primaryColor : borderColor,
@@ -609,7 +672,9 @@ class _PromptsScreenState extends State<PromptsScreen> {
                     prompt.question,
                     style: AppTheme.bodyLarge.copyWith(
                       color: isSelected ? primaryColor : onSurfaceColor,
-                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                      fontWeight: isSelected
+                          ? FontWeight.w700
+                          : FontWeight.w500,
                       fontSize: 16,
                     ),
                   ),
@@ -651,20 +716,16 @@ class _PromptsScreenState extends State<PromptsScreen> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(
-                      color: primaryColor,
-                      width: 2,
-                    ),
+                    borderSide: BorderSide(color: primaryColor, width: 2),
                   ),
                   errorBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(
-                      color: errorColor,
-                      width: 2,
-                    ),
+                    borderSide: BorderSide(color: errorColor, width: 2),
                   ),
                   filled: true,
-                  fillColor: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade50,
+                  fillColor: isDark
+                      ? Colors.white.withValues(alpha: 0.05)
+                      : Colors.grey.shade50,
                   contentPadding: const EdgeInsets.all(12),
                   isDense: true,
                   errorStyle: TextStyle(

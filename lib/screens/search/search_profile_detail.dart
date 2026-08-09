@@ -6,6 +6,7 @@ import 'package:dating_app/generated/app_localizations.dart';
 import 'package:dating_app/models/discover_profile.dart';
 import 'package:dating_app/providers/chat_provider.dart';
 import 'package:dating_app/screens/chats/chat_detail_screen.dart';
+import 'package:dating_app/utils/responsive.dart';
 import 'package:dating_app/widgets/shimmer_avatar.dart';
 import 'package:dating_app/widgets/discover_action_button.dart';
 import 'package:dating_app/widgets/action_toast.dart';
@@ -18,7 +19,11 @@ class SearchProfileDetail extends StatefulWidget {
   final bool isPremium;
   final bool viewOnly;
   final Future<Map<String, dynamic>?> Function(DiscoverProfile)? onLike;
-  final Future<Map<String, dynamic>?> Function(DiscoverProfile, {String? message})? onChat;
+  final Future<Map<String, dynamic>?> Function(
+    DiscoverProfile, {
+    String? message,
+  })?
+  onChat;
 
   const SearchProfileDetail({
     super.key,
@@ -71,7 +76,9 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
     final bgColor = isDark ? AppTheme.darkBackground : AppTheme.lightBackground;
     final surfaceColor = isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
     final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
-    final mutedColor = isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted;
+    final mutedColor = isDark
+        ? AppTheme.darkTextMuted
+        : AppTheme.lightTextMuted;
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
 
     final photos = allPhotos;
@@ -82,23 +89,39 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
         child: Column(
           children: [
             Expanded(
-              child: CustomScrollView(
-                slivers: [
-                  SliverToBoxAdapter(
-                    child: _buildHeaderSection(
-                      t, isDark, primaryColor, mutedColor, textColor, surfaceColor, borderColor, photos,
+              child: AppLayout.box(
+                context: context,
+                child: CustomScrollView(
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: _buildHeaderSection(
+                        t,
+                        isDark,
+                        primaryColor,
+                        mutedColor,
+                        textColor,
+                        surfaceColor,
+                        borderColor,
+                        photos,
+                      ),
                     ),
-                  ),
-                  SliverToBoxAdapter(
-                    child: _buildBodySection(
-                      t, isDark, primaryColor, mutedColor, textColor, surfaceColor, borderColor,
+                    SliverToBoxAdapter(
+                      child: _buildBodySection(
+                        t,
+                        isDark,
+                        primaryColor,
+                        mutedColor,
+                        textColor,
+                        surfaceColor,
+                        borderColor,
+                      ),
                     ),
-                  ),
-                  SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: SizedBox(height: 80),
-                  ),
-                ],
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: SizedBox(height: 80),
+                    ),
+                  ],
+                ),
               ),
             ),
             if (!widget.viewOnly) _buildBottomActionBar(t, isDark),
@@ -123,23 +146,36 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
         Stack(
           children: [
             SizedBox(
-              height: MediaQuery.of(context).size.height * 0.42,
+              height: (MediaQuery.of(context).size.height * 0.42).clamp(
+                220.0,
+                560.0,
+              ),
               width: double.infinity,
-                child: photos.isNotEmpty
+              child: photos.isNotEmpty
                   ? CachedNetworkImage(
                       imageUrl: photos[_currentPhotoIndex],
                       fit: BoxFit.cover,
                       placeholder: (context, url) => const ShimmerAvatar(),
                       errorWidget: (context, url, error) => Container(
-                        color: isDark ? AppTheme.darkSecondary : Colors.grey.shade200,
-                        child: Icon(Icons.person, size: 80,
-                            color: isDark ? AppTheme.darkTextMuted : Colors.grey),
+                        color: isDark
+                            ? AppTheme.darkSecondary
+                            : Colors.grey.shade200,
+                        child: Icon(
+                          Icons.person,
+                          size: 80,
+                          color: isDark ? AppTheme.darkTextMuted : Colors.grey,
+                        ),
                       ),
                     )
                   : Container(
-                      color: isDark ? AppTheme.darkSecondary : Colors.grey.shade200,
-                      child: Icon(Icons.person, size: 80,
-                          color: isDark ? AppTheme.darkTextMuted : Colors.grey),
+                      color: isDark
+                          ? AppTheme.darkSecondary
+                          : Colors.grey.shade200,
+                      child: Icon(
+                        Icons.person,
+                        size: 80,
+                        color: isDark ? AppTheme.darkTextMuted : Colors.grey,
+                      ),
                     ),
             ),
             Container(
@@ -163,13 +199,17 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
               child: GestureDetector(
                 onTap: () => Navigator.pop(context),
                 child: Container(
-                  width: 40,
-                  height: 40,
+                  width: AppLayout.s(context, 40),
+                  height: AppLayout.s(context, 40),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.4),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.close, color: Colors.white, size: 22),
+                  child: Icon(
+                    Icons.close,
+                    color: Colors.white,
+                    size: AppLayout.s(context, 22),
+                  ),
                 ),
               ),
             ),
@@ -179,8 +219,8 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
               child: GestureDetector(
                 onTap: _openProfileMenu,
                 child: Container(
-                  width: 40,
-                  height: 40,
+                  width: AppLayout.s(context, 40),
+                  height: AppLayout.s(context, 40),
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.4),
                     shape: BoxShape.circle,
@@ -191,7 +231,7 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
             ),
             if (photos.length > 1)
               Positioned(
-                bottom: 60,
+                bottom: AppLayout.s(context, 60),
                 left: 0,
                 right: 0,
                 child: Center(
@@ -202,13 +242,18 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                       return AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
                         margin: const EdgeInsets.symmetric(horizontal: 3),
-                        width: _currentPhotoIndex == index ? 24 : 8,
-                        height: 8,
+                        width: AppLayout.s(
+                          context,
+                          _currentPhotoIndex == index ? 24 : 8,
+                        ),
+                        height: AppLayout.s(context, 8),
                         decoration: BoxDecoration(
                           color: _currentPhotoIndex == index
                               ? Colors.white
                               : Colors.white.withValues(alpha: 0.4),
-                          borderRadius: BorderRadius.circular(4),
+                          borderRadius: BorderRadius.circular(
+                            AppLayout.s(context, 4),
+                          ),
                         ),
                       );
                     }),
@@ -223,14 +268,20 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
                     children: [
-                      Text(
-                        profile.name,
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 26,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
+                      Flexible(
+                        child: Text(
+                          profile.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 26,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -248,27 +299,43 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                         profile.gender == 'male' ? Icons.male : Icons.female,
                         size: 20,
                         color: profile.gender == 'male'
-                            ? (isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary)
-                            : (isDark ? AppTheme.darkError : AppTheme.lightError),
+                            ? (isDark
+                                  ? AppTheme.darkPrimary
+                                  : AppTheme.lightPrimary)
+                            : (isDark
+                                  ? AppTheme.darkError
+                                  : AppTheme.lightError),
                       ),
                       if (profile.isPremium) ...[
                         const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
                           decoration: BoxDecoration(
-                            color: isDark ? AppTheme.darkError : AppTheme.lightError,
+                            color: isDark
+                                ? AppTheme.darkError
+                                : AppTheme.lightError,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.workspace_premium, size: 12, color: Colors.white),
+                              const Icon(
+                                Icons.workspace_premium,
+                                size: 12,
+                                color: Colors.white,
+                              ),
                               const SizedBox(width: 3),
-                              Text(t.discover_premium,
-                                  style: const TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.white)),
+                              Text(
+                                t.discover_premium,
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -279,7 +346,11 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                   Row(
                     children: [
                       if (profile.distanceKm != null) ...[
-                        Icon(Icons.near_me, size: 14, color: Colors.white.withValues(alpha: 0.8)),
+                        Icon(
+                          Icons.near_me,
+                          size: 14,
+                          color: Colors.white.withValues(alpha: 0.8),
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           t.discover_km_away(profile.distanceKm!.round()),
@@ -292,7 +363,11 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                         const SizedBox(width: 12),
                       ],
                       if (profile.locationDisplay.isNotEmpty) ...[
-                        Icon(Icons.location_on, size: 14, color: Colors.white.withValues(alpha: 0.8)),
+                        Icon(
+                          Icons.location_on,
+                          size: 14,
+                          color: Colors.white.withValues(alpha: 0.8),
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           profile.locationDisplay,
@@ -303,28 +378,38 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                           ),
                         ),
                       ],
-                       if (profile.isVerified) ...[
-                         const SizedBox(width: 8),
-                         Container(
-                           padding: const EdgeInsets.all(4),
-                           decoration: BoxDecoration(
-                             color: isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary,
-                             shape: BoxShape.circle,
-                           ),
-                           child: const Icon(Icons.verified, size: 14, color: Colors.white),
-                         ),
-                       ],
-                       if (profile.currentUserAction == 'like') ...[
-                         const SizedBox(width: 6),
-                         Container(
-                           padding: const EdgeInsets.all(3),
-                           decoration: BoxDecoration(
-                             color: Colors.red,
-                             shape: BoxShape.circle,
-                           ),
-                           child: const Icon(Icons.favorite, size: 10, color: Colors.white),
-                         ),
-                       ],
+                      if (profile.isVerified) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? AppTheme.darkPrimary
+                                : AppTheme.lightPrimary,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.verified,
+                            size: 14,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                      if (profile.currentUserAction == 'like') ...[
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.all(3),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const Icon(
+                            Icons.favorite,
+                            size: 10,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                 ],
@@ -335,7 +420,7 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
         const SizedBox(height: 12),
         if (photos.length > 1)
           SizedBox(
-            height: 64,
+            height: AppLayout.s(context, 64),
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               controller: _photoStripController,
@@ -348,26 +433,37 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                     setState(() => _currentPhotoIndex = index);
                   },
                   child: Container(
-                    width: 56,
-                    height: 56,
-                    margin: const EdgeInsets.symmetric(horizontal: 3, vertical: 4),
+                    width: AppLayout.s(context, 56),
+                    height: AppLayout.s(context, 56),
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 3,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(
+                        AppLayout.s(context, 10),
+                      ),
                       border: Border.all(
                         color: isSelected ? primaryColor : Colors.transparent,
                         width: 2.5,
                       ),
                     ),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(
+                        AppLayout.s(context, 8),
+                      ),
                       child: CachedNetworkImage(
                         imageUrl: photos[index],
                         fit: BoxFit.cover,
                         placeholder: (context, url) => Container(
-                          color: isDark ? AppTheme.darkSecondary : Colors.grey.shade200,
+                          color: isDark
+                              ? AppTheme.darkSecondary
+                              : Colors.grey.shade200,
                         ),
                         errorWidget: (context, url, error) => Container(
-                          color: isDark ? AppTheme.darkSecondary : Colors.grey.shade200,
+                          color: isDark
+                              ? AppTheme.darkSecondary
+                              : Colors.grey.shade200,
                           child: const Icon(Icons.broken_image, size: 20),
                         ),
                       ),
@@ -396,17 +492,43 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (profile.bio != null && profile.bio!.isNotEmpty)
-            _buildBioSection(t, isDark, primaryColor, mutedColor, textColor, surfaceColor, borderColor),
+            _buildBioSection(
+              t,
+              isDark,
+              primaryColor,
+              mutedColor,
+              textColor,
+              surfaceColor,
+              borderColor,
+            ),
           _buildChipSection(
             emoji: '💪',
             title: t.profile_section_physical,
             chips: [
               if (profile.height != null)
-                _buildValueChip('📏', '${profile.height} cm', isDark, textColor, borderColor),
+                _buildValueChip(
+                  '📏',
+                  '${profile.height} cm',
+                  isDark,
+                  textColor,
+                  borderColor,
+                ),
               if (profile.weight != null)
-                _buildValueChip('⚖️', '${profile.weight} kg', isDark, textColor, borderColor),
+                _buildValueChip(
+                  '⚖️',
+                  '${profile.weight} kg',
+                  isDark,
+                  textColor,
+                  borderColor,
+                ),
               if (profile.bodyType != null)
-                _buildValueChip('💪', _capitalize(profile.bodyType!), isDark, textColor, borderColor),
+                _buildValueChip(
+                  '💪',
+                  _capitalize(profile.bodyType!),
+                  isDark,
+                  textColor,
+                  borderColor,
+                ),
             ],
           ),
           _buildChipSection(
@@ -414,15 +536,45 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
             title: t.profile_section_lifestyle,
             chips: [
               if (profile.relationshipStatus != null)
-                _buildValueChip('❤️', _capitalize(profile.relationshipStatus!), isDark, textColor, borderColor),
+                _buildValueChip(
+                  '❤️',
+                  _capitalize(profile.relationshipStatus!),
+                  isDark,
+                  textColor,
+                  borderColor,
+                ),
               if (profile.livingSituation != null)
-                _buildValueChip('🏠', _formatLiving(profile.livingSituation!), isDark, textColor, borderColor),
+                _buildValueChip(
+                  '🏠',
+                  _formatLiving(profile.livingSituation!),
+                  isDark,
+                  textColor,
+                  borderColor,
+                ),
               if (profile.childrenStatus != null)
-                _buildValueChip('👶', _formatChildren(profile.childrenStatus!), isDark, textColor, borderColor),
+                _buildValueChip(
+                  '👶',
+                  _formatChildren(profile.childrenStatus!),
+                  isDark,
+                  textColor,
+                  borderColor,
+                ),
               if (profile.smoking != null)
-                _buildValueChip('🚬', _capitalize(profile.smoking!), isDark, textColor, borderColor),
+                _buildValueChip(
+                  '🚬',
+                  _capitalize(profile.smoking!),
+                  isDark,
+                  textColor,
+                  borderColor,
+                ),
               if (profile.drinking != null)
-                _buildValueChip('🍷', _capitalize(profile.drinking!), isDark, textColor, borderColor),
+                _buildValueChip(
+                  '🍷',
+                  _capitalize(profile.drinking!),
+                  isDark,
+                  textColor,
+                  borderColor,
+                ),
             ],
           ),
           _buildChipSection(
@@ -430,15 +582,45 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
             title: t.profile_section_background,
             chips: [
               if (profile.education != null)
-                _buildValueChip('🎓', _formatEducation(profile.education!), isDark, textColor, borderColor),
+                _buildValueChip(
+                  '🎓',
+                  _formatEducation(profile.education!),
+                  isDark,
+                  textColor,
+                  borderColor,
+                ),
               if (profile.workplace != null && profile.workplace!.isNotEmpty)
-                _buildValueChip('💼', profile.workplace!, isDark, textColor, borderColor),
+                _buildValueChip(
+                  '💼',
+                  profile.workplace!,
+                  isDark,
+                  textColor,
+                  borderColor,
+                ),
               if (profile.religion != null)
-                _buildValueChip('☪️', _capitalize(profile.religion!), isDark, textColor, borderColor),
+                _buildValueChip(
+                  '☪️',
+                  _capitalize(profile.religion!),
+                  isDark,
+                  textColor,
+                  borderColor,
+                ),
               if (profile.ethnicity != null)
-                _buildValueChip('🌍', _capitalize(profile.ethnicity!), isDark, textColor, borderColor),
+                _buildValueChip(
+                  '🌍',
+                  _capitalize(profile.ethnicity!),
+                  isDark,
+                  textColor,
+                  borderColor,
+                ),
               if (profile.politicalOrientation != null)
-                _buildValueChip('🗳️', _capitalize(profile.politicalOrientation!), isDark, textColor, borderColor),
+                _buildValueChip(
+                  '🗳️',
+                  _capitalize(profile.politicalOrientation!),
+                  isDark,
+                  textColor,
+                  borderColor,
+                ),
             ],
           ),
           if (profile.languages != null && profile.languages!.isNotEmpty)
@@ -552,26 +734,35 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                 fontFamily: 'Inter',
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
-                color: context.isDarkMode ? AppTheme.darkPrimary : AppTheme.lightPrimary,
+                color: context.isDarkMode
+                    ? AppTheme.darkPrimary
+                    : AppTheme.lightPrimary,
               ),
             ),
           ],
         ),
         const SizedBox(height: 10),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: chips,
-        ),
+        Wrap(spacing: 8, runSpacing: 8, children: chips),
       ],
     );
   }
 
-  Widget _buildValueChip(String emoji, String value, bool isDark, Color textColor, Color borderColor) {
+  Widget _buildValueChip(
+    String emoji,
+    String value,
+    bool isDark,
+    Color textColor,
+    Color borderColor,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white10 : (context.isDarkMode ? AppTheme.darkPrimary : AppTheme.lightPrimary).withValues(alpha: 0.06),
+        color: isDark
+            ? Colors.white10
+            : (context.isDarkMode
+                      ? AppTheme.darkPrimary
+                      : AppTheme.lightPrimary)
+                  .withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
@@ -625,7 +816,9 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
-                color: isDark ? Colors.white10 : primaryColor.withValues(alpha: 0.06),
+                color: isDark
+                    ? Colors.white10
+                    : primaryColor.withValues(alpha: 0.06),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
@@ -718,10 +911,13 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
   }
 
   Widget _buildBottomActionBar(AppLocalizations t, bool isDark) {
-    final isLikeBlocked = !widget.isPremium && (widget.likesRemaining ?? 0) <= 0;
-    final isChatBlocked = !widget.isPremium && (widget.chatsRemaining ?? 0) <= 0;
-    final alreadyLiked = profile.currentUserAction == 'like' || 
-profile.currentUserAction == 'matched';
+    final isLikeBlocked =
+        !widget.isPremium && (widget.likesRemaining ?? 0) <= 0;
+    final isChatBlocked =
+        !widget.isPremium && (widget.chatsRemaining ?? 0) <= 0;
+    final alreadyLiked =
+        profile.currentUserAction == 'like' ||
+        profile.currentUserAction == 'matched';
 
     return Container(
       decoration: BoxDecoration(
@@ -764,7 +960,7 @@ profile.currentUserAction == 'matched';
     );
   }
 
-    void _openProfileMenu() {
+  void _openProfileMenu() {
     final isDark = context.isDarkMode;
     final surfaceColor = isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
     final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
@@ -821,8 +1017,10 @@ profile.currentUserAction == 'matched';
         backgroundColor: Theme.of(dialogContext).brightness == Brightness.dark
             ? AppTheme.darkSurface
             : AppTheme.lightSurface,
-        title: const Text('Report Profile',
-            style: TextStyle(fontFamily: 'Inter')),
+        title: const Text(
+          'Report Profile',
+          style: TextStyle(fontFamily: 'Inter'),
+        ),
         content: TextField(
           controller: controller,
           maxLines: 3,
@@ -862,8 +1060,7 @@ profile.currentUserAction == 'matched';
         backgroundColor: Theme.of(dialogContext).brightness == Brightness.dark
             ? AppTheme.darkSurface
             : AppTheme.lightSurface,
-        title: const Text('Block User',
-            style: TextStyle(fontFamily: 'Inter')),
+        title: const Text('Block User', style: TextStyle(fontFamily: 'Inter')),
         content: const Text(
           'You will no longer see each other. Their messages will stop.',
           style: TextStyle(fontFamily: 'Inter'),
@@ -887,7 +1084,8 @@ profile.currentUserAction == 'matched';
   }
 
   Future<void> _handleLike() async {
-    final isLikeBlocked = !widget.isPremium && (widget.likesRemaining ?? 0) <= 0;
+    final isLikeBlocked =
+        !widget.isPremium && (widget.likesRemaining ?? 0) <= 0;
     if (isLikeBlocked) {
       _showLimitReachedDialog('likes');
       return;
@@ -910,7 +1108,8 @@ profile.currentUserAction == 'matched';
   }
 
   Future<void> _handleChat() async {
-    final isChatBlocked = !widget.isPremium && (widget.chatsRemaining ?? 0) <= 0;
+    final isChatBlocked =
+        !widget.isPremium && (widget.chatsRemaining ?? 0) <= 0;
     if (isChatBlocked) {
       _showLimitReachedDialog('chats');
       return;
@@ -964,7 +1163,9 @@ profile.currentUserAction == 'matched';
           ),
         ),
         content: Text(
-          type == 'likes' ? t.search_limit_reached_likes : t.search_limit_reached_chats,
+          type == 'likes'
+              ? t.search_limit_reached_likes
+              : t.search_limit_reached_chats,
           style: TextStyle(
             fontFamily: 'Inter',
             color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
@@ -1002,7 +1203,9 @@ profile.currentUserAction == 'matched';
               ),
               decoration: BoxDecoration(
                 color: isDark ? AppTheme.darkSurface : Colors.white,
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(20),
+                ),
               ),
               child: Padding(
                 padding: const EdgeInsets.all(20),
@@ -1028,7 +1231,9 @@ profile.currentUserAction == 'matched';
                           fontFamily: 'Inter',
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: isDark ? AppTheme.darkText : AppTheme.lightText,
+                          color: isDark
+                              ? AppTheme.darkText
+                              : AppTheme.lightText,
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -1037,14 +1242,23 @@ profile.currentUserAction == 'matched';
                         autofocus: true,
                         maxLines: 3,
                         maxLength: 200,
-                        style: TextStyle(fontFamily: 'Inter', color: isDark ? AppTheme.darkText : AppTheme.lightText),
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          color: isDark
+                              ? AppTheme.darkText
+                              : AppTheme.lightText,
+                        ),
                         decoration: InputDecoration(
                           hintText: t.discover_send_message_hint,
                           hintStyle: TextStyle(
-                            color: isDark ? AppTheme.darkTextMuted : Colors.grey,
+                            color: isDark
+                                ? AppTheme.darkTextMuted
+                                : Colors.grey,
                           ),
                           filled: true,
-                          fillColor: isDark ? AppTheme.darkSecondary : Colors.grey.shade100,
+                          fillColor: isDark
+                              ? AppTheme.darkSecondary
+                              : Colors.grey.shade100,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
                             borderSide: BorderSide.none,
@@ -1130,7 +1344,9 @@ profile.currentUserAction == 'matched';
               style: TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 14,
-                color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
+                color: isDark
+                    ? AppTheme.darkTextMuted
+                    : AppTheme.lightTextMuted,
               ),
             ),
             if (messageSent) ...[
@@ -1138,14 +1354,22 @@ profile.currentUserAction == 'matched';
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Icon(Icons.check_circle, size: 16, color: isDark ? AppTheme.darkSuccess : AppTheme.lightSuccess),
+                  Icon(
+                    Icons.check_circle,
+                    size: 16,
+                    color: isDark
+                        ? AppTheme.darkSuccess
+                        : AppTheme.lightSuccess,
+                  ),
                   const SizedBox(width: 6),
                   Text(
                     t.search_match_message_sent,
                     style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 13,
-                      color: isDark ? AppTheme.darkSuccess : AppTheme.lightSuccess,
+                      color: isDark
+                          ? AppTheme.darkSuccess
+                          : AppTheme.lightSuccess,
                     ),
                   ),
                 ],
@@ -1183,31 +1407,46 @@ profile.currentUserAction == 'matched';
 
   String _formatLiving(String value) {
     switch (value.toLowerCase()) {
-      case 'alone': return 'Alone';
-      case 'with_family': return 'With Family';
-      case 'with_roommate': return 'With Roommates';
-      case 'with_partner': return 'With Partner';
-      default: return _capitalize(value);
+      case 'alone':
+        return 'Alone';
+      case 'with_family':
+        return 'With Family';
+      case 'with_roommate':
+        return 'With Roommates';
+      case 'with_partner':
+        return 'With Partner';
+      default:
+        return _capitalize(value);
     }
   }
 
   String _formatChildren(String value) {
     switch (value.toLowerCase()) {
-      case 'have': return 'Have children';
-      case 'dont_have': return "Don't have children";
-      case 'want': return 'Want children';
-      case 'dont_want': return "Don't want children";
-      default: return _capitalize(value);
+      case 'have':
+        return 'Have children';
+      case 'dont_have':
+        return "Don't have children";
+      case 'want':
+        return 'Want children';
+      case 'dont_want':
+        return "Don't want children";
+      default:
+        return _capitalize(value);
     }
   }
 
   String _formatEducation(String value) {
     switch (value.toLowerCase()) {
-      case 'high_school': return 'High School';
-      case 'bachelor': return 'Undergraduate Degree';
-      case 'master': return 'Postgraduate Degree';
-      case 'phd': return 'PhD / Doctorate';
-      default: return _capitalize(value);
+      case 'high_school':
+        return 'High School';
+      case 'bachelor':
+        return 'Undergraduate Degree';
+      case 'master':
+        return 'Postgraduate Degree';
+      case 'phd':
+        return 'PhD / Doctorate';
+      default:
+        return _capitalize(value);
     }
   }
 }

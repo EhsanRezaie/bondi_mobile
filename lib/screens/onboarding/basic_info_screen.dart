@@ -4,6 +4,7 @@ import '../../config/app_theme.dart';
 import '../../providers/onboarding_provider.dart';
 import '../../services/location_service.dart';
 import '../../models/location.dart';
+import '../../utils/responsive.dart';
 import 'profile_details_screen.dart';
 
 class BasicInfoScreen extends StatefulWidget {
@@ -69,7 +70,9 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
     if (onboarding.lat != null) _lat = onboarding.lat;
     if (onboarding.lng != null) _lng = onboarding.lng;
 
-    if (onboarding.country != null || onboarding.province != null || onboarding.city != null) {
+    if (onboarding.country != null ||
+        onboarding.province != null ||
+        onboarding.city != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _loadSavedLocationData();
       });
@@ -163,9 +166,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
     });
 
     try {
-      final states = await LocationService.getStates(
-        countryIso2: countryIso2,
-      );
+      final states = await LocationService.getStates(countryIso2: countryIso2);
       setState(() {
         _provinces = states;
         _isLoadingProvinces = false;
@@ -232,7 +233,8 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
 
       if (location == null || location.country == null) {
         setState(() {
-          _errorMessage = 'Could not determine your location. Please select manually.';
+          _errorMessage =
+              'Could not determine your location. Please select manually.';
           _isLoadingLocation = false;
         });
         return;
@@ -248,7 +250,8 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
 
       if (matchedCountry == null) {
         setState(() {
-          _errorMessage = 'Your country is not supported. Please select manually.';
+          _errorMessage =
+              'Your country is not supported. Please select manually.';
           _isLoadingLocation = false;
         });
         return;
@@ -459,7 +462,9 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
       return;
     }
 
-    if (_selectedCountry == null || _selectedProvince == null || _selectedCity == null) {
+    if (_selectedCountry == null ||
+        _selectedProvince == null ||
+        _selectedCity == null) {
       setState(() => _errorMessage = 'Please select your location');
       return;
     }
@@ -467,7 +472,10 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
     if (_lat == null || _lng == null) {
       await _getCityCentroid(_selectedCity!.name);
       if (_lat == null || _lng == null) {
-        setState(() => _errorMessage = 'Could not determine location coordinates. Please try again.');
+        setState(
+          () => _errorMessage =
+              'Could not determine location coordinates. Please try again.',
+        );
         return;
       }
     }
@@ -528,7 +536,9 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
               fontWeight: FontWeight.w600,
               color: isEnabled
                   ? Theme.of(context).colorScheme.onSurface
-                  : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
+                  : Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withValues(alpha: 0.4),
             ),
           ),
         ),
@@ -545,11 +555,11 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
               backgroundColor: WidgetStatePropertyAll(
                 isEnabled
                     ? (isDark
-                        ? Colors.white.withValues(alpha: 0.05)
-                        : Colors.grey.shade50)
+                          ? Colors.white.withValues(alpha: 0.05)
+                          : Colors.grey.shade50)
                     : (isDark
-                        ? Colors.white.withValues(alpha: 0.02)
-                        : Colors.grey.shade100),
+                          ? Colors.white.withValues(alpha: 0.02)
+                          : Colors.grey.shade100),
               ),
               shape: WidgetStatePropertyAll(
                 RoundedRectangleBorder(
@@ -562,12 +572,17 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                   ),
                 ),
               ),
-              leading: leadingIcon ??
+              leading:
+                  leadingIcon ??
                   Icon(
                     Icons.search,
                     color: isEnabled
-                        ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6)
-                        : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
+                        ? Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.6)
+                        : Theme.of(
+                            context,
+                          ).colorScheme.onSurface.withValues(alpha: 0.2),
                   ),
               trailing: [
                 if (selectedItem != null && isEnabled)
@@ -575,7 +590,9 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                     icon: Icon(
                       Icons.close,
                       size: 18,
-                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.6),
                     ),
                     onPressed: () {
                       searchController.clear();
@@ -605,7 +622,9 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                   fontSize: 15,
                   color: isEnabled
                       ? Theme.of(context).colorScheme.onSurface
-                      : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.4),
+                      : Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.4),
                 ),
               ),
               hintStyle: WidgetStatePropertyAll(
@@ -613,8 +632,12 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                   fontFamily: 'Inter',
                   fontSize: 15,
                   color: isEnabled
-                      ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)
-                      : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.2),
+                      ? Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.5)
+                      : Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.2),
                 ),
               ),
             );
@@ -625,10 +648,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                 const ListTile(
                   title: Text(
                     'Please select a country first',
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      color: Colors.grey,
-                    ),
+                    style: TextStyle(fontFamily: 'Inter', color: Colors.grey),
                   ),
                 ),
               ];
@@ -650,7 +670,9 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                     'No results found',
                     style: TextStyle(
                       fontFamily: 'Inter',
-                      color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.5),
                     ),
                   ),
                 ),
@@ -671,11 +693,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                   ),
                 ),
                 trailing: isSelected
-                    ? Icon(
-                        Icons.check,
-                        color: primaryColor,
-                        size: 20,
-                      )
+                    ? Icon(Icons.check, color: primaryColor, size: 20)
                     : null,
                 onTap: () {
                   searchController.closeView(displayName(item));
@@ -711,7 +729,9 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
     final isDark = context.isDarkMode;
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
     final bgColor = isDark ? AppTheme.darkBackground : AppTheme.lightBackground;
-    final textMutedColor = isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted;
+    final textMutedColor = isDark
+        ? AppTheme.darkTextMuted
+        : AppTheme.lightTextMuted;
     final onSurfaceColor = colors.onSurface;
     final errorColor = AppTheme.lightError;
 
@@ -769,305 +789,374 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
         behavior: HitTestBehavior.opaque,
         onTap: () => FocusScope.of(context).unfocus(),
         child: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return CustomScrollView(
-                slivers: [
-                  SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-                    sliver: SliverToBoxAdapter(
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Tell us about yourself',
-                              style: AppTheme.headlineMedium.copyWith(
-                                color: onSurfaceColor,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'This information will be shown on your profile',
-                              style: AppTheme.bodyLarge.copyWith(
-                                color: textMutedColor,
-                              ),
-                            ),
-                            const SizedBox(height: 28),
-                            if (_errorMessage != null) ...[
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                                decoration: BoxDecoration(
-                                  color: errorColor.withValues(alpha: 0.08),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: errorColor.withValues(alpha: 0.2)),
+          child: AppLayout.box(
+            context: context,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return CustomScrollView(
+                  slivers: [
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24.0,
+                        vertical: 16.0,
+                      ),
+                      sliver: SliverToBoxAdapter(
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Tell us about yourself',
+                                style: AppTheme.headlineMedium.copyWith(
+                                  color: onSurfaceColor,
+                                  fontWeight: FontWeight.w800,
                                 ),
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.error_outline, color: errorColor, size: 20),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Text(
-                                        _errorMessage!,
-                                        style: TextStyle(
-                                          fontFamily: 'Inter',
-                                          fontSize: 14,
-                                          color: errorColor,
-                                          fontWeight: FontWeight.w500,
+                              ),
+                              const SizedBox(height: 8),
+                              Text(
+                                'This information will be shown on your profile',
+                                style: AppTheme.bodyLarge.copyWith(
+                                  color: textMutedColor,
+                                ),
+                              ),
+                              const SizedBox(height: 28),
+                              if (_errorMessage != null) ...[
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 14,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: errorColor.withValues(alpha: 0.08),
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: errorColor.withValues(alpha: 0.2),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.error_outline,
+                                        color: errorColor,
+                                        size: 20,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          _errorMessage!,
+                                          style: TextStyle(
+                                            fontFamily: 'Inter',
+                                            fontSize: 14,
+                                            color: errorColor,
+                                            fontWeight: FontWeight.w500,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
+                                const SizedBox(height: 20),
+                              ],
+                              TextFormField(
+                                controller: _nameController,
+                                textInputAction: TextInputAction.next,
+                                style: AppTheme.bodyLarge.copyWith(
+                                  color: onSurfaceColor,
+                                ),
+                                decoration: InputDecoration(
+                                  labelText: 'Full Name',
+                                  hintText: 'Enter your full name',
+                                  prefixIcon: Icon(
+                                    Icons.person_outline,
+                                    color: textMutedColor,
+                                    size: 22,
+                                  ),
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please enter your name';
+                                  }
+                                  if (value.length < 2) {
+                                    return 'Name must be at least 2 characters';
+                                  }
+                                  return null;
+                                },
                               ),
                               const SizedBox(height: 20),
-                            ],
-                            TextFormField(
-                              controller: _nameController,
-                              textInputAction: TextInputAction.next,
-                              style: AppTheme.bodyLarge.copyWith(color: onSurfaceColor),
-                              decoration: InputDecoration(
-                                labelText: 'Full Name',
-                                hintText: 'Enter your full name',
-                                prefixIcon: Icon(Icons.person_outline, color: textMutedColor, size: 22),
+                              TextFormField(
+                                controller: _birthDateController,
+                                readOnly: true,
+                                onTap: _selectBirthDate,
+                                style: AppTheme.bodyLarge.copyWith(
+                                  color: onSurfaceColor,
+                                ),
+                                decoration: InputDecoration(
+                                  labelText: 'Date of Birth',
+                                  hintText: 'Select your birth date',
+                                  prefixIcon: Icon(
+                                    Icons.cake_outlined,
+                                    color: textMutedColor,
+                                    size: 22,
+                                  ),
+                                ),
+                                validator: (value) {
+                                  if (value == null || value.isEmpty) {
+                                    return 'Please select your birth date';
+                                  }
+                                  return null;
+                                },
                               ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please enter your name';
-                                }
-                                if (value.length < 2) {
-                                  return 'Name must be at least 2 characters';
-                                }
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 20),
-                            TextFormField(
-                              controller: _birthDateController,
-                              readOnly: true,
-                              onTap: _selectBirthDate,
-                              style: AppTheme.bodyLarge.copyWith(color: onSurfaceColor),
-                              decoration: InputDecoration(
-                                labelText: 'Date of Birth',
-                                hintText: 'Select your birth date',
-                                prefixIcon: Icon(Icons.cake_outlined, color: textMutedColor, size: 22),
+                              const SizedBox(height: 24),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 4.0),
+                                    child: Text(
+                                      'Gender',
+                                      style: TextStyle(
+                                        fontFamily: 'Inter',
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: onSurfaceColor,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: _GenderOption(
+                                          label: 'Male',
+                                          icon: Icons.male,
+                                          isSelected: _selectedGender == 'male',
+                                          onTap: () {
+                                            setState(() {
+                                              _selectedGender = 'male';
+                                              _errorMessage = null;
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: _GenderOption(
+                                          label: 'Female',
+                                          icon: Icons.female,
+                                          isSelected:
+                                              _selectedGender == 'female',
+                                          onTap: () {
+                                            setState(() {
+                                              _selectedGender = 'female';
+                                              _errorMessage = null;
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ),
-                              validator: (value) {
-                                if (value == null || value.isEmpty) {
-                                  return 'Please select your birth date';
-                                }
-                                return null;
-                              },
-                            ),
-                            const SizedBox(height: 24),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 4.0),
-                                  child: Text(
-                                    'Gender',
-                                    style: TextStyle(
-                                      fontFamily: 'Inter',
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      color: onSurfaceColor,
+                              const SizedBox(height: 24),
+                              TextFormField(
+                                controller: _bioController,
+                                maxLines: 3,
+                                maxLength: 500,
+                                style: AppTheme.bodyLarge.copyWith(
+                                  color: onSurfaceColor,
+                                ),
+                                decoration: InputDecoration(
+                                  labelText: 'Bio (optional)',
+                                  hintText:
+                                      'Tell others a bit about yourself...',
+                                  alignLabelWithHint: true,
+                                  prefixIcon: Padding(
+                                    padding: const EdgeInsets.only(
+                                      bottom: 40.0,
+                                    ),
+                                    child: Icon(
+                                      Icons.notes,
+                                      color: textMutedColor,
+                                      size: 22,
                                     ),
                                   ),
                                 ),
-                                const SizedBox(height: 12),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: _GenderOption(
-                                        label: 'Male',
-                                        icon: Icons.male,
-                                        isSelected: _selectedGender == 'male',
-                                        onTap: () {
-                                          setState(() {
-                                            _selectedGender = 'male';
-                                            _errorMessage = null;
-                                          });
-                                        },
-                                      ),
-                                    ),
-                                    const SizedBox(width: 16),
-                                    Expanded(
-                                      child: _GenderOption(
-                                        label: 'Female',
-                                        icon: Icons.female,
-                                        isSelected: _selectedGender == 'female',
-                                        onTap: () {
-                                          setState(() {
-                                            _selectedGender = 'female';
-                                            _errorMessage = null;
-                                          });
-                                        },
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 24),
-                            TextFormField(
-                              controller: _bioController,
-                              maxLines: 3,
-                              maxLength: 500,
-                              style: AppTheme.bodyLarge.copyWith(color: onSurfaceColor),
-                              decoration: InputDecoration(
-                                labelText: 'Bio (optional)',
-                                hintText: 'Tell others a bit about yourself...',
-                                alignLabelWithHint: true,
-                                prefixIcon: Padding(
-                                  padding: const EdgeInsets.only(bottom: 40.0),
-                                  child: Icon(Icons.notes, color: textMutedColor, size: 22),
-                                ),
                               ),
-                            ),
-                            const SizedBox(height: 24),
-                            // Location section with searchable dropdowns
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Padding(
-                                      padding: const EdgeInsets.only(left: 4.0),
-                                      child: Text(
-                                        'Location',
-                                        style: TextStyle(
-                                          fontFamily: 'Inter',
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
-                                          color: onSurfaceColor,
+                              const SizedBox(height: 24),
+                              // Location section with searchable dropdowns
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Padding(
+                                        padding: const EdgeInsets.only(
+                                          left: 4.0,
+                                        ),
+                                        child: Text(
+                                          'Location',
+                                          style: TextStyle(
+                                            fontFamily: 'Inter',
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w600,
+                                            color: onSurfaceColor,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    const Spacer(),
-                                    TextButton.icon(
-                                      onPressed: _isLoadingLocation ? null : _getCurrentLocation,
-                                      style: TextButton.styleFrom(
-                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                        backgroundColor: primaryColor.withValues(alpha: 0.06),
-                                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                                      ),
-                                      icon: _isLoadingLocation
-                                          ? SizedBox(
-                                              height: 14,
-                                              width: 14,
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 2,
+                                      const Spacer(),
+                                      TextButton.icon(
+                                        onPressed: _isLoadingLocation
+                                            ? null
+                                            : _getCurrentLocation,
+                                        style: TextButton.styleFrom(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 6,
+                                          ),
+                                          backgroundColor: primaryColor
+                                              .withValues(alpha: 0.06),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              20,
+                                            ),
+                                          ),
+                                        ),
+                                        icon: _isLoadingLocation
+                                            ? SizedBox(
+                                                height: 14,
+                                                width: 14,
+                                                child:
+                                                    CircularProgressIndicator(
+                                                      strokeWidth: 2,
+                                                      color: primaryColor,
+                                                    ),
+                                              )
+                                            : Icon(
+                                                Icons.my_location,
                                                 color: primaryColor,
+                                                size: 14,
                                               ),
-                                            )
-                                          : Icon(Icons.my_location, color: primaryColor, size: 14),
-                                      label: Text(
-                                        _isLoadingLocation ? 'Locating...' : 'GPS',
-                                        style: TextStyle(
-                                          fontFamily: 'Inter',
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w700,
-                                          color: primaryColor,
+                                        label: Text(
+                                          _isLoadingLocation
+                                              ? 'Locating...'
+                                              : 'GPS',
+                                          style: TextStyle(
+                                            fontFamily: 'Inter',
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w700,
+                                            color: primaryColor,
+                                          ),
                                         ),
                                       ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  // Country Searchable Dropdown (always enabled)
+                                  _buildSearchableDropdown<CountryResponse>(
+                                    items: _countries,
+                                    selectedItem: _selectedCountry,
+                                    hintText: 'Search for a country...',
+                                    labelText: 'Country',
+                                    displayName: (country) => country.name,
+                                    onSelected: _onCountryChanged,
+                                    isLoading: _isLoadingCountries,
+                                    searchController: _countrySearchController,
+                                    leadingIcon: Icon(
+                                      Icons.public,
+                                      color: textMutedColor,
+                                      size: 22,
                                     ),
-                                  ],
-                                ),
-                                const SizedBox(height: 12),
-                                // Country Searchable Dropdown (always enabled)
-                                _buildSearchableDropdown<CountryResponse>(
-                                  items: _countries,
-                                  selectedItem: _selectedCountry,
-                                  hintText: 'Search for a country...',
-                                  labelText: 'Country',
-                                  displayName: (country) => country.name,
-                                  onSelected: _onCountryChanged,
-                                  isLoading: _isLoadingCountries,
-                                  searchController: _countrySearchController,
-                                  leadingIcon: Icon(
-                                    Icons.public,
-                                    color: textMutedColor,
-                                    size: 22,
+                                    isEnabled: true,
                                   ),
-                                  isEnabled: true,
-                                ),
-                                const SizedBox(height: 16),
-                                // State/Province Searchable Dropdown (enabled only if country selected)
-                                _buildSearchableDropdown<ProvinceResponse>(
-                                  items: _provinces,
-                                  selectedItem: _selectedProvince,
-                                  hintText: isProvinceEnabled ? 'Search for a state/province...' : 'Select a country first',
-                                  labelText: 'State/Province',
-                                  displayName: (province) => province.name,
-                                  onSelected: _onProvinceChanged,
-                                  isLoading: _isLoadingProvinces,
-                                  searchController: _provinceSearchController,
-                                  leadingIcon: Icon(
-                                    Icons.map_outlined,
-                                    color: textMutedColor,
-                                    size: 22,
+                                  const SizedBox(height: 16),
+                                  // State/Province Searchable Dropdown (enabled only if country selected)
+                                  _buildSearchableDropdown<ProvinceResponse>(
+                                    items: _provinces,
+                                    selectedItem: _selectedProvince,
+                                    hintText: isProvinceEnabled
+                                        ? 'Search for a state/province...'
+                                        : 'Select a country first',
+                                    labelText: 'State/Province',
+                                    displayName: (province) => province.name,
+                                    onSelected: _onProvinceChanged,
+                                    isLoading: _isLoadingProvinces,
+                                    searchController: _provinceSearchController,
+                                    leadingIcon: Icon(
+                                      Icons.map_outlined,
+                                      color: textMutedColor,
+                                      size: 22,
+                                    ),
+                                    isEnabled: isProvinceEnabled,
                                   ),
-                                  isEnabled: isProvinceEnabled,
-                                ),
-                                const SizedBox(height: 16),
-                                // City Searchable Dropdown (enabled only if province selected)
-                                _buildSearchableDropdown<CityResponse>(
-                                  items: _cities,
-                                  selectedItem: _selectedCity,
-                                  hintText: isCityEnabled ? 'Search for a city...' : 'Select a state/province first',
-                                  labelText: 'City',
-                                  displayName: (city) => city.name,
-                                  onSelected: _onCityChanged,
-                                  isLoading: _isLoadingCities,
-                                  searchController: _citySearchController,
-                                  leadingIcon: Icon(
-                                    Icons.location_city_outlined,
-                                    color: textMutedColor,
-                                    size: 22,
+                                  const SizedBox(height: 16),
+                                  // City Searchable Dropdown (enabled only if province selected)
+                                  _buildSearchableDropdown<CityResponse>(
+                                    items: _cities,
+                                    selectedItem: _selectedCity,
+                                    hintText: isCityEnabled
+                                        ? 'Search for a city...'
+                                        : 'Select a state/province first',
+                                    labelText: 'City',
+                                    displayName: (city) => city.name,
+                                    onSelected: _onCityChanged,
+                                    isLoading: _isLoadingCities,
+                                    searchController: _citySearchController,
+                                    leadingIcon: Icon(
+                                      Icons.location_city_outlined,
+                                      color: textMutedColor,
+                                      size: 22,
+                                    ),
+                                    isEnabled: isCityEnabled,
                                   ),
-                                  isEnabled: isCityEnabled,
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 40),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                  SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Container(
-                      alignment: Alignment.bottomCenter,
-                      padding: const EdgeInsets.only(left: 24.0, right: 24.0, bottom: 24.0),
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: _isLoading ? null : _handleNext,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: primaryColor,
-                            foregroundColor: Colors.white,
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                            elevation: 0,
-                            minimumSize: const Size(double.infinity, 56),
+                                ],
+                              ),
+                              const SizedBox(height: 40),
+                            ],
                           ),
-                          child: _isLoading
-                              ? const SizedBox(
-                                  height: 24,
-                                  width: 24,
-                                  child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                                )
-                              : Text('Continue', style: AppTheme.buttonText),
                         ),
                       ),
                     ),
-                  ),
-                ],
-              );
-            },
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Container(
+                        alignment: Alignment.bottomCenter,
+                        padding: const EdgeInsets.only(
+                          left: 24.0,
+                          right: 24.0,
+                          bottom: 24.0,
+                        ),
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: ElevatedButton(
+                            onPressed: _isLoading ? null : _handleNext,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: primaryColor,
+                              foregroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                              elevation: 0,
+                              minimumSize: const Size(double.infinity, 56),
+                            ),
+                            child: _isLoading
+                                ? const SizedBox(
+                                    height: 24,
+                                    width: 24,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: Colors.white,
+                                    ),
+                                  )
+                                : Text('Continue', style: AppTheme.buttonText),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -1103,14 +1192,22 @@ class _GenderOption extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 16),
         decoration: BoxDecoration(
-          color: isSelected ? primaryColor.withValues(alpha: 0.06) : surfaceColor,
+          color: isSelected
+              ? primaryColor.withValues(alpha: 0.06)
+              : surfaceColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected ? primaryColor : borderColor,
             width: isSelected ? 2 : 1,
           ),
           boxShadow: isSelected
-              ? [BoxShadow(color: primaryColor.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4))]
+              ? [
+                  BoxShadow(
+                    color: primaryColor.withValues(alpha: 0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
               : null,
         ),
         child: Row(
@@ -1118,7 +1215,9 @@ class _GenderOption extends StatelessWidget {
           children: [
             Icon(
               icon,
-              color: isSelected ? primaryColor : onSurfaceColor.withValues(alpha: 0.6),
+              color: isSelected
+                  ? primaryColor
+                  : onSurfaceColor.withValues(alpha: 0.6),
               size: 20,
             ),
             const SizedBox(width: 8),

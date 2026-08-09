@@ -43,16 +43,16 @@ class SwipeStubProfile {
   });
 
   DiscoverProfile toDiscoverProfile() => DiscoverProfile(
-        id: id,
-        name: name,
-        age: age,
-        gender: '',
-        mainPhotoUrl: mainPhotoUrl,
-        photos: mainPhotoUrl != null ? [mainPhotoUrl!] : const [],
-        isPremium: isPremium,
-        isVerified: isVerified,
-        distanceKm: distanceKm,
-      );
+    id: id,
+    name: name,
+    age: age,
+    gender: '',
+    mainPhotoUrl: mainPhotoUrl,
+    photos: mainPhotoUrl != null ? [mainPhotoUrl!] : const [],
+    isPremium: isPremium,
+    isVerified: isVerified,
+    distanceKm: distanceKm,
+  );
 }
 
 class _UserNotificationProfileScreenState
@@ -75,7 +75,8 @@ class _UserNotificationProfileScreenState
       final response = await ChatService.getPublicProfile(widget.userId);
       if (response.statusCode == 200 && response.data != null) {
         final profile = DiscoverProfile.fromJson(
-            response.data as Map<String, dynamic>);
+          response.data as Map<String, dynamic>,
+        );
         if (mounted) {
           setState(() {
             _profile = profile;
@@ -122,10 +123,7 @@ class _UserNotificationProfileScreenState
     String? message,
   }) async {
     try {
-      final response = await ChatService.createChat(
-        profile.id,
-        message ?? '',
-      );
+      final response = await ChatService.createChat(profile.id, message ?? '');
       if (response.statusCode != 200 && response.statusCode != 201) {
         return null;
       }

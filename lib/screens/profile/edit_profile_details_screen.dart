@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../config/app_theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../generated/app_localizations.dart';
+import '../../utils/responsive.dart';
 import '../../widgets/action_toast.dart';
 
 class EditProfileDetailsScreen extends StatefulWidget {
@@ -441,7 +442,9 @@ class _EditProfileDetailsScreenState extends State<EditProfileDetailsScreen> {
         behavior: HitTestBehavior.opaque,
         onTap: () => FocusScope.of(context).unfocus(),
         child: SafeArea(
-          child: LayoutBuilder(
+          child: AppLayout.box(
+            context: context,
+            child: LayoutBuilder(
             builder: (context, constraints) {
               return CustomScrollView(
                 slivers: [
@@ -758,6 +761,7 @@ class _EditProfileDetailsScreenState extends State<EditProfileDetailsScreen> {
                 ],
               );
             },
+            ),
           ),
         ),
       ),

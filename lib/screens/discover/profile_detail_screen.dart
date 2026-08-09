@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dating_app/config/app_theme.dart';
 import 'package:dating_app/generated/app_localizations.dart';
 import 'package:dating_app/models/discover_profile.dart';
+import 'package:dating_app/utils/responsive.dart';
 import 'package:dating_app/widgets/shimmer_avatar.dart';
 import 'package:dating_app/widgets/discover_action_button.dart';
 
@@ -48,10 +49,10 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
       vsync: this,
       duration: const Duration(milliseconds: 300),
     );
-    _dismissAnimation = Tween<Offset>(
-      begin: Offset.zero,
-      end: const Offset(1.5, 0),
-    ).animate(CurvedAnimation(parent: _dismissController, curve: Curves.easeIn));
+    _dismissAnimation =
+        Tween<Offset>(begin: Offset.zero, end: const Offset(1.5, 0)).animate(
+          CurvedAnimation(parent: _dismissController, curve: Curves.easeIn),
+        );
   }
 
   @override
@@ -62,10 +63,13 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
   }
 
   void _startDismissAnimation(int direction) {
-    _dismissAnimation = Tween<Offset>(
-      begin: Offset.zero,
-      end: Offset(direction * 1.5, 0),
-    ).animate(CurvedAnimation(parent: _dismissController, curve: Curves.easeIn));
+    _dismissAnimation =
+        Tween<Offset>(
+          begin: Offset.zero,
+          end: Offset(direction * 1.5, 0),
+        ).animate(
+          CurvedAnimation(parent: _dismissController, curve: Curves.easeIn),
+        );
     _isAnimating = true;
     _dismissController.reset();
     _dismissController.forward().then((_) {
@@ -78,10 +82,10 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
   void _snapBack() {
     _dismissController.stop();
     _dismissController.reset();
-    _dismissAnimation = Tween<Offset>(
-      begin: _dismissAnimation.value,
-      end: Offset.zero,
-    ).animate(CurvedAnimation(parent: _dismissController, curve: Curves.elasticOut));
+    _dismissAnimation =
+        Tween<Offset>(begin: _dismissAnimation.value, end: Offset.zero).animate(
+          CurvedAnimation(parent: _dismissController, curve: Curves.elasticOut),
+        );
     _dismissController.forward().then((_) {
       if (mounted) {
         _isAnimating = false;
@@ -180,7 +184,9 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
     final bgColor = isDark ? AppTheme.darkBackground : AppTheme.lightBackground;
     final surfaceColor = isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
     final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
-    final mutedColor = isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted;
+    final mutedColor = isDark
+        ? AppTheme.darkTextMuted
+        : AppTheme.lightTextMuted;
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
 
     final photos = allPhotos;
@@ -191,32 +197,50 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
         child: Column(
           children: [
             Expanded(
-              child: CustomScrollView(
-                slivers: [
-                  SliverToBoxAdapter(
-                    child: AnimatedBuilder(
-                      animation: _dismissController,
-                      builder: (context, child) {
-                        return Transform.translate(
-                          offset: _dismissAnimation.value * MediaQuery.of(context).size.width,
-                          child: child,
-                        );
-                      },
-                      child: _buildHeaderSection(
-                        t, isDark, primaryColor, mutedColor, textColor, surfaceColor, borderColor, photos,
+              child: AppLayout.box(
+                context: context,
+                child: CustomScrollView(
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: AnimatedBuilder(
+                        animation: _dismissController,
+                        builder: (context, child) {
+                          return Transform.translate(
+                            offset:
+                                _dismissAnimation.value *
+                                MediaQuery.of(context).size.width,
+                            child: child,
+                          );
+                        },
+                        child: _buildHeaderSection(
+                          t,
+                          isDark,
+                          primaryColor,
+                          mutedColor,
+                          textColor,
+                          surfaceColor,
+                          borderColor,
+                          photos,
+                        ),
                       ),
                     ),
-                  ),
-                  SliverToBoxAdapter(
-                    child: _buildBodySection(
-                      t, isDark, primaryColor, mutedColor, textColor, surfaceColor, borderColor,
+                    SliverToBoxAdapter(
+                      child: _buildBodySection(
+                        t,
+                        isDark,
+                        primaryColor,
+                        mutedColor,
+                        textColor,
+                        surfaceColor,
+                        borderColor,
+                      ),
                     ),
-                  ),
-                  SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: SizedBox(height: 80),
-                  ),
-                ],
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: SizedBox(height: 80),
+                    ),
+                  ],
+                ),
               ),
             ),
             _buildBottomActionBar(t, isDark),
@@ -241,7 +265,12 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
         Stack(
           children: [
             SizedBox(
-              height: MediaQuery.of(context).size.height * 0.42,
+              // Bounded hero height: ~42% on phones, capped on tall tablets so
+              // the photo never dominates the screen.
+              height: (MediaQuery.of(context).size.height * 0.42).clamp(
+                220.0,
+                560.0,
+              ),
               width: double.infinity,
               child: photos.isNotEmpty
                   ? CachedNetworkImage(
@@ -249,15 +278,25 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
                       fit: BoxFit.cover,
                       placeholder: (context, url) => const ShimmerAvatar(),
                       errorWidget: (context, url, error) => Container(
-                        color: isDark ? AppTheme.darkSecondary : Colors.grey.shade200,
-                        child: Icon(Icons.person, size: 80,
-                            color: isDark ? AppTheme.darkTextMuted : Colors.grey),
+                        color: isDark
+                            ? AppTheme.darkSecondary
+                            : Colors.grey.shade200,
+                        child: Icon(
+                          Icons.person,
+                          size: 80,
+                          color: isDark ? AppTheme.darkTextMuted : Colors.grey,
+                        ),
                       ),
                     )
                   : Container(
-                      color: isDark ? AppTheme.darkSecondary : Colors.grey.shade200,
-                      child: Icon(Icons.person, size: 80,
-                          color: isDark ? AppTheme.darkTextMuted : Colors.grey),
+                      color: isDark
+                          ? AppTheme.darkSecondary
+                          : Colors.grey.shade200,
+                      child: Icon(
+                        Icons.person,
+                        size: 80,
+                        color: isDark ? AppTheme.darkTextMuted : Colors.grey,
+                      ),
                     ),
             ),
             Container(
@@ -350,27 +389,43 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
                         profile.gender == 'male' ? Icons.male : Icons.female,
                         size: 20,
                         color: profile.gender == 'male'
-                            ? (isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary)
-                            : (isDark ? AppTheme.darkError : AppTheme.lightError),
+                            ? (isDark
+                                  ? AppTheme.darkPrimary
+                                  : AppTheme.lightPrimary)
+                            : (isDark
+                                  ? AppTheme.darkError
+                                  : AppTheme.lightError),
                       ),
                       if (profile.isPremium) ...[
                         const SizedBox(width: 8),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
                           decoration: BoxDecoration(
-                            color: isDark ? AppTheme.darkError : AppTheme.lightError,
+                            color: isDark
+                                ? AppTheme.darkError
+                                : AppTheme.lightError,
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.workspace_premium, size: 12, color: Colors.white),
+                              const Icon(
+                                Icons.workspace_premium,
+                                size: 12,
+                                color: Colors.white,
+                              ),
                               const SizedBox(width: 3),
-                              Text(t.discover_premium,
-                                  style: const TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w700,
-                                      color: Colors.white)),
+                              Text(
+                                t.discover_premium,
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                ),
+                              ),
                             ],
                           ),
                         ),
@@ -381,7 +436,11 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
                   Row(
                     children: [
                       if (profile.distanceKm != null) ...[
-                        Icon(Icons.near_me, size: 14, color: Colors.white.withValues(alpha: 0.8)),
+                        Icon(
+                          Icons.near_me,
+                          size: 14,
+                          color: Colors.white.withValues(alpha: 0.8),
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           t.discover_km_away(profile.distanceKm!.round()),
@@ -394,7 +453,11 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
                         const SizedBox(width: 12),
                       ],
                       if (profile.locationDisplay.isNotEmpty) ...[
-                        Icon(Icons.location_on, size: 14, color: Colors.white.withValues(alpha: 0.8)),
+                        Icon(
+                          Icons.location_on,
+                          size: 14,
+                          color: Colors.white.withValues(alpha: 0.8),
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           profile.locationDisplay,
@@ -410,10 +473,16 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
                         Container(
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
-                            color: isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary,
+                            color: isDark
+                                ? AppTheme.darkPrimary
+                                : AppTheme.lightPrimary,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.verified, size: 14, color: Colors.white),
+                          child: const Icon(
+                            Icons.verified,
+                            size: 14,
+                            color: Colors.white,
+                          ),
                         ),
                       ],
                     ],
@@ -426,7 +495,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
         SizedBox(height: 12),
         if (photos.length > 1)
           SizedBox(
-            height: 64,
+            height: AppLayout.s(context, 64),
             child: ListView.builder(
               scrollDirection: Axis.horizontal,
               controller: _photoStripController,
@@ -439,26 +508,37 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
                     setState(() => _currentPhotoIndex = index);
                   },
                   child: Container(
-                    width: 56,
-                    height: 56,
-                    margin: const EdgeInsets.symmetric(horizontal: 3, vertical: 4),
+                    width: AppLayout.s(context, 56),
+                    height: AppLayout.s(context, 56),
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 3,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(
+                        AppLayout.s(context, 10),
+                      ),
                       border: Border.all(
                         color: isSelected ? primaryColor : Colors.transparent,
                         width: 2.5,
                       ),
                     ),
                     child: ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(
+                        AppLayout.s(context, 8),
+                      ),
                       child: CachedNetworkImage(
                         imageUrl: _getDisplayUrl(photos[index]),
                         fit: BoxFit.cover,
                         placeholder: (context, url) => Container(
-                          color: isDark ? AppTheme.darkSecondary : Colors.grey.shade200,
+                          color: isDark
+                              ? AppTheme.darkSecondary
+                              : Colors.grey.shade200,
                         ),
                         errorWidget: (context, url, error) => Container(
-                          color: isDark ? AppTheme.darkSecondary : Colors.grey.shade200,
+                          color: isDark
+                              ? AppTheme.darkSecondary
+                              : Colors.grey.shade200,
                           child: const Icon(Icons.broken_image, size: 20),
                         ),
                       ),
@@ -487,17 +567,43 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (profile.bio != null && profile.bio!.isNotEmpty)
-            _buildBioSection(t, isDark, primaryColor, mutedColor, textColor, surfaceColor, borderColor),
+            _buildBioSection(
+              t,
+              isDark,
+              primaryColor,
+              mutedColor,
+              textColor,
+              surfaceColor,
+              borderColor,
+            ),
           _buildChipSection(
             emoji: '💪',
             title: t.profile_section_physical,
             chips: [
               if (profile.height != null)
-                _buildValueChip('📏', '${profile.height} cm', isDark, textColor, borderColor),
+                _buildValueChip(
+                  '📏',
+                  '${profile.height} cm',
+                  isDark,
+                  textColor,
+                  borderColor,
+                ),
               if (profile.weight != null)
-                _buildValueChip('⚖️', '${profile.weight} kg', isDark, textColor, borderColor),
+                _buildValueChip(
+                  '⚖️',
+                  '${profile.weight} kg',
+                  isDark,
+                  textColor,
+                  borderColor,
+                ),
               if (profile.bodyType != null)
-                _buildValueChip('💪', _capitalize(profile.bodyType!), isDark, textColor, borderColor),
+                _buildValueChip(
+                  '💪',
+                  _capitalize(profile.bodyType!),
+                  isDark,
+                  textColor,
+                  borderColor,
+                ),
             ],
           ),
           _buildChipSection(
@@ -505,15 +611,45 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
             title: t.profile_section_lifestyle,
             chips: [
               if (profile.relationshipStatus != null)
-                _buildValueChip('❤️', _capitalize(profile.relationshipStatus!), isDark, textColor, borderColor),
+                _buildValueChip(
+                  '❤️',
+                  _capitalize(profile.relationshipStatus!),
+                  isDark,
+                  textColor,
+                  borderColor,
+                ),
               if (profile.livingSituation != null)
-                _buildValueChip('🏠', _formatLiving(profile.livingSituation!), isDark, textColor, borderColor),
+                _buildValueChip(
+                  '🏠',
+                  _formatLiving(profile.livingSituation!),
+                  isDark,
+                  textColor,
+                  borderColor,
+                ),
               if (profile.childrenStatus != null)
-                _buildValueChip('👶', _formatChildren(profile.childrenStatus!), isDark, textColor, borderColor),
+                _buildValueChip(
+                  '👶',
+                  _formatChildren(profile.childrenStatus!),
+                  isDark,
+                  textColor,
+                  borderColor,
+                ),
               if (profile.smoking != null)
-                _buildValueChip('🚬', _capitalize(profile.smoking!), isDark, textColor, borderColor),
+                _buildValueChip(
+                  '🚬',
+                  _capitalize(profile.smoking!),
+                  isDark,
+                  textColor,
+                  borderColor,
+                ),
               if (profile.drinking != null)
-                _buildValueChip('🍷', _capitalize(profile.drinking!), isDark, textColor, borderColor),
+                _buildValueChip(
+                  '🍷',
+                  _capitalize(profile.drinking!),
+                  isDark,
+                  textColor,
+                  borderColor,
+                ),
             ],
           ),
           _buildChipSection(
@@ -521,15 +657,45 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
             title: t.profile_section_background,
             chips: [
               if (profile.education != null)
-                _buildValueChip('🎓', _formatEducation(profile.education!), isDark, textColor, borderColor),
+                _buildValueChip(
+                  '🎓',
+                  _formatEducation(profile.education!),
+                  isDark,
+                  textColor,
+                  borderColor,
+                ),
               if (profile.workplace != null && profile.workplace!.isNotEmpty)
-                _buildValueChip('💼', profile.workplace!, isDark, textColor, borderColor),
+                _buildValueChip(
+                  '💼',
+                  profile.workplace!,
+                  isDark,
+                  textColor,
+                  borderColor,
+                ),
               if (profile.religion != null)
-                _buildValueChip('☪️', _capitalize(profile.religion!), isDark, textColor, borderColor),
+                _buildValueChip(
+                  '☪️',
+                  _capitalize(profile.religion!),
+                  isDark,
+                  textColor,
+                  borderColor,
+                ),
               if (profile.ethnicity != null)
-                _buildValueChip('🌍', _capitalize(profile.ethnicity!), isDark, textColor, borderColor),
+                _buildValueChip(
+                  '🌍',
+                  _capitalize(profile.ethnicity!),
+                  isDark,
+                  textColor,
+                  borderColor,
+                ),
               if (profile.politicalOrientation != null)
-                _buildValueChip('🗳️', _capitalize(profile.politicalOrientation!), isDark, textColor, borderColor),
+                _buildValueChip(
+                  '🗳️',
+                  _capitalize(profile.politicalOrientation!),
+                  isDark,
+                  textColor,
+                  borderColor,
+                ),
             ],
           ),
           if (profile.languages != null && profile.languages!.isNotEmpty)
@@ -643,26 +809,35 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
                 fontFamily: 'Inter',
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
-                color: context.isDarkMode ? AppTheme.darkPrimary : AppTheme.lightPrimary,
+                color: context.isDarkMode
+                    ? AppTheme.darkPrimary
+                    : AppTheme.lightPrimary,
               ),
             ),
           ],
         ),
         const SizedBox(height: 10),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: chips,
-        ),
+        Wrap(spacing: 8, runSpacing: 8, children: chips),
       ],
     );
   }
 
-  Widget _buildValueChip(String emoji, String value, bool isDark, Color textColor, Color borderColor) {
+  Widget _buildValueChip(
+    String emoji,
+    String value,
+    bool isDark,
+    Color textColor,
+    Color borderColor,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white10 : (context.isDarkMode ? AppTheme.darkPrimary : AppTheme.lightPrimary).withValues(alpha: 0.06),
+        color: isDark
+            ? Colors.white10
+            : (context.isDarkMode
+                      ? AppTheme.darkPrimary
+                      : AppTheme.lightPrimary)
+                  .withValues(alpha: 0.06),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Text(
@@ -716,7 +891,9 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
               decoration: BoxDecoration(
-                color: isDark ? Colors.white10 : primaryColor.withValues(alpha: 0.06),
+                color: isDark
+                    ? Colors.white10
+                    : primaryColor.withValues(alpha: 0.06),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(

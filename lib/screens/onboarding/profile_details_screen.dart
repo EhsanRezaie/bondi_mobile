@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../config/app_theme.dart';
 import '../../providers/onboarding_provider.dart';
+import '../../utils/responsive.dart';
 import 'interests_screen.dart';
 
 class ProfileDetailsScreen extends StatefulWidget {
@@ -63,7 +64,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
     'Athletic',
     'Curvy',
     'Muscular',
-    'Plus Size',  // maps to 'overweight'
+    'Plus Size', // maps to 'overweight'
   ];
 
   // ============================================================
@@ -101,27 +102,23 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
   // ============================================================
   final List<String> _smokingOptions = [
     'Never',
-    'Socially',    // maps to 'occasionally'
+    'Socially', // maps to 'occasionally'
     'Regularly',
   ];
 
   // ============================================================
   // DRINKING - Matches backend: never, socially, regularly
   // ============================================================
-  final List<String> _drinkingOptions = [
-    'Never',
-    'Socially',
-    'Regularly',
-  ];
+  final List<String> _drinkingOptions = ['Never', 'Socially', 'Regularly'];
 
   // ============================================================
   // EDUCATION - Matches backend: high_school, bachelor, master, phd
   // ============================================================
   final List<String> _educationOptions = [
     'High School',
-    'Undergraduate Degree',  // maps to 'bachelor'
-    'Postgraduate Degree',   // maps to 'master'
-    'PhD / Doctorate',       // maps to 'phd'
+    'Undergraduate Degree', // maps to 'bachelor'
+    'Postgraduate Degree', // maps to 'master'
+    'PhD / Doctorate', // maps to 'phd'
   ];
 
   // ============================================================
@@ -202,7 +199,9 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
     if (onboarding.education != null) {
       _education = _capitalize(onboarding.education!);
     }
-    if (onboarding.workplace != null) _workplaceController.text = onboarding.workplace!;
+    if (onboarding.workplace != null) {
+      _workplaceController.text = onboarding.workplace!;
+    }
     if (onboarding.religion != null) {
       _religion = _capitalize(onboarding.religion!);
     }
@@ -212,7 +211,9 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
     if (onboarding.politicalOrientation != null) {
       _politicalOrientation = _capitalize(onboarding.politicalOrientation!);
     }
-    if (onboarding.languages != null) _selectedLanguages = List.from(onboarding.languages!);
+    if (onboarding.languages != null) {
+      _selectedLanguages = List.from(onboarding.languages!);
+    }
   }
 
   String _capitalize(String str) {
@@ -301,16 +302,26 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
       height: _height.toInt(),
       weight: _weight.toInt(),
       bodyType: _bodyType != null ? _getBackendValue(_bodyType!) : null,
-      relationshipStatus: _relationshipStatus != null ? _getBackendValue(_relationshipStatus!) : null,
-      livingSituation: _livingSituation != null ? _getBackendValue(_livingSituation!) : null,
-      childrenStatus: _childrenStatus != null ? _getBackendValue(_childrenStatus!) : null,
+      relationshipStatus: _relationshipStatus != null
+          ? _getBackendValue(_relationshipStatus!)
+          : null,
+      livingSituation: _livingSituation != null
+          ? _getBackendValue(_livingSituation!)
+          : null,
+      childrenStatus: _childrenStatus != null
+          ? _getBackendValue(_childrenStatus!)
+          : null,
       smoking: _smoking != null ? _getBackendValue(_smoking!) : null,
       drinking: _drinking != null ? _getBackendValue(_drinking!) : null,
       education: _education != null ? _getBackendValue(_education!) : null,
-      workplace: _workplaceController.text.trim().isNotEmpty ? _workplaceController.text.trim() : null,
+      workplace: _workplaceController.text.trim().isNotEmpty
+          ? _workplaceController.text.trim()
+          : null,
       religion: _religion != null ? _getBackendValue(_religion!) : null,
       ethnicity: _ethnicity != null ? _getBackendValue(_ethnicity!) : null,
-      politicalOrientation: _politicalOrientation != null ? _getBackendValue(_politicalOrientation!) : null,
+      politicalOrientation: _politicalOrientation != null
+          ? _getBackendValue(_politicalOrientation!)
+          : null,
       languages: _selectedLanguages.isNotEmpty ? _selectedLanguages : null,
     );
 
@@ -334,7 +345,9 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
     final bgColor = isDark ? AppTheme.darkBackground : AppTheme.lightBackground;
     final surfaceColor = isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
-    final textMutedColor = isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted;
+    final textMutedColor = isDark
+        ? AppTheme.darkTextMuted
+        : AppTheme.lightTextMuted;
     final onSurfaceColor = colors.onSurface;
     final errorColor = AppTheme.lightError;
 
@@ -388,350 +401,466 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
         behavior: HitTestBehavior.opaque,
         onTap: () => FocusScope.of(context).unfocus(),
         child: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return CustomScrollView(
-                slivers: [
-                  SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
-                    sliver: SliverToBoxAdapter(
-                      child: Form(
-                        key: _formKey,
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Tell us more about yourself',
-                              style: AppTheme.headlineMedium.copyWith(
-                                color: onSurfaceColor,
-                                fontWeight: FontWeight.w800,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'All fields are optional. Fill what you want to share.',
-                              style: AppTheme.bodyLarge.copyWith(
-                                color: textMutedColor,
-                              ),
-                            ),
-                            const SizedBox(height: 28),
-                            if (_errorMessage != null) ...[
-                              Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                                decoration: BoxDecoration(
-                                  color: errorColor.withValues(alpha: 0.08),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: errorColor.withValues(alpha: 0.2)),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(Icons.error_outline, color: errorColor, size: 20),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Text(
-                                        _errorMessage!,
-                                        style: TextStyle(
-                                          fontFamily: 'Inter',
-                                          fontSize: 14,
-                                          color: errorColor,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
+          child: AppLayout.box(
+            context: context,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return CustomScrollView(
+                  slivers: [
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24.0,
+                        vertical: 16.0,
+                      ),
+                      sliver: SliverToBoxAdapter(
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Tell us more about yourself',
+                                style: AppTheme.headlineMedium.copyWith(
+                                  color: onSurfaceColor,
+                                  fontWeight: FontWeight.w800,
                                 ),
                               ),
-                              const SizedBox(height: 20),
-                            ],
-                            // HEIGHT
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      '📏 Height',
-                                      style: TextStyle(
-                                        fontFamily: 'Inter',
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w600,
-                                        color: onSurfaceColor,
-                                      ),
-                                    ),
-                                    Text(
-                                      '${_height.toInt()} cm',
-                                      style: AppTheme.labelLarge.copyWith(
-                                        color: primaryColor,
-                                      ),
-                                    ),
-                                  ],
+                              const SizedBox(height: 8),
+                              Text(
+                                'All fields are optional. Fill what you want to share.',
+                                style: AppTheme.bodyLarge.copyWith(
+                                  color: textMutedColor,
                                 ),
-                                Slider(
-                                  value: _height,
-                                  min: 140,
-                                  max: 220,
-                                  divisions: 80,
-                                  activeColor: primaryColor,
-                                  inactiveColor: isDark ? Colors.white12 : Colors.black12,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _height = value;
-                                    });
-                                  },
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            // WEIGHT
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      '🏋️ Weight',
-                                      style: TextStyle(
-                                        fontFamily: 'Inter',
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.w600,
-                                        color: onSurfaceColor,
-                                      ),
-                                    ),
-                                    Text(
-                                      '${_weight.toInt()} kg',
-                                      style: AppTheme.labelLarge.copyWith(
-                                        color: primaryColor,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                Slider(
-                                  value: _weight,
-                                  min: 40,
-                                  max: 140,
-                                  divisions: 100,
-                                  activeColor: primaryColor,
-                                  inactiveColor: isDark ? Colors.white12 : Colors.black12,
-                                  onChanged: (value) {
-                                    setState(() {
-                                      _weight = value;
-                                    });
-                                  },
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 24),
-                            // BODY TYPE
-                            _buildChipSection(
-                              label: '💪 Body Type',
-                              options: _bodyTypeOptions,
-                              selected: _bodyType,
-                              onTap: (value) => _selectChip(value, (v) => _bodyType = v, _bodyType),
-                            ),
-                            const SizedBox(height: 24),
-                            // RELATIONSHIP STATUS
-                            _buildChipSection(
-                              label: '❤️ Relationship Status',
-                              options: _relationshipOptions,
-                              selected: _relationshipStatus,
-                              onTap: (value) => _selectChip(value, (v) => _relationshipStatus = v, _relationshipStatus),
-                            ),
-                            const SizedBox(height: 24),
-                            // LIVING SITUATION
-                            _buildChipSection(
-                              label: '🏠 Living Situation',
-                              options: _livingSituationOptions,
-                              selected: _livingSituation,
-                              onTap: (value) => _selectChip(value, (v) => _livingSituation = v, _livingSituation),
-                            ),
-                            const SizedBox(height: 24),
-                            // CHILDREN STATUS
-                            _buildChipSection(
-                              label: '👶 Children Status',
-                              options: _childrenOptions,
-                              selected: _childrenStatus,
-                              onTap: (value) => _selectChip(value, (v) => _childrenStatus = v, _childrenStatus),
-                            ),
-                            const SizedBox(height: 24),
-                            // SMOKING
-                            _buildChipSection(
-                              label: '🚬 Smoking',
-                              options: _smokingOptions,
-                              selected: _smoking,
-                              onTap: (value) => _selectChip(value, (v) => _smoking = v, _smoking),
-                            ),
-                            const SizedBox(height: 24),
-                            // DRINKING
-                            _buildChipSection(
-                              label: '🍷 Drinking',
-                              options: _drinkingOptions,
-                              selected: _drinking,
-                              onTap: (value) => _selectChip(value, (v) => _drinking = v, _drinking),
-                            ),
-                            const SizedBox(height: 24),
-                            // EDUCATION
-                            _buildChipSection(
-                              label: '🎓 Education',
-                              options: _educationOptions,
-                              selected: _education,
-                              onTap: (value) => _selectChip(value, (v) => _education = v, _education),
-                            ),
-                            const SizedBox(height: 24),
-                            // POLITICAL ORIENTATION
-                            _buildChipSection(
-                              label: '🗳️ Political Orientation',
-                              options: _politicalOptions,
-                              selected: _politicalOrientation,
-                              onTap: (value) => _selectChip(value, (v) => _politicalOrientation = v, _politicalOrientation),
-                            ),
-                            const SizedBox(height: 24),
-                            // RELIGION
-                            _buildChipSection(
-                              label: '🕌 Religion',
-                              options: _religionOptions,
-                              selected: _religion,
-                              onTap: (value) => _selectChip(value, (v) => _religion = v, _religion),
-                            ),
-                            const SizedBox(height: 24),
-                            // ETHNICITY
-                            _buildChipSection(
-                              label: '🌍 Ethnicity',
-                              options: _ethnicityOptions,
-                              selected: _ethnicity,
-                              onTap: (value) => _selectChip(value, (v) => _ethnicity = v, _ethnicity),
-                            ),
-                            const SizedBox(height: 24),
-                            // LANGUAGES (Multi-select)
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 4.0),
-                                  child: Text(
-                                    '🗣️ Languages (Multi-select)',
-                                    style: TextStyle(
-                                      fontFamily: 'Inter',
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      color: onSurfaceColor,
+                              ),
+                              const SizedBox(height: 28),
+                              if (_errorMessage != null) ...[
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 14,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: errorColor.withValues(alpha: 0.08),
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: errorColor.withValues(alpha: 0.2),
                                     ),
                                   ),
-                                ),
-                                const SizedBox(height: 12),
-                                Wrap(
-                                  spacing: 8,
-                                  runSpacing: 8,
-                                  children: _languageOptions.map((language) {
-                                    final isSelected = _selectedLanguages.contains(language);
-                                    return GestureDetector(
-                                      onTap: () => _toggleLanguage(language),
-                                      child: AnimatedContainer(
-                                        duration: const Duration(milliseconds: 150),
-                                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                                        decoration: BoxDecoration(
-                                          color: isSelected ? primaryColor.withValues(alpha: 0.06) : surfaceColor,
-                                          borderRadius: BorderRadius.circular(20),
-                                          border: Border.all(
-                                            color: isSelected ? primaryColor : borderColor,
-                                            width: isSelected ? 1.5 : 1,
-                                          ),
-                                        ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.error_outline,
+                                        color: errorColor,
+                                        size: 20,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
                                         child: Text(
-                                          language,
+                                          _errorMessage!,
                                           style: TextStyle(
                                             fontFamily: 'Inter',
                                             fontSize: 14,
-                                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                                            color: isSelected ? primaryColor : onSurfaceColor.withValues(alpha: 0.8),
+                                            color: errorColor,
+                                            fontWeight: FontWeight.w500,
                                           ),
                                         ),
                                       ),
-                                    );
-                                  }).toList(),
+                                    ],
+                                  ),
                                 ),
+                                const SizedBox(height: 20),
                               ],
-                            ),
-                            const SizedBox(height: 24),
-                            // WORKPLACE
-                            TextFormField(
-                              controller: _workplaceController,
-                              style: AppTheme.bodyLarge.copyWith(
-                                color: onSurfaceColor,
+                              // HEIGHT
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        '📏 Height',
+                                        style: TextStyle(
+                                          fontFamily: 'Inter',
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                          color: onSurfaceColor,
+                                        ),
+                                      ),
+                                      Text(
+                                        '${_height.toInt()} cm',
+                                        style: AppTheme.labelLarge.copyWith(
+                                          color: primaryColor,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Slider(
+                                    value: _height,
+                                    min: 140,
+                                    max: 220,
+                                    divisions: 80,
+                                    activeColor: primaryColor,
+                                    inactiveColor: isDark
+                                        ? Colors.white12
+                                        : Colors.black12,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _height = value;
+                                      });
+                                    },
+                                  ),
+                                ],
                               ),
-                              decoration: InputDecoration(
-                                labelText: '💼 Workplace (optional)',
-                                hintText: 'Your job title or company',
-                                prefixIcon: Icon(Icons.work_outline, color: textMutedColor, size: 22),
+                              const SizedBox(height: 16),
+                              // WEIGHT
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.spaceBetween,
+                                    children: [
+                                      Text(
+                                        '🏋️ Weight',
+                                        style: TextStyle(
+                                          fontFamily: 'Inter',
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w600,
+                                          color: onSurfaceColor,
+                                        ),
+                                      ),
+                                      Text(
+                                        '${_weight.toInt()} kg',
+                                        style: AppTheme.labelLarge.copyWith(
+                                          color: primaryColor,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  Slider(
+                                    value: _weight,
+                                    min: 40,
+                                    max: 140,
+                                    divisions: 100,
+                                    activeColor: primaryColor,
+                                    inactiveColor: isDark
+                                        ? Colors.white12
+                                        : Colors.black12,
+                                    onChanged: (value) {
+                                      setState(() {
+                                        _weight = value;
+                                      });
+                                    },
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 24),
+                              // BODY TYPE
+                              _buildChipSection(
+                                label: '💪 Body Type',
+                                options: _bodyTypeOptions,
+                                selected: _bodyType,
+                                onTap: (value) => _selectChip(
+                                  value,
+                                  (v) => _bodyType = v,
+                                  _bodyType,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              // RELATIONSHIP STATUS
+                              _buildChipSection(
+                                label: '❤️ Relationship Status',
+                                options: _relationshipOptions,
+                                selected: _relationshipStatus,
+                                onTap: (value) => _selectChip(
+                                  value,
+                                  (v) => _relationshipStatus = v,
+                                  _relationshipStatus,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              // LIVING SITUATION
+                              _buildChipSection(
+                                label: '🏠 Living Situation',
+                                options: _livingSituationOptions,
+                                selected: _livingSituation,
+                                onTap: (value) => _selectChip(
+                                  value,
+                                  (v) => _livingSituation = v,
+                                  _livingSituation,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              // CHILDREN STATUS
+                              _buildChipSection(
+                                label: '👶 Children Status',
+                                options: _childrenOptions,
+                                selected: _childrenStatus,
+                                onTap: (value) => _selectChip(
+                                  value,
+                                  (v) => _childrenStatus = v,
+                                  _childrenStatus,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              // SMOKING
+                              _buildChipSection(
+                                label: '🚬 Smoking',
+                                options: _smokingOptions,
+                                selected: _smoking,
+                                onTap: (value) => _selectChip(
+                                  value,
+                                  (v) => _smoking = v,
+                                  _smoking,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              // DRINKING
+                              _buildChipSection(
+                                label: '🍷 Drinking',
+                                options: _drinkingOptions,
+                                selected: _drinking,
+                                onTap: (value) => _selectChip(
+                                  value,
+                                  (v) => _drinking = v,
+                                  _drinking,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              // EDUCATION
+                              _buildChipSection(
+                                label: '🎓 Education',
+                                options: _educationOptions,
+                                selected: _education,
+                                onTap: (value) => _selectChip(
+                                  value,
+                                  (v) => _education = v,
+                                  _education,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              // POLITICAL ORIENTATION
+                              _buildChipSection(
+                                label: '🗳️ Political Orientation',
+                                options: _politicalOptions,
+                                selected: _politicalOrientation,
+                                onTap: (value) => _selectChip(
+                                  value,
+                                  (v) => _politicalOrientation = v,
+                                  _politicalOrientation,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              // RELIGION
+                              _buildChipSection(
+                                label: '🕌 Religion',
+                                options: _religionOptions,
+                                selected: _religion,
+                                onTap: (value) => _selectChip(
+                                  value,
+                                  (v) => _religion = v,
+                                  _religion,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              // ETHNICITY
+                              _buildChipSection(
+                                label: '🌍 Ethnicity',
+                                options: _ethnicityOptions,
+                                selected: _ethnicity,
+                                onTap: (value) => _selectChip(
+                                  value,
+                                  (v) => _ethnicity = v,
+                                  _ethnicity,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              // LANGUAGES (Multi-select)
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 4.0),
+                                    child: Text(
+                                      '🗣️ Languages (Multi-select)',
+                                      style: TextStyle(
+                                        fontFamily: 'Inter',
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: onSurfaceColor,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  Wrap(
+                                    spacing: 8,
+                                    runSpacing: 8,
+                                    children: _languageOptions.map((language) {
+                                      final isSelected = _selectedLanguages
+                                          .contains(language);
+                                      return GestureDetector(
+                                        onTap: () => _toggleLanguage(language),
+                                        child: AnimatedContainer(
+                                          duration: const Duration(
+                                            milliseconds: 150,
+                                          ),
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 16,
+                                            vertical: 10,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: isSelected
+                                                ? primaryColor.withValues(
+                                                    alpha: 0.06,
+                                                  )
+                                                : surfaceColor,
+                                            borderRadius: BorderRadius.circular(
+                                              20,
+                                            ),
+                                            border: Border.all(
+                                              color: isSelected
+                                                  ? primaryColor
+                                                  : borderColor,
+                                              width: isSelected ? 1.5 : 1,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            language,
+                                            style: TextStyle(
+                                              fontFamily: 'Inter',
+                                              fontSize: 14,
+                                              fontWeight: isSelected
+                                                  ? FontWeight.w600
+                                                  : FontWeight.w500,
+                                              color: isSelected
+                                                  ? primaryColor
+                                                  : onSurfaceColor.withValues(
+                                                      alpha: 0.8,
+                                                    ),
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 24),
+                              // WORKPLACE
+                              TextFormField(
+                                controller: _workplaceController,
+                                style: AppTheme.bodyLarge.copyWith(
+                                  color: onSurfaceColor,
+                                ),
+                                decoration: InputDecoration(
+                                  labelText: '💼 Workplace (optional)',
+                                  hintText: 'Your job title or company',
+                                  prefixIcon: Icon(
+                                    Icons.work_outline,
+                                    color: textMutedColor,
+                                    size: 22,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 40),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Container(
+                        alignment: Alignment.bottomCenter,
+                        padding: const EdgeInsets.only(
+                          left: 24.0,
+                          right: 24.0,
+                          bottom: 24.0,
+                        ),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () => Navigator.pop(context),
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(
+                                    color: borderColor,
+                                    width: 1.5,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  minimumSize: const Size(double.infinity, 56),
+                                  foregroundColor: onSurfaceColor,
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.arrow_back,
+                                      size: 20,
+                                      color: onSurfaceColor,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Back',
+                                      style: AppTheme.buttonText.copyWith(
+                                        color: onSurfaceColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
                               ),
                             ),
-                            const SizedBox(height: 40),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: _isLoading ? null : _handleNext,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: primaryColor,
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  elevation: 0,
+                                  minimumSize: const Size(double.infinity, 56),
+                                ),
+                                child: _isLoading
+                                    ? const SizedBox(
+                                        height: 24,
+                                        width: 24,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    : Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            'Continue',
+                                            style: AppTheme.buttonText,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          const Icon(
+                                            Icons.arrow_forward,
+                                            size: 20,
+                                            color: Colors.white,
+                                          ),
+                                        ],
+                                      ),
+                              ),
+                            ),
                           ],
                         ),
                       ),
                     ),
-                  ),
-                  SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Container(
-                      alignment: Alignment.bottomCenter,
-                      padding: const EdgeInsets.only(left: 24.0, right: 24.0, bottom: 24.0),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: () => Navigator.pop(context),
-                              style: OutlinedButton.styleFrom(
-                                side: BorderSide(color: borderColor, width: 1.5),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                minimumSize: const Size(double.infinity, 56),
-                                foregroundColor: onSurfaceColor,
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.arrow_back, size: 20, color: onSurfaceColor),
-                                  const SizedBox(width: 8),
-                                  Text('Back', style: AppTheme.buttonText.copyWith(color: onSurfaceColor)),
-                                ],
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: _isLoading ? null : _handleNext,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: primaryColor,
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                elevation: 0,
-                                minimumSize: const Size(double.infinity, 56),
-                              ),
-                              child: _isLoading
-                                  ? const SizedBox(
-                                      height: 24,
-                                      width: 24,
-                                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                                    )
-                                  : Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Text('Continue', style: AppTheme.buttonText),
-                                        const SizedBox(width: 8),
-                                        const Icon(Icons.arrow_forward, size: 20, color: Colors.white),
-                                      ],
-                                    ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              );
-            },
+                  ],
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -775,9 +904,14 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
               onTap: () => onTap(option),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 150),
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
-                  color: isSelected ? primaryColor.withValues(alpha: 0.06) : surfaceColor,
+                  color: isSelected
+                      ? primaryColor.withValues(alpha: 0.06)
+                      : surfaceColor,
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: isSelected ? primaryColor : borderColor,
@@ -790,7 +924,9 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                     fontFamily: 'Inter',
                     fontSize: 14,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                    color: isSelected ? primaryColor : onSurfaceColor.withValues(alpha: 0.8),
+                    color: isSelected
+                        ? primaryColor
+                        : onSurfaceColor.withValues(alpha: 0.8),
                   ),
                 ),
               ),

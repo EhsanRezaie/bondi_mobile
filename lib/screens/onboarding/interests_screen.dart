@@ -5,6 +5,7 @@ import '../../config/app_theme.dart';
 import '../../providers/onboarding_provider.dart';
 import '../../services/onboarding_service.dart';
 import '../../models/interest.dart';
+import '../../utils/responsive.dart';
 import 'prompts_screen.dart';
 
 class InterestsScreen extends StatefulWidget {
@@ -72,7 +73,9 @@ class _InterestsScreenState extends State<InterestsScreen> {
 
   String _formatCategory(String category) {
     final parts = category.split('_');
-    return parts.map((part) => part[0].toUpperCase() + part.substring(1)).join(' & ');
+    return parts
+        .map((part) => part[0].toUpperCase() + part.substring(1))
+        .join(' & ');
   }
 
   void _toggleInterest(Interest interest) {
@@ -125,7 +128,9 @@ class _InterestsScreenState extends State<InterestsScreen> {
     final bgColor = isDark ? AppTheme.darkBackground : AppTheme.lightBackground;
     final surfaceColor = isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
-    final textMutedColor = isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted;
+    final textMutedColor = isDark
+        ? AppTheme.darkTextMuted
+        : AppTheme.lightTextMuted;
     final onSurfaceColor = colors.onSurface;
     final errorColor = AppTheme.lightError;
 
@@ -185,215 +190,271 @@ class _InterestsScreenState extends State<InterestsScreen> {
         behavior: HitTestBehavior.opaque,
         onTap: () => FocusScope.of(context).unfocus(),
         child: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              return CustomScrollView(
-                slivers: [
-                  SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                    sliver: SliverToBoxAdapter(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 16),
-                          // Header
-                          Text(
-                            'What are your interests?',
-                            style: AppTheme.headlineMedium.copyWith(
-                              color: onSurfaceColor,
-                              fontWeight: FontWeight.w800,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Select at least 8 interests that represent you',
-                            style: AppTheme.bodyLarge.copyWith(
-                              color: textMutedColor,
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-
-                          // Error Message
-                          if (_errorMessage != null)
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                              decoration: BoxDecoration(
-                                color: errorColor.withValues(alpha: 0.08),
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: errorColor.withValues(alpha: 0.2)),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(Icons.error_outline, color: errorColor, size: 20),
-                                  const SizedBox(width: 12),
-                                  Expanded(
-                                    child: Text(
-                                      _errorMessage!,
-                                      style: TextStyle(
-                                        fontFamily: 'Inter',
-                                        fontSize: 14,
-                                        color: errorColor,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                  ),
-                                ],
+          child: AppLayout.box(
+            context: context,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return CustomScrollView(
+                  slivers: [
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                      sliver: SliverToBoxAdapter(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 16),
+                            // Header
+                            Text(
+                              'What are your interests?',
+                              style: AppTheme.headlineMedium.copyWith(
+                                color: onSurfaceColor,
+                                fontWeight: FontWeight.w800,
                               ),
                             ),
-                          if (_errorMessage != null) const SizedBox(height: 16),
-
-                          // Progress indicator
-                          Container(
-                            width: double.infinity,
-                            height: 6,
-                            decoration: BoxDecoration(
-                              color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.grey.shade200,
-                              borderRadius: BorderRadius.circular(3),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Select at least 8 interests that represent you',
+                              style: AppTheme.bodyLarge.copyWith(
+                                color: textMutedColor,
+                              ),
                             ),
-                            child: FractionallySizedBox(
-                              widthFactor: selectedCount.clamp(0, 8) / 8,
-                              child: Container(
+                            const SizedBox(height: 24),
+
+                            // Error Message
+                            if (_errorMessage != null)
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 14,
+                                ),
                                 decoration: BoxDecoration(
-                                  color: isEnough ? Colors.green : primaryColor,
-                                  borderRadius: BorderRadius.circular(3),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          // Counter text below progress bar
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Selected: $selectedCount',
-                                style: TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                  color: isEnough ? Colors.green : textMutedColor,
-                                ),
-                              ),
-                              Text(
-                                isEnough ? '✅ Great!' : '$remaining more needed',
-                                style: TextStyle(
-                                  fontFamily: 'Inter',
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w500,
-                                  color: isEnough ? Colors.green : textMutedColor,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 24),
-
-                          // Interests List
-                          if (_isLoading)
-                            const Center(child: CircularProgressIndicator())
-                          else if (_groupedInterests.isEmpty)
-                            Center(
-                              child: Text(
-                                'No interests available',
-                                style: AppTheme.bodyLarge.copyWith(
-                                  color: textMutedColor,
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  if (!_isLoading && _groupedInterests.isNotEmpty)
-                    SliverToBoxAdapter(
-                      child: Column(
-                        children: _groupedInterests.keys.map((category) {
-                          return _buildCategorySection(
-                            category,
-                            _groupedInterests[category]!,
-                            primaryColor,
-                            surfaceColor,
-                            borderColor,
-                            textMutedColor,
-                            onSurfaceColor,
-                            isDark,
-                          );
-                        }).toList(),
-                      ),
-                    ),
-                  SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Container(
-                      alignment: Alignment.bottomCenter,
-                      padding: const EdgeInsets.only(left: 24.0, right: 24.0, bottom: 24.0),
-                      child: Row(
-                        children: [
-                          // Back Button
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: () => Navigator.pop(context),
-                              style: OutlinedButton.styleFrom(
-                                side: BorderSide(color: borderColor, width: 1.5),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                minimumSize: const Size(double.infinity, 56),
-                                foregroundColor: onSurfaceColor,
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.arrow_back, size: 20, color: onSurfaceColor),
-                                  const SizedBox(width: 8),
-                                  Text('Back', style: AppTheme.buttonText.copyWith(color: onSurfaceColor)),
-                                ],
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          // Next Button
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: _isSubmitting || !isEnough ? null : _handleNext,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: isEnough ? primaryColor : Colors.grey.shade400,
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
+                                  color: errorColor.withValues(alpha: 0.08),
                                   borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: errorColor.withValues(alpha: 0.2),
+                                  ),
                                 ),
-                                elevation: 0,
-                                minimumSize: const Size(double.infinity, 56),
-                              ),
-                              child: _isSubmitting
-                                  ? const SizedBox(
-                                      height: 24,
-                                      width: 24,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Colors.white,
-                                      ),
-                                    )
-                                  : Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          isEnough ? 'Continue' : 'Select ${8 - selectedCount} more',
-                                          style: AppTheme.buttonText.copyWith(
-                                            color: isEnough ? Colors.white : Colors.white.withValues(alpha: 0.7),
-                                          ),
-                                        ),
-                                        if (isEnough) ...[
-                                          const SizedBox(width: 8),
-                                          const Icon(Icons.arrow_forward, size: 20, color: Colors.white),
-                                        ],
-                                      ],
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.error_outline,
+                                      color: errorColor,
+                                      size: 20,
                                     ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: Text(
+                                        _errorMessage!,
+                                        style: TextStyle(
+                                          fontFamily: 'Inter',
+                                          fontSize: 14,
+                                          color: errorColor,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            if (_errorMessage != null)
+                              const SizedBox(height: 16),
+
+                            // Progress indicator
+                            Container(
+                              width: double.infinity,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? Colors.white.withValues(alpha: 0.1)
+                                    : Colors.grey.shade200,
+                                borderRadius: BorderRadius.circular(3),
+                              ),
+                              child: FractionallySizedBox(
+                                widthFactor: selectedCount.clamp(0, 8) / 8,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: isEnough
+                                        ? Colors.green
+                                        : primaryColor,
+                                    borderRadius: BorderRadius.circular(3),
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(height: 8),
+                            // Counter text below progress bar
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Selected: $selectedCount',
+                                  style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                    color: isEnough
+                                        ? Colors.green
+                                        : textMutedColor,
+                                  ),
+                                ),
+                                Text(
+                                  isEnough
+                                      ? '✅ Great!'
+                                      : '$remaining more needed',
+                                  style: TextStyle(
+                                    fontFamily: 'Inter',
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w500,
+                                    color: isEnough
+                                        ? Colors.green
+                                        : textMutedColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 24),
+
+                            // Interests List
+                            if (_isLoading)
+                              const Center(child: CircularProgressIndicator())
+                            else if (_groupedInterests.isEmpty)
+                              Center(
+                                child: Text(
+                                  'No interests available',
+                                  style: AppTheme.bodyLarge.copyWith(
+                                    color: textMutedColor,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                ],
-              );
-            },
+                    if (!_isLoading && _groupedInterests.isNotEmpty)
+                      SliverToBoxAdapter(
+                        child: Column(
+                          children: _groupedInterests.keys.map((category) {
+                            return _buildCategorySection(
+                              category,
+                              _groupedInterests[category]!,
+                              primaryColor,
+                              surfaceColor,
+                              borderColor,
+                              textMutedColor,
+                              onSurfaceColor,
+                              isDark,
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    SliverFillRemaining(
+                      hasScrollBody: false,
+                      child: Container(
+                        alignment: Alignment.bottomCenter,
+                        padding: const EdgeInsets.only(
+                          left: 24.0,
+                          right: 24.0,
+                          bottom: 24.0,
+                        ),
+                        child: Row(
+                          children: [
+                            // Back Button
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () => Navigator.pop(context),
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(
+                                    color: borderColor,
+                                    width: 1.5,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  minimumSize: const Size(double.infinity, 56),
+                                  foregroundColor: onSurfaceColor,
+                                ),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.arrow_back,
+                                      size: 20,
+                                      color: onSurfaceColor,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Back',
+                                      style: AppTheme.buttonText.copyWith(
+                                        color: onSurfaceColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            // Next Button
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: _isSubmitting || !isEnough
+                                    ? null
+                                    : _handleNext,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: isEnough
+                                      ? primaryColor
+                                      : Colors.grey.shade400,
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  elevation: 0,
+                                  minimumSize: const Size(double.infinity, 56),
+                                ),
+                                child: _isSubmitting
+                                    ? const SizedBox(
+                                        height: 24,
+                                        width: 24,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    : Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            isEnough
+                                                ? 'Continue'
+                                                : 'Select ${8 - selectedCount} more',
+                                            style: AppTheme.buttonText.copyWith(
+                                              color: isEnough
+                                                  ? Colors.white
+                                                  : Colors.white.withValues(
+                                                      alpha: 0.7,
+                                                    ),
+                                            ),
+                                          ),
+                                          if (isEnough) ...[
+                                            const SizedBox(width: 8),
+                                            const Icon(
+                                              Icons.arrow_forward,
+                                              size: 20,
+                                              color: Colors.white,
+                                            ),
+                                          ],
+                                        ],
+                                      ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
           ),
         ),
       ),
@@ -411,7 +472,9 @@ class _InterestsScreenState extends State<InterestsScreen> {
     bool isDark,
   ) {
     final isExpanded = _expandedCategories.contains(category);
-    final selectedInCategory = interests.where((i) => _isSelected(i.name)).length;
+    final selectedInCategory = interests
+        .where((i) => _isSelected(i.name))
+        .length;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -424,10 +487,7 @@ class _InterestsScreenState extends State<InterestsScreen> {
               padding: const EdgeInsets.symmetric(vertical: 14),
               decoration: BoxDecoration(
                 border: Border(
-                  bottom: BorderSide(
-                    color: borderColor,
-                    width: 0.5,
-                  ),
+                  bottom: BorderSide(color: borderColor, width: 0.5),
                 ),
               ),
               child: Row(
@@ -444,7 +504,10 @@ class _InterestsScreenState extends State<InterestsScreen> {
                   ),
                   if (selectedInCategory > 0)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       margin: const EdgeInsets.only(right: 8),
                       decoration: BoxDecoration(
                         color: primaryColor.withValues(alpha: 0.15),
@@ -517,7 +580,9 @@ class _InterestsScreenState extends State<InterestsScreen> {
                             style: TextStyle(
                               fontFamily: 'Inter',
                               fontSize: 14,
-                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                              fontWeight: isSelected
+                                  ? FontWeight.w600
+                                  : FontWeight.w500,
                               color: isSelected ? Colors.white : onSurfaceColor,
                             ),
                           ),
@@ -544,7 +609,9 @@ class _InterestsScreenState extends State<InterestsScreen> {
   }
 
   String _formatInterestName(String name) {
-    return name.replaceAll('_', ' ').split(' ')
+    return name
+        .replaceAll('_', ' ')
+        .split(' ')
         .map((word) => word[0].toUpperCase() + word.substring(1))
         .join(' ');
   }

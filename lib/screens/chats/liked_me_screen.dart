@@ -7,6 +7,7 @@ import 'package:dating_app/models/swipe_user.dart';
 import 'package:dating_app/screens/chats/user_notification_profile_screen.dart';
 import 'package:dating_app/generated/app_localizations.dart';
 import 'package:dating_app/utils/relative_time.dart';
+import 'package:dating_app/utils/responsive.dart';
 
 class LikedMeScreen extends StatefulWidget {
   const LikedMeScreen({super.key});
@@ -46,18 +47,16 @@ class _LikedMeScreenState extends State<LikedMeScreen> {
     final t = AppLocalizations.of(context)!;
     final isDark = context.isDarkMode;
     final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
-    final mutedColor =
-        isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted;
-    final borderColor =
-        isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
+    final mutedColor = isDark
+        ? AppTheme.darkTextMuted
+        : AppTheme.lightTextMuted;
+    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
 
     return Consumer<ChatProvider>(
       builder: (context, provider, _) {
         if (provider.isLoading && provider.likers.isEmpty) {
-          return Center(
-            child: CircularProgressIndicator(color: primaryColor),
-          );
+          return Center(child: CircularProgressIndicator(color: primaryColor));
         }
 
         if (provider.likers.isEmpty) {
@@ -83,8 +82,7 @@ class _LikedMeScreenState extends State<LikedMeScreen> {
         return ListView.builder(
           controller: _scrollController,
           padding: const EdgeInsets.symmetric(vertical: 8),
-          itemCount:
-              provider.likers.length + (provider.hasMoreLikers ? 1 : 0),
+          itemCount: provider.likers.length + (provider.hasMoreLikers ? 1 : 0),
           itemBuilder: (context, index) {
             if (index == provider.likers.length) {
               return Center(
@@ -122,14 +120,18 @@ class _LikedMeScreenState extends State<LikedMeScreen> {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       leading: CircleAvatar(
-        radius: 26,
+        radius: AppLayout.s(context, 26),
         backgroundColor: borderColor,
-        backgroundImage: user.mainPhotoUrl != null &&
-                user.mainPhotoUrl!.isNotEmpty
+        backgroundImage:
+            user.mainPhotoUrl != null && user.mainPhotoUrl!.isNotEmpty
             ? CachedNetworkImageProvider(user.mainPhotoUrl!)
             : null,
         child: user.mainPhotoUrl == null || user.mainPhotoUrl!.isEmpty
-            ? Icon(Icons.person, size: 26, color: borderColor)
+            ? Icon(
+                Icons.person,
+                size: AppLayout.s(context, 26),
+                color: borderColor,
+              )
             : null,
       ),
       title: Text(
@@ -143,16 +145,9 @@ class _LikedMeScreenState extends State<LikedMeScreen> {
       ),
       subtitle: Text(
         relativeTime(user.swipedAt, t),
-        style: TextStyle(
-          fontFamily: 'Inter',
-          fontSize: 13,
-          color: mutedColor,
-        ),
+        style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: mutedColor),
       ),
-      trailing: Icon(
-        Icons.chevron_right,
-        color: mutedColor,
-      ),
+      trailing: Icon(Icons.chevron_right, color: mutedColor),
       onTap: () {
         Navigator.push(
           context,

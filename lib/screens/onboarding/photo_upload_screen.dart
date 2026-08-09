@@ -7,6 +7,7 @@ import '../../config/app_theme.dart';
 import '../../providers/onboarding_provider.dart';
 import '../../services/photo_service.dart';
 import '../../models/photo.dart';
+import '../../utils/responsive.dart';
 import '../main_screen.dart';
 
 class PhotoUploadScreen extends StatefulWidget {
@@ -35,12 +36,14 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
     final onboarding = Provider.of<OnboardingProvider>(context, listen: false);
     if (onboarding.photos != null && onboarding.photos!.isNotEmpty) {
       _photos = onboarding.photos!
-          .map((path) => PhotoUpload(
-                id: DateTime.now().millisecondsSinceEpoch.toString(),
-                file: File(path),
-                isMain: false,
-                isUploaded: false,
-              ))
+          .map(
+            (path) => PhotoUpload(
+              id: DateTime.now().millisecondsSinceEpoch.toString(),
+              file: File(path),
+              isMain: false,
+              isUploaded: false,
+            ),
+          )
           .toList();
       if (_photos.isNotEmpty) {
         _photos[0].isMain = true;
@@ -121,7 +124,7 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
 
   void _reorderPhotos(int oldIndex, int newIndex) {
     if (oldIndex == newIndex) return;
-    
+
     setState(() {
       final item = _photos.removeAt(oldIndex);
       _photos.insert(newIndex, item);
@@ -195,7 +198,6 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
           MaterialPageRoute(builder: (_) => const MainScreen()),
         );
       }
-      
     } catch (e) {
       setState(() {
         _errorMessage = 'Failed to upload photos. Please try again.';
@@ -211,7 +213,9 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
     final bgColor = isDark ? AppTheme.darkBackground : AppTheme.lightBackground;
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
-    final textMutedColor = isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted;
+    final textMutedColor = isDark
+        ? AppTheme.darkTextMuted
+        : AppTheme.lightTextMuted;
     final onSurfaceColor = colors.onSurface;
     final errorColor = AppTheme.lightError;
 
@@ -265,141 +269,155 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
         centerTitle: true,
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24.0, 12.0, 24.0, 12.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Add at least 3 photos to showcase your best self. You can add up to 9.',
-                    style: AppTheme.bodyLarge.copyWith(
-                      color: textMutedColor,
-                      fontSize: 15,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-
-                  if (_errorMessage != null)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                      decoration: BoxDecoration(
-                        color: errorColor.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: errorColor.withValues(alpha: 0.2)),
-                      ),
-                      child: Row(
-                        children: [
-                          Icon(Icons.error_outline, color: errorColor, size: 16),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              _errorMessage!,
-                              style: TextStyle(
-                                fontFamily: 'Inter',
-                                fontSize: 12,
-                                color: errorColor,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ],
+        child: AppLayout.box(
+          context: context,
+          child: Column(
+            children: [
+              // Header
+              Padding(
+                padding: const EdgeInsets.fromLTRB(24.0, 12.0, 24.0, 12.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Add at least 3 photos to showcase your best self. You can add up to 9.',
+                      style: AppTheme.bodyLarge.copyWith(
+                        color: textMutedColor,
+                        fontSize: 15,
                       ),
                     ),
-                  if (_errorMessage != null) const SizedBox(height: 6),
-                ],
-              ),
-            ),
+                    const SizedBox(height: 10),
 
-            // Photo Grid with Drag & Drop
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                child: _buildPhotoGrid(primaryColor, borderColor),
-              ),
-            ),
-
-            // Tips with drag hint
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 4.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.drag_handle,
-                    size: 14,
-                    color: textMutedColor,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    'Drag to reorder photos',
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 11,
-                      color: textMutedColor,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Text(
-                    'Tips: Clear, high-quality photos work best.',
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 11,
-                      fontStyle: FontStyle.italic,
-                      color: textMutedColor,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // Bottom Button
-            Container(
-              padding: const EdgeInsets.all(20.0),
-              decoration: BoxDecoration(
-                color: bgColor,
-                border: Border(
-                  top: BorderSide(
-                    color: borderColor,
-                    width: 0.5,
-                  ),
-                ),
-              ),
-              child: SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isUploading ? null : _handleComplete,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: canProceed ? primaryColor : primaryColor.withValues(alpha: 0.2),
-                    foregroundColor: canProceed ? Colors.white : primaryColor.withValues(alpha: 0.4),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    elevation: 0,
-                    minimumSize: const Size(double.infinity, 50),
-                  ),
-                  child: _isUploading
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : Text(
-                          canProceed ? 'Complete' : 'Add ${minPhotos - selectedCount} more',
-                          style: AppTheme.buttonText.copyWith(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w600,
+                    if (_errorMessage != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: errorColor.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: errorColor.withValues(alpha: 0.2),
                           ),
                         ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.error_outline,
+                              color: errorColor,
+                              size: 16,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                _errorMessage!,
+                                style: TextStyle(
+                                  fontFamily: 'Inter',
+                                  fontSize: 12,
+                                  color: errorColor,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    if (_errorMessage != null) const SizedBox(height: 6),
+                  ],
                 ),
               ),
-            ),
-          ],
+
+              // Photo Grid with Drag & Drop
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                  child: _buildPhotoGrid(primaryColor, borderColor),
+                ),
+              ),
+
+              // Tips with drag hint
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24.0,
+                  vertical: 4.0,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.drag_handle, size: 14, color: textMutedColor),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Drag to reorder photos',
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 11,
+                        color: textMutedColor,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Tips: Clear, high-quality photos work best.',
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 11,
+                        fontStyle: FontStyle.italic,
+                        color: textMutedColor,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // Bottom Button
+              Container(
+                padding: const EdgeInsets.all(20.0),
+                decoration: BoxDecoration(
+                  color: bgColor,
+                  border: Border(
+                    top: BorderSide(color: borderColor, width: 0.5),
+                  ),
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isUploading ? null : _handleComplete,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: canProceed
+                          ? primaryColor
+                          : primaryColor.withValues(alpha: 0.2),
+                      foregroundColor: canProceed
+                          ? Colors.white
+                          : primaryColor.withValues(alpha: 0.4),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      elevation: 0,
+                      minimumSize: const Size(double.infinity, 50),
+                    ),
+                    child: _isUploading
+                        ? const SizedBox(
+                            height: 20,
+                            width: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : Text(
+                            canProceed
+                                ? 'Complete'
+                                : 'Add ${minPhotos - selectedCount} more',
+                            style: AppTheme.buttonText.copyWith(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -643,10 +661,7 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(13),
                 child: photo != null
-                    ? Image.file(
-                        photo.file,
-                        fit: BoxFit.cover,
-                      )
+                    ? Image.file(photo.file, fit: BoxFit.cover)
                     : Container(),
               ),
             ),
@@ -737,7 +752,10 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
                   top: 5,
                   right: 5,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
                       color: primaryColor,
                       borderRadius: BorderRadius.circular(8),
@@ -745,11 +763,7 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(
-                          Icons.star,
-                          color: Colors.white,
-                          size: 12,
-                        ),
+                        Icon(Icons.star, color: Colors.white, size: 12),
                         const SizedBox(width: 3),
                         Text(
                           'Main',
@@ -814,7 +828,10 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
                   right: 0,
                   child: Center(
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.black54,
                         borderRadius: BorderRadius.circular(8),

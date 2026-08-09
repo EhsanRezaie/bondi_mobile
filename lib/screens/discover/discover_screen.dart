@@ -6,6 +6,7 @@ import 'package:dating_app/generated/app_localizations.dart';
 import 'package:dating_app/models/discover_profile.dart';
 import 'package:dating_app/providers/discover_provider.dart';
 import 'package:dating_app/services/onboarding_service.dart';
+import 'package:dating_app/utils/responsive.dart';
 import 'package:dating_app/widgets/user_card.dart';
 import 'package:dating_app/widgets/discover_action_button.dart';
 import 'package:dating_app/screens/discover/profile_detail_screen.dart';
@@ -53,7 +54,9 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
         map[i.name] = i.icon!;
       }
     }
-    setState(() { _interestIcons = map; });
+    setState(() {
+      _interestIcons = map;
+    });
   }
 
   Future<void> _handleSwipeRight(DiscoverProfile profile) async {
@@ -185,7 +188,10 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     final animationFuture = _currentCardState?.swipeOut(-1);
 
     try {
-      await Provider.of<DiscoverProvider>(context, listen: false).swipeLeft(profile);
+      await Provider.of<DiscoverProvider>(
+        context,
+        listen: false,
+      ).swipeLeft(profile);
       if (!mounted) return;
 
       // API succeeded - wait for animation to complete
@@ -244,7 +250,9 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           ),
         ),
         content: Text(
-          type == 'likes' ? t.discover_limit_reached_likes : t.discover_limit_reached_chats,
+          type == 'likes'
+              ? t.discover_limit_reached_likes
+              : t.discover_limit_reached_chats,
           style: TextStyle(
             fontFamily: 'Inter',
             color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
@@ -267,7 +275,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     );
   }
 
-Future<String?> _showChatBottomSheet() async {
+  Future<String?> _showChatBottomSheet() async {
     final t = AppLocalizations.of(context)!;
     final result = await showModalBottomSheet<String>(
       context: context,
@@ -286,7 +294,9 @@ Future<String?> _showChatBottomSheet() async {
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
                   color: isDark ? AppTheme.darkSurface : Colors.white,
-                  borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+                  borderRadius: const BorderRadius.vertical(
+                    top: Radius.circular(24),
+                  ),
                 ),
                 child: SingleChildScrollView(
                   child: Column(
@@ -298,7 +308,9 @@ Future<String?> _showChatBottomSheet() async {
                           width: 40,
                           height: 4,
                           decoration: BoxDecoration(
-                            color: isDark ? AppTheme.darkBorder : Colors.grey.shade300,
+                            color: isDark
+                                ? AppTheme.darkBorder
+                                : Colors.grey.shade300,
                             borderRadius: BorderRadius.circular(2),
                           ),
                         ),
@@ -310,7 +322,9 @@ Future<String?> _showChatBottomSheet() async {
                           fontFamily: 'Inter',
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
-                          color: isDark ? AppTheme.darkText : AppTheme.lightText,
+                          color: isDark
+                              ? AppTheme.darkText
+                              : AppTheme.lightText,
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -346,8 +360,11 @@ Future<String?> _showChatBottomSheet() async {
     return result;
   }
 
-  void _showMatchDialog(Map<String, dynamic> result, DiscoverProfile profile,
-      {bool messageSent = false}) {
+  void _showMatchDialog(
+    Map<String, dynamic> result,
+    DiscoverProfile profile, {
+    bool messageSent = false,
+  }) {
     if (!mounted) return;
     final t = AppLocalizations.of(context)!;
     final isDark = context.isDarkMode;
@@ -373,7 +390,11 @@ Future<String?> _showChatBottomSheet() async {
                     shape: BoxShape.circle,
                     gradient: AppTheme.likeGradient(isDark: isDark),
                   ),
-                  child: const Icon(Icons.favorite, size: 48, color: Colors.white),
+                  child: const Icon(
+                    Icons.favorite,
+                    size: 48,
+                    color: Colors.white,
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Text(
@@ -392,7 +413,9 @@ Future<String?> _showChatBottomSheet() async {
                   style: TextStyle(
                     fontFamily: 'Inter',
                     fontSize: 14,
-                    color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
+                    color: isDark
+                        ? AppTheme.darkTextMuted
+                        : AppTheme.lightTextMuted,
                   ),
                 ),
                 if (messageSent) ...[
@@ -400,15 +423,22 @@ Future<String?> _showChatBottomSheet() async {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.check_circle, size: 16,
-                          color: isDark ? AppTheme.darkSuccess : AppTheme.lightSuccess),
+                      Icon(
+                        Icons.check_circle,
+                        size: 16,
+                        color: isDark
+                            ? AppTheme.darkSuccess
+                            : AppTheme.lightSuccess,
+                      ),
                       const SizedBox(width: 6),
                       Text(
                         t.discover_match_message_sent,
                         style: TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 13,
-                          color: isDark ? AppTheme.darkSuccess : AppTheme.lightSuccess,
+                          color: isDark
+                              ? AppTheme.darkSuccess
+                              : AppTheme.lightSuccess,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
@@ -436,7 +466,9 @@ Future<String?> _showChatBottomSheet() async {
                     style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 14,
-                      color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
+                      color: isDark
+                          ? AppTheme.darkTextMuted
+                          : AppTheme.lightTextMuted,
                     ),
                   ),
                 ),
@@ -545,7 +577,11 @@ Future<String?> _showChatBottomSheet() async {
     );
   }
 
-  Widget _buildLoadingState(AppLocalizations t, bool isDark, Color primaryColor) {
+  Widget _buildLoadingState(
+    AppLocalizations t,
+    bool isDark,
+    Color primaryColor,
+  ) {
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -566,15 +602,22 @@ Future<String?> _showChatBottomSheet() async {
   }
 
   Widget _buildErrorState(
-      DiscoverProvider provider, AppLocalizations t, bool isDark, Color primaryColor) {
+    DiscoverProvider provider,
+    AppLocalizations t,
+    bool isDark,
+    Color primaryColor,
+  ) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.cloud_off, size: 48,
-                color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted),
+            Icon(
+              Icons.cloud_off,
+              size: 48,
+              color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
+            ),
             const SizedBox(height: 16),
             Text(
               provider.errorMessage ?? t.error_something_wrong,
@@ -582,7 +625,9 @@ Future<String?> _showChatBottomSheet() async {
               style: TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 14,
-                color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
+                color: isDark
+                    ? AppTheme.darkTextMuted
+                    : AppTheme.lightTextMuted,
               ),
             ),
             const SizedBox(height: 24),
@@ -598,7 +643,11 @@ Future<String?> _showChatBottomSheet() async {
   }
 
   Widget _buildEmptyState(
-      DiscoverProvider provider, AppLocalizations t, bool isDark, Color primaryColor) {
+    DiscoverProvider provider,
+    AppLocalizations t,
+    bool isDark,
+    Color primaryColor,
+  ) {
     final canWiden = provider.canWidenDistance || provider.canWidenAge;
 
     return Center(
@@ -624,11 +673,15 @@ Future<String?> _showChatBottomSheet() async {
             ),
             const SizedBox(height: 8),
             Text(
-              canWiden ? t.discover_widen_subtitle : t.discover_no_profiles_hint,
+              canWiden
+                  ? t.discover_widen_subtitle
+                  : t.discover_no_profiles_hint,
               style: TextStyle(
                 fontFamily: 'Inter',
                 fontSize: 14,
-                color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
+                color: isDark
+                    ? AppTheme.darkTextMuted
+                    : AppTheme.lightTextMuted,
               ),
             ),
             if (canWiden) ...[
@@ -685,9 +738,7 @@ Future<String?> _showChatBottomSheet() async {
               ? primaryColor.withValues(alpha: 0.15)
               : primaryColor.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: primaryColor.withValues(alpha: 0.3),
-          ),
+          border: Border.all(color: primaryColor.withValues(alpha: 0.3)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -709,8 +760,12 @@ Future<String?> _showChatBottomSheet() async {
     );
   }
 
-  Widget _buildFilterBar(DiscoverProvider provider, AppLocalizations t,
-      bool isDark, Color primaryColor) {
+  Widget _buildFilterBar(
+    DiscoverProvider provider,
+    AppLocalizations t,
+    bool isDark,
+    Color primaryColor,
+  ) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: SingleChildScrollView(
@@ -722,8 +777,8 @@ Future<String?> _showChatBottomSheet() async {
               icon: Icons.wc,
               label: provider.genderFilter != null
                   ? provider.genderFilter == 'male'
-                      ? t.discover_filter_male
-                      : t.discover_filter_female
+                        ? t.discover_filter_male
+                        : t.discover_filter_female
                   : t.discover_filter_all,
               onTap: () => _showGenderPicker(provider),
               isDark: isDark,
@@ -786,8 +841,11 @@ Future<String?> _showChatBottomSheet() async {
               ),
             ),
             const SizedBox(width: 4),
-            Icon(Icons.arrow_drop_down, size: 18,
-                color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted),
+            Icon(
+              Icons.arrow_drop_down,
+              size: 18,
+              color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
+            ),
           ],
         ),
       ),
@@ -825,16 +883,17 @@ Future<String?> _showChatBottomSheet() async {
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
-                children: [
-                  'all',
-                  'male',
-                  'female',
-                ].map((g) {
-                  final selected = (g == 'all' && provider.genderFilter == null) ||
+                children: ['all', 'male', 'female'].map((g) {
+                  final selected =
+                      (g == 'all' && provider.genderFilter == null) ||
                       provider.genderFilter == g;
                   return ChoiceChip(
                     label: Text(
-                      g == 'all' ? t.discover_filter_all : g == 'male' ? t.discover_filter_male : t.discover_filter_female,
+                      g == 'all'
+                          ? t.discover_filter_all
+                          : g == 'male'
+                          ? t.discover_filter_male
+                          : t.discover_filter_female,
                       style: TextStyle(
                         fontFamily: 'Inter',
                         fontWeight: FontWeight.w500,
@@ -900,7 +959,9 @@ Future<String?> _showChatBottomSheet() async {
                     style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 14,
-                      color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
+                      color: isDark
+                          ? AppTheme.darkTextMuted
+                          : AppTheme.lightTextMuted,
                     ),
                   ),
                   RangeSlider(
@@ -909,10 +970,7 @@ Future<String?> _showChatBottomSheet() async {
                     max: 100,
                     divisions: 82,
                     activeColor: primaryColor,
-                    labels: RangeLabels(
-                      ageLabel(min),
-                      ageLabel(max),
-                    ),
+                    labels: RangeLabels(ageLabel(min), ageLabel(max)),
                     onChanged: (values) {
                       setSheetState(() {
                         min = values.start;
@@ -972,11 +1030,13 @@ Future<String?> _showChatBottomSheet() async {
                   ),
                   const SizedBox(height: 8),
                   Text(
-formatDistanceKm(distance),
+                    formatDistanceKm(distance),
                     style: TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 14,
-                      color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
+                      color: isDark
+                          ? AppTheme.darkTextMuted
+                          : AppTheme.lightTextMuted,
                     ),
                   ),
                   Slider(
@@ -993,7 +1053,9 @@ formatDistanceKm(distance),
                     child: ElevatedButton(
                       onPressed: () {
                         Navigator.pop(ctx);
-                        final apiDistance = distance >= 500 ? null : distance.round();
+                        final apiDistance = distance >= 500
+                            ? null
+                            : distance.round();
                         provider.setDistance(apiDistance);
                       },
                       child: Text(t.discover_filter_apply),
@@ -1014,25 +1076,41 @@ formatDistanceKm(distance),
         : null;
     if (profile == null) return const SizedBox.shrink();
 
-    final cardHeight = MediaQuery.of(context).size.height * 0.55;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final horizontalMargin = EdgeInsets.symmetric(
+          // On tablets the deck is capped to a comfortable card width and
+          // centered, otherwise it uses 16dp side margins.
+          horizontal: switch (constraints.maxWidth) {
+            final w when w >= Breakpoints.tablet =>
+              (constraints.maxWidth - 520) / 2,
+            _ => 16,
+          },
+        );
 
-    return Container(
-      height: cardHeight,
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      child: UserCard(
-        key: ValueKey(profile.id),
-        profile: profile,
-        interestIcons: _interestIcons,
-        isTop: true,
-        onTap: () => _openProfileDetail(profile),
-        onSwipeLeft: () => _handleSwipeLeft(profile),
-        onSwipeRight: () => _handleSwipeRight(profile),
-        onCardReady: _onCardReady,
-      ),
+        return Container(
+          height: constraints.maxHeight,
+          margin: horizontalMargin,
+          child: UserCard(
+            key: ValueKey(profile.id),
+            profile: profile,
+            interestIcons: _interestIcons,
+            isTop: true,
+            onTap: () => _openProfileDetail(profile),
+            onSwipeLeft: () => _handleSwipeLeft(profile),
+            onSwipeRight: () => _handleSwipeRight(profile),
+            onCardReady: _onCardReady,
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildActionButtons(DiscoverProvider provider, AppLocalizations t, bool isDark) {
+  Widget _buildActionButtons(
+    DiscoverProvider provider,
+    AppLocalizations t,
+    bool isDark,
+  ) {
     final profile = provider.visibleProfiles.isNotEmpty
         ? provider.visibleProfiles.first
         : null;
@@ -1057,7 +1135,9 @@ formatDistanceKm(distance),
             borderColor: isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary,
             size: 62,
             badgeCount: provider.isPremium ? null : provider.chatsRemaining,
-            onPressed: _isSwiping || provider.isChatBlocked ? null : () => _onChatPressed(profile),
+            onPressed: _isSwiping || provider.isChatBlocked
+                ? null
+                : () => _onChatPressed(profile),
           ),
           const SizedBox(width: 20),
           DiscoverActionButton(
@@ -1065,7 +1145,9 @@ formatDistanceKm(distance),
             gradient: AppTheme.likeGradient(isDark: isDark),
             size: 56,
             badgeCount: provider.isPremium ? null : provider.likesRemaining,
-            onPressed: _isSwiping || provider.isLikeBlocked ? null : () => _onLikePressed(profile),
+            onPressed: _isSwiping || provider.isLikeBlocked
+                ? null
+                : () => _onLikePressed(profile),
           ),
         ],
       ),

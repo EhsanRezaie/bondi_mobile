@@ -9,6 +9,7 @@ import 'package:dating_app/models/user.dart';
 import 'package:dating_app/providers/auth_provider.dart';
 import 'package:dating_app/providers/profile_provider.dart';
 import 'package:dating_app/screens/profile/avatar_crop_screen.dart';
+import 'package:dating_app/utils/responsive.dart';
 import 'package:dating_app/screens/profile/edit_basic_info_screen.dart';
 import 'package:dating_app/screens/profile/edit_profile_details_screen.dart';
 import 'package:dating_app/screens/profile/edit_interests_screen.dart';
@@ -68,7 +69,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final bgColor = isDark ? AppTheme.darkBackground : AppTheme.lightBackground;
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
     final onSurfaceColor = Theme.of(context).colorScheme.onSurface;
-    final textMutedColor = isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted;
+    final textMutedColor = isDark
+        ? AppTheme.darkTextMuted
+        : AppTheme.lightTextMuted;
 
     return Selector<ProfileProvider, bool>(
       selector: (_, p) => p.isLoading && p.photos.isEmpty,
@@ -102,9 +105,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 onPressed: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(
-                      builder: (_) => const SettingsScreen(),
-                    ),
+                    MaterialPageRoute(builder: (_) => const SettingsScreen()),
                   );
                 },
               ),
@@ -124,7 +125,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       return Selector<ProfileProvider, PhotoResponse?>(
                         selector: (_, p) => p.mainPhoto,
                         builder: (context, mainPhoto, _) {
-                          return _buildProfileHeader(user, mainPhoto, primaryColor, onSurfaceColor, textMutedColor);
+                          return _buildProfileHeader(
+                            user,
+                            mainPhoto,
+                            primaryColor,
+                            onSurfaceColor,
+                            textMutedColor,
+                          );
                         },
                       );
                     },
@@ -132,12 +139,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   const SizedBox(height: 32),
                   Selector<ProfileProvider, ProfileStats?>(
                     selector: (_, p) => p.stats,
-                    builder: (context, stats, _) => _buildStatsSection(stats, primaryColor, onSurfaceColor, textMutedColor, isDark),
+                    builder: (context, stats, _) => _buildStatsSection(
+                      stats,
+                      primaryColor,
+                      onSurfaceColor,
+                      textMutedColor,
+                      isDark,
+                    ),
                   ),
                   const SizedBox(height: 32),
                   Selector<AuthProvider, User?>(
                     selector: (_, a) => a.user,
-                    builder: (context, user, _) => _buildPremiumSection(user, primaryColor, isDark),
+                    builder: (context, user, _) =>
+                        _buildPremiumSection(user, primaryColor, isDark),
                   ),
                   const SizedBox(height: 32),
                   Selector<AuthProvider, User?>(
@@ -146,7 +160,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       return Selector<ProfileProvider, PhotoResponse?>(
                         selector: (_, p) => p.mainPhoto,
                         builder: (context, mainPhoto, _) {
-                          return _buildAccountSection(user, mainPhoto, onSurfaceColor, textMutedColor, isDark);
+                          return _buildAccountSection(
+                            user,
+                            mainPhoto,
+                            onSurfaceColor,
+                            textMutedColor,
+                            isDark,
+                          );
                         },
                       );
                     },
@@ -169,13 +189,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
     Color textMutedColor,
   ) {
     final t = AppLocalizations.of(context)!;
+    final avatarSize = AppLayout.s(context, 120);
     return Column(
       children: [
         Stack(
           children: [
             Container(
-              width: 120,
-              height: 120,
+              width: avatarSize,
+              height: avatarSize,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(color: Colors.grey.shade200, width: 2),
@@ -194,20 +215,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           final double normX = mainPhoto.cropOffsetX;
                           final double normY = mainPhoto.cropOffsetY;
                           return Transform.translate(
-                            offset: Offset(normX * 120.0, normY * 120.0),
+                            offset: Offset(
+                              normX * avatarSize,
+                              normY * avatarSize,
+                            ),
                             child: CachedNetworkImage(
                               imageUrl: mainPhoto.displayUrl,
                               fit: BoxFit.cover,
-                              width: 120,
-                              height: 120,
+                              width: avatarSize,
+                              height: avatarSize,
                               memCacheWidth: 400,
                               memCacheHeight: 400,
                               maxWidthDiskCache: 800,
                               maxHeightDiskCache: 800,
-                              placeholder: (context, url) => const ShimmerAvatar(),
+                              placeholder: (context, url) =>
+                                  const ShimmerAvatar(),
                               errorWidget: (context, url, error) => Container(
                                 color: Colors.grey.shade200,
-                                child: const Icon(Icons.person, color: Colors.grey, size: 50),
+                                child: const Icon(
+                                  Icons.person,
+                                  color: Colors.grey,
+                                  size: 50,
+                                ),
                               ),
                             ),
                           );
@@ -241,21 +270,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     );
                   } else {
-                    showActionToast(context, t.upload_profile_picture_first, isError: true);
+                    showActionToast(
+                      context,
+                      t.upload_profile_picture_first,
+                      isError: true,
+                    );
                   }
                 },
                 child: Container(
-                  width: 36,
-                  height: 36,
+                  width: AppLayout.s(context, 36),
+                  height: AppLayout.s(context, 36),
                   decoration: BoxDecoration(
                     color: primaryColor,
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white, width: 2),
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.edit,
                     color: Colors.white,
-                    size: 18,
+                    size: AppLayout.s(context, 18),
                   ),
                 ),
               ),
@@ -276,11 +309,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.location_on,
-              size: 14,
-              color: textMutedColor,
-            ),
+            Icon(Icons.location_on, size: 14, color: textMutedColor),
             const SizedBox(width: 4),
             Text(
               user?.city != null && user!.city!.isNotEmpty
@@ -317,21 +346,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _buildStatItem('❤️', stats?.likesSent ?? 0, 'Likes', onSurfaceColor, textMutedColor),
-          _buildStatItem('💑', stats?.matches ?? 0, 'Matches', onSurfaceColor, textMutedColor),
-          _buildStatItem('💬', stats?.messages ?? 0, 'Messages', onSurfaceColor, textMutedColor),
+          _buildStatItem(
+            '❤️',
+            stats?.likesSent ?? 0,
+            'Likes',
+            onSurfaceColor,
+            textMutedColor,
+          ),
+          _buildStatItem(
+            '💑',
+            stats?.matches ?? 0,
+            'Matches',
+            onSurfaceColor,
+            textMutedColor,
+          ),
+          _buildStatItem(
+            '💬',
+            stats?.messages ?? 0,
+            'Messages',
+            onSurfaceColor,
+            textMutedColor,
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildStatItem(String icon, int value, String label, Color onSurfaceColor, Color textMutedColor) {
+  Widget _buildStatItem(
+    String icon,
+    int value,
+    String label,
+    Color onSurfaceColor,
+    Color textMutedColor,
+  ) {
     return Column(
       children: [
-        Text(
-          icon,
-          style: const TextStyle(fontSize: 24),
-        ),
+        Text(icon, style: const TextStyle(fontSize: 24)),
         const SizedBox(height: 4),
         Text(
           value.toString(),
@@ -387,8 +437,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Row(
                 children: [
                   Icon(
-                    isPremium ? Icons.workspace_premium : Icons.workspace_premium_outlined,
-                    color: isPremium ? Colors.amber.shade300 : Colors.white.withValues(alpha: 0.5),
+                    isPremium
+                        ? Icons.workspace_premium
+                        : Icons.workspace_premium_outlined,
+                    color: isPremium
+                        ? Colors.amber.shade300
+                        : Colors.white.withValues(alpha: 0.5),
                     size: 18,
                   ),
                   const SizedBox(width: 8),
@@ -398,14 +452,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       fontFamily: 'Inter',
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
-                      color: isPremium ? Colors.amber.shade300 : Colors.white.withValues(alpha: 0.5),
+                      color: isPremium
+                          ? Colors.amber.shade300
+                          : Colors.white.withValues(alpha: 0.5),
                       letterSpacing: 0.5,
                     ),
                   ),
                   if (isPremium) ...[
                     const SizedBox(width: 8),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.green,
                         borderRadius: BorderRadius.circular(10),
@@ -425,7 +484,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ),
               if (isPremium)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
@@ -455,7 +517,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
           const SizedBox(height: 12),
           Text(
-            isPremium ? 'You have Premium access' : 'Unlock Exclusive Connections',
+            isPremium
+                ? 'You have Premium access'
+                : 'Unlock Exclusive Connections',
             style: const TextStyle(
               fontFamily: 'Inter',
               fontSize: 22,
@@ -486,13 +550,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       // TODO: Navigate to premium purchase
                     },
               style: ElevatedButton.styleFrom(
-                backgroundColor: isPremium ? Colors.white.withValues(alpha: 0.1) : Colors.white,
+                backgroundColor: isPremium
+                    ? Colors.white.withValues(alpha: 0.1)
+                    : Colors.white,
                 foregroundColor: isPremium ? Colors.white : primaryColor,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
                 minimumSize: const Size(double.infinity, 48),
-                side: isPremium ? BorderSide(color: Colors.white.withValues(alpha: 0.2)) : BorderSide.none,
+                side: isPremium
+                    ? BorderSide(color: Colors.white.withValues(alpha: 0.2))
+                    : BorderSide.none,
               ),
               child: Text(
                 isPremium ? 'Manage Subscription' : 'Get Premium',
@@ -655,9 +723,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (_) => EditPhotosScreen(
-                    profileProvider: Provider.of<ProfileProvider>(context, listen: false),
-                  )),
+                    MaterialPageRoute(
+                      builder: (_) => EditPhotosScreen(
+                        profileProvider: Provider.of<ProfileProvider>(
+                          context,
+                          listen: false,
+                        ),
+                      ),
+                    ),
                   );
                 },
                 showChevron: true,
@@ -697,51 +770,57 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Row(
           children: [
             Container(
-              width: 40,
-              height: 40,
+              width: AppLayout.s(context, 40),
+              height: AppLayout.s(context, 40),
               decoration: BoxDecoration(
                 color: isDark ? Colors.grey.shade800 : Colors.grey.shade100,
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppLayout.s(context, 12)),
               ),
               child: Icon(
                 icon,
                 color: textMutedColor,
-                size: 22,
+                size: AppLayout.s(context, 22),
               ),
             ),
-            const SizedBox(width: 16),
+            SizedBox(width: AppLayout.s(context, 16)),
             Expanded(
               child: Row(
                 children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: onSurfaceColor,
+                  Flexible(
+                    child: Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: 'Inter',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: onSurfaceColor,
+                      ),
                     ),
                   ),
                   if (status.isNotEmpty) ...[
-                    const SizedBox(width: 8),
-                    Text(
-                      status,
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: status.contains('Verified') ? Colors.green : textMutedColor,
+                    SizedBox(width: AppLayout.s(context, 8)),
+                    Flexible(
+                      child: Text(
+                        status,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: status.contains('Verified')
+                              ? Colors.green
+                              : textMutedColor,
+                        ),
                       ),
                     ),
                   ],
                 ],
               ),
             ),
-            if (showChevron)
-              Icon(
-                Icons.chevron_right,
-                color: textMutedColor,
-              ),
+            if (showChevron) Icon(Icons.chevron_right, color: textMutedColor),
           ],
         ),
       ),

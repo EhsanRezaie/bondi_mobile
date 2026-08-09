@@ -6,6 +6,7 @@ import '../../providers/auth_provider.dart';
 import '../../services/location_service.dart';
 import '../../models/location.dart';
 import '../../generated/app_localizations.dart';
+import '../../utils/responsive.dart';
 import '../../widgets/action_toast.dart';
 
 class EditBasicInfoScreen extends StatefulWidget {
@@ -850,7 +851,9 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
         behavior: HitTestBehavior.opaque,
         onTap: () => FocusScope.of(context).unfocus(),
         child: SafeArea(
-          child: LayoutBuilder(
+          child: AppLayout.box(
+            context: context,
+            child: LayoutBuilder(
             builder: (context, constraints) {
               return CustomScrollView(
                 slivers: [
@@ -1152,6 +1155,7 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
                 ],
               );
             },
+            ),
           ),
         ),
       ),

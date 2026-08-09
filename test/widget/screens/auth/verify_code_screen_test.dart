@@ -4,7 +4,6 @@ import 'package:provider/provider.dart';
 import 'package:dating_app/screens/auth/verify_code_screen.dart';
 import 'package:dating_app/providers/auth_provider.dart';
 import "package:dating_app/providers/language_provider.dart";
-import 'package:dating_app/providers/onboarding_provider.dart';
 import '../../../helpers/test_helpers.dart';
 
 class FakeOnboardingProvider extends ChangeNotifier {
@@ -25,10 +24,15 @@ void main() {
   });
 
   group('VerifyCodeScreen', () {
-    testWidgets('auto-advances focus to next field on digit entry', (tester) async {
+    testWidgets('auto-advances focus to next field on digit entry', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildTestable(
-          const VerifyCodeScreen(email: 'test@example.com', password: 'password123'),
+          const VerifyCodeScreen(
+            email: 'test@example.com',
+            password: 'password123',
+          ),
           providers: [
             ChangeNotifierProvider(create: (_) => AuthProvider()),
             ChangeNotifierProvider(create: (_) => FakeOnboardingProvider()),
@@ -47,10 +51,15 @@ void main() {
       expect(FocusScope.of(tester.element(secondField)).hasFocus, isTrue);
     });
 
-    testWidgets('backspace on empty field returns focus to previous', (tester) async {
+    testWidgets('backspace on empty field returns focus to previous', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildTestable(
-          const VerifyCodeScreen(email: 'test@example.com', password: 'password123'),
+          const VerifyCodeScreen(
+            email: 'test@example.com',
+            password: 'password123',
+          ),
           providers: [
             ChangeNotifierProvider(create: (_) => AuthProvider()),
             ChangeNotifierProvider(create: (_) => FakeOnboardingProvider()),
@@ -69,10 +78,15 @@ void main() {
       expect(FocusScope.of(tester.element(firstField)).hasFocus, isTrue);
     });
 
-    testWidgets('entering 6 digits one at a time fills all boxes', (tester) async {
+    testWidgets('entering 6 digits one at a time fills all boxes', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildTestable(
-          const VerifyCodeScreen(email: 'test@example.com', password: 'password123'),
+          const VerifyCodeScreen(
+            email: 'test@example.com',
+            password: 'password123',
+          ),
           providers: [
             ChangeNotifierProvider(create: (_) => AuthProvider()),
             ChangeNotifierProvider(create: (_) => FakeOnboardingProvider()),
@@ -88,14 +102,20 @@ void main() {
 
       for (int i = 0; i < 6; i++) {
         final field = find.byType(TextFormField).at(i);
-        expect(tester.widget<TextFormField>(field).controller?.text, isNotEmpty);
+        expect(
+          tester.widget<TextFormField>(field).controller?.text,
+          isNotEmpty,
+        );
       }
     });
 
     testWidgets('shows error for incomplete 6-digit code', (tester) async {
       await tester.pumpWidget(
         buildTestable(
-          const VerifyCodeScreen(email: 'test@example.com', password: 'password123'),
+          const VerifyCodeScreen(
+            email: 'test@example.com',
+            password: 'password123',
+          ),
           providers: [
             ChangeNotifierProvider(create: (_) => AuthProvider()),
             ChangeNotifierProvider(create: (_) => FakeOnboardingProvider()),
@@ -113,10 +133,15 @@ void main() {
       expect(find.text('Please enter the 6-digit code'), findsOneWidget);
     });
 
-    testWidgets('resend button is disabled while timer is running', (tester) async {
+    testWidgets('resend button is disabled while timer is running', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildTestable(
-          const VerifyCodeScreen(email: 'test@example.com', password: 'password123'),
+          const VerifyCodeScreen(
+            email: 'test@example.com',
+            password: 'password123',
+          ),
           providers: [
             ChangeNotifierProvider(create: (_) => AuthProvider()),
             ChangeNotifierProvider(create: (_) => FakeOnboardingProvider()),
@@ -126,7 +151,8 @@ void main() {
       );
 
       final resendButton = find.byWidgetPredicate(
-        (widget) => widget is TextButton &&
+        (widget) =>
+            widget is TextButton &&
             widget.child is Text &&
             (widget.child as Text).data!.contains('Resend Code'),
       );

@@ -113,8 +113,9 @@ class _ChatsScreenState extends State<ChatsScreen>
         bottom: TabBar(
           controller: _tabController,
           labelColor: primaryColor,
-          unselectedLabelColor:
-              isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
+          unselectedLabelColor: isDark
+              ? AppTheme.darkTextMuted
+              : AppTheme.lightTextMuted,
           indicatorColor: primaryColor,
           indicatorSize: TabBarIndicatorSize.label,
           labelStyle: const TextStyle(
@@ -142,8 +143,7 @@ class _ChatsScreenState extends State<ChatsScreen>
             isLoading: context.watch<ChatProvider>().isLoading,
             hasMore: context.watch<ChatProvider>().hasMoreConversations,
             emptyText: t.chat_empty_chats,
-            onRefresh: () =>
-                context.read<ChatProvider>().loadConversations(),
+            onRefresh: () => context.read<ChatProvider>().loadConversations(),
             onLoadMore: () =>
                 context.read<ChatProvider>().loadMoreConversations(),
             onChatTap: _openChat,
@@ -154,8 +154,7 @@ class _ChatsScreenState extends State<ChatsScreen>
             isLoading: context.watch<ChatProvider>().isLoading,
             hasMore: context.watch<ChatProvider>().hasMorePending,
             emptyText: t.chat_empty_pending,
-            onRefresh: () =>
-                context.read<ChatProvider>().loadPendingIncoming(),
+            onRefresh: () => context.read<ChatProvider>().loadPendingIncoming(),
             onLoadMore: () =>
                 context.read<ChatProvider>().loadMorePendingIncoming(),
             onChatTap: _openChat,
@@ -166,8 +165,7 @@ class _ChatsScreenState extends State<ChatsScreen>
             isLoading: context.watch<ChatProvider>().isLoading,
             hasMore: context.watch<ChatProvider>().hasMoreIncoming,
             emptyText: t.chat_empty_incoming,
-            onRefresh: () =>
-                context.read<ChatProvider>().loadPendingIncoming(),
+            onRefresh: () => context.read<ChatProvider>().loadPendingIncoming(),
             onLoadMore: () =>
                 context.read<ChatProvider>().loadMorePendingIncoming(),
             onChatTap: _openChat,
@@ -180,8 +178,7 @@ class _ChatsScreenState extends State<ChatsScreen>
 
   void _showChatActions(ChatCard chat) {
     final isDark = context.isDarkMode;
-    final surfaceColor =
-        isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
+    final surfaceColor = isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
     final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
 
     showModalBottomSheet(
@@ -215,8 +212,7 @@ class _ChatsScreenState extends State<ChatsScreen>
 
   Future<void> _confirmDeleteChat(ChatCard chat) async {
     final isDark = context.isDarkMode;
-    final surfaceColor =
-        isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
+    final surfaceColor = isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(

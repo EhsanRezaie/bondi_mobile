@@ -16,13 +16,14 @@ class FakeProfileProvider extends ProfileProvider {
   final ProfileStats? _stats;
   final bool _isLoading;
 
+  // ignore: prefer_initializing_formals
   FakeProfileProvider({
     List<PhotoResponse> photos = const [],
     ProfileStats? stats,
     bool isLoading = false,
-  })  : _photos = photos,
-        _stats = stats,
-        _isLoading = isLoading;
+  }) : _photos = photos, // ignore: prefer_initializing_formals
+       _stats = stats, // ignore: prefer_initializing_formals
+       _isLoading = isLoading; // ignore: prefer_initializing_formals
 
   @override
   List<PhotoResponse> get photos => _photos;
@@ -46,6 +47,7 @@ class FakeProfileProvider extends ProfileProvider {
 class FakeAuthProvider extends AuthProvider {
   final User? _user;
 
+  // ignore: prefer_initializing_formals
   FakeAuthProvider({User? user}) : _user = user;
 
   @override

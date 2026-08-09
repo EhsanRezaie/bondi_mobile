@@ -89,6 +89,22 @@ class AppView extends StatelessWidget {
       locale: langProv.locale,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
+      builder: (context, child) {
+        final media = MediaQuery.of(context);
+        // Clamp the system text scale so very large accessibility fonts
+        // (2x+) can't overflow our fixed-height layouts. Default scale is
+        // untouched.
+        final userScale = media.textScaler.scale(1.0);
+        final clamped = userScale.clamp(1.0, 1.3);
+        return MediaQuery(
+          data: media.copyWith(
+            textScaler: clamped == userScale
+                ? media.textScaler
+                : TextScaler.linear(clamped),
+          ),
+          child: child!,
+        );
+      },
       home: const SplashScreen(),
     );
   }

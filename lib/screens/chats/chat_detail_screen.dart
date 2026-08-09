@@ -117,10 +117,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
   void _showMessageOptions(Message message) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final primaryColor =
-        isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
-    final surfaceColor =
-        isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
+    final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
+    final surfaceColor = isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
     final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
     final errorColor = isDark ? AppTheme.darkError : AppTheme.lightError;
 
@@ -145,15 +143,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
-            if (message.messageType == MessageType.text && message.content != null) ...[
+            if (message.messageType == MessageType.text &&
+                message.content != null) ...[
               ListTile(
                 leading: Icon(Icons.copy, color: primaryColor),
                 title: Text(
                   'Copy',
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    color: textColor,
-                  ),
+                  style: TextStyle(fontFamily: 'Inter', color: textColor),
                 ),
                 onTap: () async {
                   await Clipboard.setData(
@@ -168,10 +164,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 leading: Icon(Icons.edit, color: primaryColor),
                 title: Text(
                   'Edit',
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    color: textColor,
-                  ),
+                  style: TextStyle(fontFamily: 'Inter', color: textColor),
                 ),
                 onTap: () {
                   Navigator.pop(context);
@@ -182,10 +175,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 leading: Icon(Icons.delete_outline, color: errorColor),
                 title: Text(
                   'Delete',
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    color: textColor,
-                  ),
+                  style: TextStyle(fontFamily: 'Inter', color: textColor),
                 ),
                 onTap: () {
                   Navigator.pop(context);
@@ -197,10 +187,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               leading: Icon(Icons.reply, color: primaryColor),
               title: Text(
                 'Reply',
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  color: textColor,
-                ),
+                style: TextStyle(fontFamily: 'Inter', color: textColor),
               ),
               onTap: () {
                 Navigator.pop(context);
@@ -214,10 +201,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               leading: Icon(Icons.flag, color: errorColor),
               title: Text(
                 'Report',
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  color: textColor,
-                ),
+                style: TextStyle(fontFamily: 'Inter', color: textColor),
               ),
               onTap: () {
                 Navigator.pop(context);
@@ -239,8 +223,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
   void _showReportDialog(Message message) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final surfaceColor =
-        isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
+    final surfaceColor = isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
     final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
     final controller = TextEditingController();
 
@@ -289,13 +272,14 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       ),
     ).then((reason) async {
       if (reason is String && reason.isNotEmpty && mounted) {
-        await context
-            .read<ChatProvider>()
-            .reportMessage(message.id, reason: reason);
+        await context.read<ChatProvider>().reportMessage(
+          message.id,
+          reason: reason,
+        );
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Message reported')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Message reported')));
         }
       }
     });
@@ -303,8 +287,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
   void _showDeleteDialog(Message message) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final surfaceColor =
-        isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
+    final surfaceColor = isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
     final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
     final errorColor = isDark ? AppTheme.darkError : AppTheme.lightError;
     bool deleteForAll = false;
@@ -353,14 +336,17 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                     TextButton(
                       onPressed: () {
                         Navigator.pop(dialogContext);
-                        context
-                            .read<ChatProvider>()
-                            .deleteMessage(message.id, deleteForAll: deleteForAll);
+                        context.read<ChatProvider>().deleteMessage(
+                          message.id,
+                          deleteForAll: deleteForAll,
+                        );
                       },
                       child: Text(
                         'Delete',
-                        style:
-                            TextStyle(fontFamily: 'Inter', color: errorColor),
+                        style: TextStyle(
+                          fontFamily: 'Inter',
+                          color: errorColor,
+                        ),
                       ),
                     ),
                   ],
@@ -382,10 +368,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       MaterialPageRoute(
         builder: (_) => ProfileDetailLoader(
           userId: peerId,
-          builder: (profile) => SearchProfileDetail(
-            profile: profile,
-            viewOnly: true,
-          ),
+          builder: (profile) =>
+              SearchProfileDetail(profile: profile, viewOnly: true),
         ),
       ),
     );
@@ -393,8 +377,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
   void _openChatMenu() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final surfaceColor =
-        isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
+    final surfaceColor = isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
     final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
 
     showModalBottomSheet(
@@ -439,8 +422,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
   Future<void> _confirmDeleteChat() async {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final surfaceColor =
-        isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
+    final surfaceColor = isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -474,17 +456,14 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   ) {
     final t = AppLocalizations.of(context)!;
     final bgColor = isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
-    final borderColor =
-        isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
+    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: bgColor,
-        border: Border(
-          top: BorderSide(color: borderColor, width: 0.5),
-        ),
+        border: Border(top: BorderSide(color: borderColor, width: 0.5)),
       ),
       child: Text(
         t.chat_conversation_over(widget.userName),
@@ -504,8 +483,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     final isDark = context.isDarkMode;
     final bgColor = isDark ? AppTheme.darkBackground : AppTheme.lightBackground;
     final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
-    final mutedColor =
-        isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted;
+    final mutedColor = isDark
+        ? AppTheme.darkTextMuted
+        : AppTheme.lightTextMuted;
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -513,7 +493,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         userName: widget.userName,
         avatarUrl: mediaUrlForDisplay(widget.avatarUrl),
         isOnline: context.watch<ChatProvider>().isOtherUserOnline,
-        lastSeenAt: context
+        lastSeenAt:
+            context
                 .watch<ChatProvider>()
                 .otherUserLastSeenAt
                 ?.toIso8601String() ??
@@ -536,7 +517,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   );
                 }
 
-                return _buildMessageList(provider, isDark, textColor, mutedColor);
+                return _buildMessageList(
+                  provider,
+                  isDark,
+                  textColor,
+                  mutedColor,
+                );
               },
             ),
           ),
@@ -549,7 +535,11 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 return _buildWaitingBanner(context, isDark, mutedColor);
               }
               if (provider.conversationIsOver) {
-                return _buildConversationOverBanner(context, isDark, mutedColor);
+                return _buildConversationOverBanner(
+                  context,
+                  isDark,
+                  mutedColor,
+                );
               }
               return ChatInputBar(
                 canSend: provider.canSendMessage,
@@ -564,9 +554,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 isEditing: provider.editingMessageId != null,
                 editingContent: provider.editingMessageId != null
                     ? provider.messages
-                        .where((m) => m.id == provider.editingMessageId)
-                        .map((m) => m.content)
-                        .firstOrNull
+                          .where((m) => m.id == provider.editingMessageId)
+                          .map((m) => m.content)
+                          .firstOrNull
                     : null,
                 onCancelEdit: () => provider.cancelEditing(),
                 onEditSave: (content) {
@@ -610,8 +600,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   ) {
     final t = AppLocalizations.of(context)!;
     final bgColor = isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
-    final borderColor =
-        isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
+    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
     final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
 
@@ -620,9 +609,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: bgColor,
-        border: Border(
-          top: BorderSide(color: borderColor, width: 0.5),
-        ),
+        border: Border(top: BorderSide(color: borderColor, width: 0.5)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -687,17 +674,14 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   ) {
     final t = AppLocalizations.of(context)!;
     final bgColor = isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
-    final borderColor =
-        isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
+    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
 
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: bgColor,
-        border: Border(
-          top: BorderSide(color: borderColor, width: 0.5),
-        ),
+        border: Border(top: BorderSide(color: borderColor, width: 0.5)),
       ),
       child: Text(
         t.chat_waiting_accept(widget.userName),

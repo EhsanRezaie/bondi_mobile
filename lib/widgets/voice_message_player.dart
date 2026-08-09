@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:dating_app/config/app_theme.dart';
+import 'package:dating_app/utils/responsive.dart';
 
 class VoiceMessagePlayer extends StatefulWidget {
   final String? audioUrl;
@@ -93,8 +94,11 @@ class _VoiceMessagePlayerState extends State<VoiceMessagePlayer> {
         ? _position.inMilliseconds / _duration.inMilliseconds
         : 0.0;
 
+    final maxW = MediaQuery.of(context).size.width * 0.78 - 28;
+    final width = AppLayout.s(context, 200).clamp(0.0, maxW);
+
     return SizedBox(
-      width: 200,
+      width: width,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -105,7 +109,7 @@ class _VoiceMessagePlayerState extends State<VoiceMessagePlayer> {
                 onTap: _togglePlay,
                 child: Icon(
                   _isPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill,
-                  size: 32,
+                  size: AppLayout.s(context, 32),
                   color: widget.isMine ? Colors.white : primaryColor,
                 ),
               ),

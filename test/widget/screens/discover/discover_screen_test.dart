@@ -17,9 +17,9 @@ class FakeDiscoverProvider extends DiscoverProvider {
     List<DiscoverProfile> profiles = const [],
     bool isLoading = false,
     String? errorMessage,
-  })  : _profiles = profiles,
-        _isLoading = isLoading,
-        _errorMessage = errorMessage;
+  }) : _profiles = profiles, // ignore: prefer_initializing_formals
+       _isLoading = isLoading, // ignore: prefer_initializing_formals
+       _errorMessage = errorMessage; // ignore: prefer_initializing_formals
 
   @override
   List<DiscoverProfile> get profiles => _profiles;
@@ -46,7 +46,8 @@ void main() {
           const DiscoverScreen(),
           providers: [
             ChangeNotifierProvider<DiscoverProvider>(
-              create: (_) => FakeDiscoverProvider(profiles: [discoverProfile()]),
+              create: (_) =>
+                  FakeDiscoverProvider(profiles: [discoverProfile()]),
             ),
             ChangeNotifierProvider(create: (_) => SettingsProvider()),
           ],
@@ -79,7 +80,8 @@ void main() {
           const DiscoverScreen(),
           providers: [
             ChangeNotifierProvider<DiscoverProvider>(
-              create: (_) => FakeDiscoverProvider(errorMessage: 'Failed to load profiles'),
+              create: (_) =>
+                  FakeDiscoverProvider(errorMessage: 'Failed to load profiles'),
             ),
             ChangeNotifierProvider(create: (_) => SettingsProvider()),
           ],
@@ -90,7 +92,9 @@ void main() {
       expect(find.text('Failed to load profiles'), findsOneWidget);
     });
 
-    testWidgets('shows loading indicator while feed is fetching', (tester) async {
+    testWidgets('shows loading indicator while feed is fetching', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         buildTestable(
           const DiscoverScreen(),

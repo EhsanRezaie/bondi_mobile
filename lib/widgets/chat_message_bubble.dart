@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dating_app/config/app_theme.dart';
 import 'package:dating_app/models/message.dart';
 import 'package:dating_app/utils/media_url.dart';
+import 'package:dating_app/utils/responsive.dart';
 import 'package:dating_app/widgets/voice_message_player.dart';
 import 'package:intl/intl.dart';
 
@@ -175,6 +176,9 @@ class ChatMessageBubble extends StatelessWidget {
 
   Widget _buildPhotoContent(BuildContext context) {
     final url = mediaUrlForDisplay(message.mediaUrl);
+    // Scale photo to the bubble's max width; never exceeds 220 on phones.
+    final maxW = MediaQuery.of(context).size.width * 0.78 - 28;
+    final size = AppLayout.s(context, 220).clamp(0.0, maxW);
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
       child: GestureDetector(
@@ -188,25 +192,25 @@ class ChatMessageBubble extends StatelessWidget {
         child: url.isNotEmpty
             ? CachedNetworkImage(
                 imageUrl: url,
-                width: 220,
-                height: 220,
+                width: size,
+                height: size,
                 fit: BoxFit.cover,
                 placeholder: (context, url) => Container(
-                  width: 220,
-                  height: 220,
+                  width: size,
+                  height: size,
                   color: Colors.grey.shade300,
                   child: const Center(child: CircularProgressIndicator()),
                 ),
                 errorWidget: (context, url, error) => Container(
-                  width: 220,
-                  height: 220,
+                  width: size,
+                  height: size,
                   color: Colors.grey.shade300,
                   child: const Icon(Icons.broken_image, size: 40),
                 ),
               )
             : Container(
-                width: 220,
-                height: 220,
+                width: size,
+                height: size,
                 color: Colors.grey.shade300,
                 child: const Icon(Icons.image, size: 40),
               ),

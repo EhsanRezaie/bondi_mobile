@@ -1,5 +1,6 @@
 // lib/screens/profile/avatar_crop_screen.dart
 import 'dart:io';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:path_provider/path_provider.dart';
@@ -7,6 +8,7 @@ import 'package:dating_app/models/photo.dart';
 import 'package:dating_app/services/photo_service.dart';
 import 'package:dating_app/config/app_theme.dart';
 import 'package:dating_app/generated/app_localizations.dart';
+import 'package:dating_app/utils/responsive.dart';
 import 'package:dating_app/widgets/action_toast.dart';
 
 class AvatarCropScreen extends StatefulWidget {
@@ -29,8 +31,10 @@ class _AvatarCropScreenState extends State<AvatarCropScreen> {
   File? _imageFile;
   bool _isSaving = false;
   bool _isError = false;
+  double _circleSize = 280.0;
 
-  static const double _circleSize = 280.0;
+  // Design baseline for the crop circle.
+  static const double _designCircleSize = 280.0;
 
   @override
   void initState() {
@@ -73,9 +77,11 @@ class _AvatarCropScreenState extends State<AvatarCropScreen> {
   void _onPanUpdate(DragUpdateDetails details) {
     setState(() {
       _offset += details.delta;
+      // Pan bounds are proportional to the crop circle.
+      final span = _circleSize / 2;
       _offset = Offset(
-        _offset.dx.clamp(-400.0, 400.0),
-        _offset.dy.clamp(-400.0, 400.0),
+        _offset.dx.clamp(-span, span),
+        _offset.dy.clamp(-span, span),
       );
     });
   }
@@ -109,7 +115,11 @@ class _AvatarCropScreenState extends State<AvatarCropScreen> {
       }
     } catch (e) {
       if (mounted) {
-         showActionToast(context, t.photo_crop_error(e.toString()), isError: true);
+        showActionToast(
+          context,
+          t.photo_crop_error(e.toString()),
+          isError: true,
+        );
       }
     } finally {
       if (mounted) {
@@ -163,7 +173,9 @@ class _AvatarCropScreenState extends State<AvatarCropScreen> {
                       fontFamily: 'Inter',
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary,
+                      color: isDark
+                          ? AppTheme.darkPrimary
+                          : AppTheme.lightPrimary,
                     ),
                   ),
           ),
@@ -176,44 +188,51 @@ class _AvatarCropScreenState extends State<AvatarCropScreen> {
               ),
             )
           : _isError
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.error_outline,
-                        size: 48,
-                        color: isDark ? Colors.grey.shade500 : Colors.grey.shade600,
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Failed to load image',
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
-                        ),
-                      ),
-                    ],
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    size: 48,
+                    color: isDark ? Colors.grey.shade500 : Colors.grey.shade600,
                   ),
-                )
-              : GestureDetector(
-                  onPanUpdate: _onPanUpdate,
-                  behavior: HitTestBehavior.opaque,
-                  child: Container(
-                    color: bgColor,
-                    child: Stack(
+                  const SizedBox(height: 16),
+                  Text(
+                    'Failed to load image',
+                    style: TextStyle(
+                      fontFamily: 'Inter',
+                      color: isDark
+                          ? Colors.grey.shade400
+                          : Colors.grey.shade600,
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : GestureDetector(
+              onPanUpdate: _onPanUpdate,
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                color: bgColor,
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    // Scale the crop circle with the available space so it
+                    // is neither tiny on tablets nor overflowing phones.
+                    final maxDim = math.min(
+                      constraints.maxWidth,
+                      constraints.maxHeight,
+                    );
+                    _circleSize = math.min(_designCircleSize, maxDim * 0.9);
+                    return Stack(
                       alignment: Alignment.center,
                       children: [
-                        Positioned.fill(
-                          child: Container(color: bgColor),
-                        ),
+                        Positioned.fill(child: Container(color: bgColor)),
                         // Subtle background pattern/dots
                         Positioned.fill(
                           child: IgnorePointer(
                             child: CustomPaint(
-                              painter: BackgroundPatternPainter(
-                                isDark: isDark,
-                              ),
+                              painter: BackgroundPatternPainter(isDark: isDark),
                             ),
                           ),
                         ),
@@ -255,20 +274,17 @@ class _AvatarCropScreenState extends State<AvatarCropScreen> {
                             height: _circleSize,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              border: Border.all(
-                                color: Colors.white,
-                                width: 2,
-                              ),
+                              border: Border.all(color: Colors.white, width: 2),
                             ),
                           ),
                         ),
                         Positioned(
-                          bottom: 40,
+                          bottom: AppLayout.s(context, 40),
                           child: IgnorePointer(
                             child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 20,
-                                vertical: 10,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: AppLayout.s(context, 20),
+                                vertical: AppLayout.s(context, 10),
                               ),
                               decoration: BoxDecoration(
                                 color: Colors.black.withValues(alpha: 0.5),
@@ -278,7 +294,7 @@ class _AvatarCropScreenState extends State<AvatarCropScreen> {
                                 'Drag anywhere to adjust',
                                 style: TextStyle(
                                   fontFamily: 'Inter',
-                                  fontSize: 14,
+                                  fontSize: AppLayout.s(context, 14),
                                   color: Colors.white.withValues(alpha: 0.8),
                                 ),
                               ),
@@ -286,14 +302,14 @@ class _AvatarCropScreenState extends State<AvatarCropScreen> {
                           ),
                         ),
                         Positioned(
-                          top: 20,
-                          right: 20,
+                          top: AppLayout.s(context, 20),
+                          right: AppLayout.s(context, 20),
                           child: GestureDetector(
                             onTap: _resetCrop,
                             child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 8,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: AppLayout.s(context, 16),
+                                vertical: AppLayout.s(context, 8),
                               ),
                               decoration: BoxDecoration(
                                 color: Colors.black.withValues(alpha: 0.6),
@@ -304,7 +320,7 @@ class _AvatarCropScreenState extends State<AvatarCropScreen> {
                                 style: TextStyle(
                                   fontFamily: 'Inter',
                                   color: Colors.white,
-                                  fontSize: 13,
+                                  fontSize: AppLayout.s(context, 13),
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -312,9 +328,11 @@ class _AvatarCropScreenState extends State<AvatarCropScreen> {
                           ),
                         ),
                       ],
-                    ),
-                  ),
+                    );
+                  },
                 ),
+              ),
+            ),
     );
   }
 }
@@ -323,15 +341,14 @@ class CircleCropPainter extends CustomPainter {
   final double circleSize;
   final bool isDark;
 
-  CircleCropPainter({
-    required this.circleSize,
-    required this.isDark,
-  });
+  CircleCropPainter({required this.circleSize, required this.isDark});
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = isDark ? Colors.black.withValues(alpha: 0.7) : Colors.black.withValues(alpha: 0.5)
+      ..color = isDark
+          ? Colors.black.withValues(alpha: 0.7)
+          : Colors.black.withValues(alpha: 0.5)
       ..style = PaintingStyle.fill;
 
     final center = Offset(size.width / 2, size.height / 2);
@@ -356,7 +373,9 @@ class BackgroundPatternPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = isDark ? Colors.white.withValues(alpha: 0.02) : Colors.black.withValues(alpha: 0.02)
+      ..color = isDark
+          ? Colors.white.withValues(alpha: 0.02)
+          : Colors.black.withValues(alpha: 0.02)
       ..style = PaintingStyle.fill;
 
     const spacing = 30.0;
@@ -364,11 +383,7 @@ class BackgroundPatternPainter extends CustomPainter {
 
     for (double x = spacing; x < size.width; x += spacing) {
       for (double y = spacing; y < size.height; y += spacing) {
-        canvas.drawCircle(
-          Offset(x, y),
-          dotSize,
-          paint,
-        );
+        canvas.drawCircle(Offset(x, y), dotSize, paint);
       }
     }
   }

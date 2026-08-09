@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../config/app_theme.dart';
+import '../utils/responsive.dart';
 
 OverlayEntry? _currentEntry;
 
@@ -123,11 +124,13 @@ class _ActionToastState extends State<_ActionToast>
                                 ? Icons.error_outline
                                 : Icons.check_circle_outline,
                             color: Colors.white,
-                            size: 16,
+                            size: AppLayout.s(context, 16),
                           ),
-                          const SizedBox(width: 6),
+                          SizedBox(width: AppLayout.s(context, 6)),
                           ConstrainedBox(
-                            constraints: const BoxConstraints(maxWidth: 260),
+                            constraints: BoxConstraints(
+                              maxWidth: AppLayout.s(context, 260),
+                            ),
                             child: Text(
                               widget.message,
                               maxLines: 1,

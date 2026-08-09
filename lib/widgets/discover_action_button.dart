@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../utils/responsive.dart';
 
 class DiscoverActionButton extends StatelessWidget {
   final IconData icon;
@@ -24,14 +25,17 @@ class DiscoverActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Scale the whole button (and its badge) modestly on larger screens.
+    final effectiveSize = AppLayout.s(context, size);
+    final effectiveIcon = effectiveSize * 0.45;
     return Stack(
       clipBehavior: Clip.none,
       children: [
         GestureDetector(
           onTap: onPressed,
           child: Container(
-            width: size,
-            height: size,
+            width: effectiveSize,
+            height: effectiveSize,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: backgroundColor,
@@ -43,12 +47,13 @@ class DiscoverActionButton extends StatelessWidget {
                 BoxShadow(
                   color: (gradient?.colors.first ?? backgroundColor ?? Colors.black)
                       .withValues(alpha: 0.35),
-                  blurRadius: 16,
+                  blurRadius: AppLayout.s(context, 16),
                   offset: const Offset(0, 6),
                 ),
               ],
             ),
-            child: Icon(icon, color: iconColor ?? Colors.white, size: size * 0.45),
+            child: Icon(icon,
+                color: iconColor ?? Colors.white, size: effectiveIcon),
           ),
         ),
         if (badgeCount != null && badgeCount! > 0)
@@ -56,8 +61,10 @@ class DiscoverActionButton extends StatelessWidget {
             top: -4,
             right: -4,
             child: Container(
-              constraints: const BoxConstraints(minWidth: 20, minHeight: 20),
-              padding: const EdgeInsets.symmetric(horizontal: 5),
+              constraints: BoxConstraints(
+                  minWidth: AppLayout.s(context, 20),
+                  minHeight: AppLayout.s(context, 20)),
+              padding: EdgeInsets.symmetric(horizontal: AppLayout.s(context, 5)),
               decoration: BoxDecoration(
                 color: const Color(0xFFDC3545),
                 shape: BoxShape.circle,
@@ -69,9 +76,9 @@ class DiscoverActionButton extends StatelessWidget {
               child: Center(
                 child: Text(
                   '$badgeCount',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontFamily: 'Inter',
-                    fontSize: 10,
+                    fontSize: AppLayout.s(context, 10),
                     fontWeight: FontWeight.w800,
                     color: Colors.white,
                     height: 1,

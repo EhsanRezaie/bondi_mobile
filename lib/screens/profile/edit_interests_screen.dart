@@ -6,6 +6,7 @@ import '../../providers/auth_provider.dart';
 import '../../services/onboarding_service.dart';
 import '../../models/interest.dart';
 import '../../generated/app_localizations.dart';
+import '../../utils/responsive.dart';
 import '../../widgets/action_toast.dart';
 
 class EditInterestsScreen extends StatefulWidget {
@@ -190,7 +191,9 @@ class _EditInterestsScreenState extends State<EditInterestsScreen> {
         behavior: HitTestBehavior.opaque,
         onTap: () => FocusScope.of(context).unfocus(),
         child: SafeArea(
-          child: LayoutBuilder(
+          child: AppLayout.box(
+            context: context,
+            child: LayoutBuilder(
             builder: (context, constraints) {
               return CustomScrollView(
                 slivers: [
@@ -353,6 +356,7 @@ class _EditInterestsScreenState extends State<EditInterestsScreen> {
                 ],
               );
             },
+            ),
           ),
         ),
       ),

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dating_app/config/app_theme.dart';
 import 'package:dating_app/models/discover_profile.dart';
+import 'package:dating_app/utils/responsive.dart';
 import 'package:dating_app/widgets/shimmer_avatar.dart';
 
 class UserCard extends StatefulWidget {
@@ -349,13 +350,15 @@ class UserCardState extends State<UserCard>
             ),
             if (_swipeLabel != null)
               Positioned(
-                top: 40,
+                top: AppLayout.s(context, 40),
                 left: _swipeLabel == 'LIKE' ? 24 : null,
                 right: _swipeLabel == 'NOPE' ? 24 : null,
                 child: Transform.rotate(
                   angle: _swipeLabel == 'LIKE' ? -0.2 : 0.2,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: AppLayout.s(context, 16),
+                        vertical: AppLayout.s(context, 8)),
                     decoration: BoxDecoration(
                       border: Border.all(
                         color: _swipeLabel == 'LIKE'
@@ -363,13 +366,13 @@ class UserCardState extends State<UserCard>
                             : (isDark ? AppTheme.darkError : AppTheme.lightError),
                         width: 3,
                       ),
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(AppLayout.s(context, 8)),
                     ),
                     child: Text(
                       _swipeLabel!,
                       style: TextStyle(
                         fontFamily: 'Inter',
-                        fontSize: 32,
+                        fontSize: AppLayout.s(context, 32),
                         fontWeight: FontWeight.w900,
                         color: _swipeLabel == 'LIKE'
                             ? (isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary)
@@ -381,40 +384,44 @@ class UserCardState extends State<UserCard>
                 ),
               ),
             Positioned(
-              top: 12,
-              right: 12,
+              top: AppLayout.s(context, 12),
+              right: AppLayout.s(context, 12),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (profile.isPremium)
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: EdgeInsets.symmetric(
+                          horizontal: AppLayout.s(context, 8),
+                          vertical: AppLayout.s(context, 4)),
                       decoration: BoxDecoration(
                         color: isDark ? AppTheme.darkError : AppTheme.lightError,
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(AppLayout.s(context, 12)),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(Icons.workspace_premium, size: 12, color: Colors.white),
-                          SizedBox(width: 3),
+                          Icon(Icons.workspace_premium,
+                              size: AppLayout.s(context, 12), color: Colors.white),
+                          SizedBox(width: AppLayout.s(context, 3)),
                           Text('Premium',
                               style: TextStyle(
-                                  fontSize: 10,
+                                  fontSize: AppLayout.s(context, 10),
                                   fontWeight: FontWeight.w700,
                                   color: Colors.white)),
                         ],
                       ),
                     ),
                   if (profile.isVerified) ...[
-                    const SizedBox(width: 6),
+                    SizedBox(width: AppLayout.s(context, 6)),
                     Container(
-                      padding: const EdgeInsets.all(5),
+                      padding: EdgeInsets.all(AppLayout.s(context, 5)),
                       decoration: BoxDecoration(
                         color: isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary,
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(Icons.verified, size: 14, color: Colors.white),
+                      child: Icon(Icons.verified,
+                          size: AppLayout.s(context, 14), color: Colors.white),
                     ),
                   ],
                 ],
@@ -429,14 +436,20 @@ class UserCardState extends State<UserCard>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
                     children: [
-                      Text(
-                        profile.name,
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 24,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
+                      Flexible(
+                        child: Text(
+                          profile.name,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontFamily: 'Inter',
+                            fontSize: 24,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                       const SizedBox(width: 8),
@@ -505,35 +518,38 @@ class UserCardState extends State<UserCard>
               ),
             ),
             Positioned(
-              top: 12,
-              left: 12,
+              top: AppLayout.s(context, 12),
+              left: AppLayout.s(context, 12),
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (profile.isOnline)
                     Container(
-                      width: 12,
-                      height: 12,
+                      width: AppLayout.s(context, 12),
+                      height: AppLayout.s(context, 12),
                       decoration: const BoxDecoration(
                         color: Color(0xFF22C55E),
                         shape: BoxShape.circle,
                       ),
                     ),
-                  if (profile.isOnline) const SizedBox(width: 6),
+                  if (profile.isOnline) SizedBox(width: AppLayout.s(context, 6)),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: EdgeInsets.symmetric(
+                        horizontal: AppLayout.s(context, 8),
+                        vertical: AppLayout.s(context, 4)),
                     decoration: BoxDecoration(
                       color: Colors.black.withValues(alpha: 0.4),
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(AppLayout.s(context, 10)),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.touch_app, size: 12, color: Colors.white70),
-                        SizedBox(width: 4),
+                        Icon(Icons.touch_app,
+                            size: AppLayout.s(context, 12), color: Colors.white70),
+                        SizedBox(width: AppLayout.s(context, 4)),
                         Text('Tap for more',
                             style: TextStyle(
-                                fontSize: 10,
+                                fontSize: AppLayout.s(context, 10),
                                 color: Colors.white70,
                                 fontFamily: 'Inter')),
                       ],
