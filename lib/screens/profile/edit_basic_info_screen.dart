@@ -771,29 +771,32 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
 
             return filteredItems.map((item) {
               final isSelected = item == selectedItem;
-              return ListTile(
-                selected: isSelected,
-                selectedTileColor: primaryColor.withValues(alpha: 0.1),
-                title: Text(
-                  displayName(item),
-                  style: TextStyle(
-                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                    color: Theme.of(context).colorScheme.onSurface,
+              return Material(
+                type: MaterialType.transparency,
+                child: ListTile(
+                  selected: isSelected,
+                  selectedTileColor: primaryColor.withValues(alpha: 0.1),
+                  title: Text(
+                    displayName(item),
+                    style: TextStyle(
+                      fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                   ),
-                ),
-                trailing: isSelected
-                    ? Icon(
-                        Icons.check,
-                        color: primaryColor,
-                        size: 20,
-                      )
-                    : null,
-                onTap: () {
-                  searchController.closeView(displayName(item));
-                  onSelected(item);
+                  trailing: isSelected
+                      ? Icon(
+                          Icons.check,
+                          color: primaryColor,
+                          size: 20,
+                        )
+                      : null,
+                  onTap: () {
+                    searchController.closeView(displayName(item));
+                    onSelected(item);
                   searchController.text = displayName(item);
                 },
+                ),
               );
             }).toList();
           },

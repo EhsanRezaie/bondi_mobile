@@ -520,21 +520,29 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
                                     color: textMutedColor,
                                   ),
                                   const SizedBox(width: 6),
-                                  Text(
-                                    'Drag to reorder',
-                                    style: TextStyle(
-                                      fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
-                                      fontSize: 11,
-                                      color: textMutedColor,
+                                  Expanded(
+                                    child: Text(
+                                      'Drag to reorder',
+                                      softWrap: false,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                                        fontSize: 11,
+                                        color: textMutedColor,
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(width: 16),
-                                  Text(
-                                    'Drag to first slot to set as main',
-                                    style: TextStyle(
-                                      fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
-                                      fontSize: 11,
-                                      color: textMutedColor,
+                                  Expanded(
+                                    child: Text(
+                                      'Drag to first slot to set as main',
+                                      softWrap: false,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                                        fontSize: 11,
+                                        color: textMutedColor,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -624,10 +632,8 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
       builder: (context, constraints) {
         final double width = constraints.maxWidth;
         final double gap = 10.0;
-        final double smallItemWidth = (width - gap * 2) / 3;
-        final double smallItemHeight = smallItemWidth * 1.1;
-        final double mainWidth = smallItemWidth * 2 + gap;
-        final double mainHeight = smallItemHeight * 2 + gap;
+        final double slotW = (width - gap * 2) / 3;
+        final double slotH = slotW * 1.1;
 
         final List<_EditablePhoto> displayItems = List.from(_items);
 
@@ -637,170 +643,37 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
             width: width,
             child: Column(
               children: [
-                // Row 1: Main slot + 2 small
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(
-                      width: mainWidth,
-                      height: mainHeight,
-                       child: _buildDraggableSlot(
-                         index: 0,
-                         items: displayItems,
-                         primaryColor: primaryColor,
-                         borderColor: borderColor,
-                         textMutedColor: textMutedColor,
-                         onSurfaceColor: onSurfaceColor,
-                         isBig: true,
-                         slotWidth: mainWidth,
-                         slotHeight: mainHeight,
-                       ),
-                    ),
-                    SizedBox(width: gap),
-                    Column(
+                for (int row = 0; row < 3; row++)
+                  Padding(
+                    padding: EdgeInsets.only(bottom: row < 2 ? gap : 0),
+                    child: Row(
                       children: [
-                        SizedBox(
-                          width: smallItemWidth,
-                          height: smallItemHeight,
-                          child: _buildDraggableSlot(
-                            index: 1,
-                            items: displayItems,
-                            primaryColor: primaryColor,
-                            borderColor: borderColor,
-                            textMutedColor: textMutedColor,
-                            onSurfaceColor: onSurfaceColor,
-                            isBig: false,
-                            slotWidth: smallItemWidth,
-                            slotHeight: smallItemHeight,
+                        for (int col = 0; col < 3; col++) ...[
+                          if (col > 0) SizedBox(width: gap),
+                          SizedBox(
+                            width: slotW,
+                            height: slotH,
+                            child: _buildDraggableSlot(
+                              index: row * 3 + col,
+                              items: displayItems,
+                              primaryColor: primaryColor,
+                              borderColor: borderColor,
+                              textMutedColor: textMutedColor,
+                              onSurfaceColor: onSurfaceColor,
+                              isBig: false,
+                              slotWidth: slotW,
+                              slotHeight: slotH,
+                            ),
                           ),
-                        ),
-                        SizedBox(height: gap),
-                        SizedBox(
-                          width: smallItemWidth,
-                          height: smallItemHeight,
-                          child: _buildDraggableSlot(
-                            index: 2,
-                            items: displayItems,
-                            primaryColor: primaryColor,
-                            borderColor: borderColor,
-                            textMutedColor: textMutedColor,
-                            onSurfaceColor: onSurfaceColor,
-                            isBig: false,
-                            slotWidth: smallItemWidth,
-                            slotHeight: smallItemHeight,
-                          ),
-                        ),
+                        ],
                       ],
                     ),
-                  ],
-                ),
-                SizedBox(height: gap),
-                // Row 2: 3 small
-                Row(
-                  children: [
-                    _buildSmallSlot(
-                      3,
-                      displayItems,
-                      primaryColor,
-                      borderColor,
-                      textMutedColor,
-                      onSurfaceColor,
-                      gap,
-                      width,
-                    ),
-                    _buildSmallSlot(
-                      4,
-                      displayItems,
-                      primaryColor,
-                      borderColor,
-                      textMutedColor,
-                      onSurfaceColor,
-                      gap,
-                      width,
-                    ),
-                    _buildSmallSlot(
-                      5,
-                      displayItems,
-                      primaryColor,
-                      borderColor,
-                      textMutedColor,
-                      onSurfaceColor,
-                      gap,
-                      width,
-                    ),
-                  ],
-                ),
-                SizedBox(height: gap),
-                // Row 3: 3 small
-                Row(
-                  children: [
-                    _buildSmallSlot(
-                      6,
-                      displayItems,
-                      primaryColor,
-                      borderColor,
-                      textMutedColor,
-                      onSurfaceColor,
-                      gap,
-                      width,
-                    ),
-                    _buildSmallSlot(
-                      7,
-                      displayItems,
-                      primaryColor,
-                      borderColor,
-                      textMutedColor,
-                      onSurfaceColor,
-                      gap,
-                      width,
-                    ),
-                    _buildSmallSlot(
-                      8,
-                      displayItems,
-                      primaryColor,
-                      borderColor,
-                      textMutedColor,
-                      onSurfaceColor,
-                      gap,
-                      width,
-                    ),
-                  ],
-                ),
+                  ),
               ],
             ),
           ),
         );
       },
-    );
-  }
-
-  Widget _buildSmallSlot(
-    int index,
-    List<_EditablePhoto> displayItems,
-    Color primaryColor,
-    Color borderColor,
-    Color textMutedColor,
-    Color onSurfaceColor,
-    double gap,
-    double width,
-  ) {
-    final double smallItemWidth = (width - gap * 2) / 3;
-    final double smallItemHeight = smallItemWidth * 1.1;
-
-     return SizedBox(
-      width: smallItemWidth,
-      height: smallItemHeight,
-      child: _buildDraggableSlot(
-        index: index,
-        items: displayItems,
-        primaryColor: primaryColor,
-        borderColor: borderColor,
-        textMutedColor: textMutedColor,
-        onSurfaceColor: onSurfaceColor,
-        isBig: false,
-        slotWidth: smallItemWidth,
-        slotHeight: smallItemHeight,
-      ),
     );
   }
 

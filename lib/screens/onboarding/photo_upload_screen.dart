@@ -113,15 +113,6 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
     });
   }
 
-  void _setMainPhoto(int index) {
-    setState(() {
-      for (var photo in _photos) {
-        photo.isMain = false;
-      }
-      _photos[index].isMain = true;
-    });
-  }
-
   void _reorderPhotos(int oldIndex, int newIndex) {
     if (oldIndex == newIndex) return;
 
@@ -129,12 +120,10 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
       final item = _photos.removeAt(oldIndex);
       _photos.insert(newIndex, item);
 
-      if (item.isMain) {
-        for (var photo in _photos) {
-          photo.isMain = false;
-        }
-        _photos[0].isMain = true;
+      for (var photo in _photos) {
+        photo.isMain = false;
       }
+      _photos[0].isMain = true;
     });
   }
 
@@ -426,12 +415,8 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
       builder: (context, constraints) {
         final double width = constraints.maxWidth;
         final double gap = 10.0;
-        final double smallItemWidth = (width - gap * 2) / 3;
-        final double smallItemHeight = smallItemWidth * 1.1;
-
-        // Main photo size (spans 2 columns, 2 rows)
-        final double mainWidth = smallItemWidth * 2 + gap;
-        final double mainHeight = smallItemHeight * 2 + gap;
+        final double slotW = (width - gap * 2) / 3;
+        final double slotH = slotW * 1.1;
 
         return SingleChildScrollView(
           physics: const BouncingScrollPhysics(),
@@ -439,164 +424,35 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
             width: width,
             child: Column(
               children: [
-                // Row 1: Main photo (big) + 2 small photos on right
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Main photo slot (bigger) - DRAGGABLE
-                    SizedBox(
-                      width: mainWidth,
-                      height: mainHeight,
-                      child: _buildDraggablePhotoSlot(
-                        index: 0,
-                        hasPhoto: count > 0,
-                        photo: count > 0 ? _photos[0] : null,
-                        isMain: count > 0 ? _photos[0].isMain : false,
-                        primaryColor: primaryColor,
-                        borderColor: borderColor,
-                        isBig: true,
-                        totalCount: count,
-                      ),
-                    ),
-                    SizedBox(width: gap),
-                    // Right column: 2 small photos - DRAGGABLE
-                    Column(
+                for (int row = 0; row < 3; row++)
+                  Padding(
+                    padding: EdgeInsets.only(bottom: row < 2 ? gap : 0),
+                    child: Row(
                       children: [
-                        // Top right
-                        SizedBox(
-                          width: smallItemWidth,
-                          height: smallItemHeight,
-                          child: _buildDraggablePhotoSlot(
-                            index: 1,
-                            hasPhoto: count > 1,
-                            photo: count > 1 ? _photos[1] : null,
-                            isMain: false,
-                            primaryColor: primaryColor,
-                            borderColor: borderColor,
-                            isBig: false,
-                            totalCount: count,
+                        for (int col = 0; col < 3; col++) ...[
+                          if (col > 0) SizedBox(width: gap),
+                          SizedBox(
+                            width: slotW,
+                            height: slotH,
+                            child: _buildDraggablePhotoSlot(
+                              index: row * 3 + col,
+                              hasPhoto: count > (row * 3 + col),
+                              photo: count > (row * 3 + col)
+                                  ? _photos[row * 3 + col]
+                                  : null,
+                              isMain: (row * 3 + col) == 0 &&
+                                  count > 0 &&
+                                  _photos[0].isMain,
+                              primaryColor: primaryColor,
+                              borderColor: borderColor,
+                              isBig: false,
+                              totalCount: count,
+                            ),
                           ),
-                        ),
-                        SizedBox(height: gap),
-                        // Bottom right
-                        SizedBox(
-                          width: smallItemWidth,
-                          height: smallItemHeight,
-                          child: _buildDraggablePhotoSlot(
-                            index: 2,
-                            hasPhoto: count > 2,
-                            photo: count > 2 ? _photos[2] : null,
-                            isMain: false,
-                            primaryColor: primaryColor,
-                            borderColor: borderColor,
-                            isBig: false,
-                            totalCount: count,
-                          ),
-                        ),
+                        ],
                       ],
                     ),
-                  ],
-                ),
-                SizedBox(height: gap),
-                // Row 2: 3 small photos - DRAGGABLE
-                Row(
-                  children: [
-                    SizedBox(
-                      width: smallItemWidth,
-                      height: smallItemHeight,
-                      child: _buildDraggablePhotoSlot(
-                        index: 3,
-                        hasPhoto: count > 3,
-                        photo: count > 3 ? _photos[3] : null,
-                        isMain: false,
-                        primaryColor: primaryColor,
-                        borderColor: borderColor,
-                        isBig: false,
-                        totalCount: count,
-                      ),
-                    ),
-                    SizedBox(width: gap),
-                    SizedBox(
-                      width: smallItemWidth,
-                      height: smallItemHeight,
-                      child: _buildDraggablePhotoSlot(
-                        index: 4,
-                        hasPhoto: count > 4,
-                        photo: count > 4 ? _photos[4] : null,
-                        isMain: false,
-                        primaryColor: primaryColor,
-                        borderColor: borderColor,
-                        isBig: false,
-                        totalCount: count,
-                      ),
-                    ),
-                    SizedBox(width: gap),
-                    SizedBox(
-                      width: smallItemWidth,
-                      height: smallItemHeight,
-                      child: _buildDraggablePhotoSlot(
-                        index: 5,
-                        hasPhoto: count > 5,
-                        photo: count > 5 ? _photos[5] : null,
-                        isMain: false,
-                        primaryColor: primaryColor,
-                        borderColor: borderColor,
-                        isBig: false,
-                        totalCount: count,
-                      ),
-                    ),
-                  ],
-                ),
-                SizedBox(height: gap),
-                // Row 3: 3 small photos - DRAGGABLE
-                Row(
-                  children: [
-                    SizedBox(
-                      width: smallItemWidth,
-                      height: smallItemHeight,
-                      child: _buildDraggablePhotoSlot(
-                        index: 6,
-                        hasPhoto: count > 6,
-                        photo: count > 6 ? _photos[6] : null,
-                        isMain: false,
-                        primaryColor: primaryColor,
-                        borderColor: borderColor,
-                        isBig: false,
-                        totalCount: count,
-                      ),
-                    ),
-                    SizedBox(width: gap),
-                    SizedBox(
-                      width: smallItemWidth,
-                      height: smallItemHeight,
-                      child: _buildDraggablePhotoSlot(
-                        index: 7,
-                        hasPhoto: count > 7,
-                        photo: count > 7 ? _photos[7] : null,
-                        isMain: false,
-                        primaryColor: primaryColor,
-                        borderColor: borderColor,
-                        isBig: false,
-                        totalCount: count,
-                      ),
-                    ),
-                    SizedBox(width: gap),
-                    SizedBox(
-                      width: smallItemWidth,
-                      height: smallItemHeight,
-                      child: _buildDraggablePhotoSlot(
-                        index: 8,
-                        hasPhoto: count > 8,
-                        photo: count > 8 ? _photos[8] : null,
-                        isMain: false,
-                        primaryColor: primaryColor,
-                        borderColor: borderColor,
-                        isBig: false,
-                        totalCount: count,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
               ],
             ),
           ),
@@ -698,9 +554,7 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
     required bool isBig,
   }) {
     return GestureDetector(
-      onTap: hasPhoto
-          ? () => _setMainPhoto(index)
-          : () => _showImagePicker(context),
+      onTap: hasPhoto ? null : () => _showImagePicker(context),
       child: Container(
         decoration: BoxDecoration(
           color: hasPhoto ? Colors.transparent : Colors.grey.shade100,
@@ -812,34 +666,6 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
                       Icons.drag_handle,
                       color: Colors.white70,
                       size: 14,
-                    ),
-                  ),
-                ),
-
-              // Set as main hint
-              if (hasPhoto && !isMain)
-                Positioned(
-                  bottom: 5,
-                  left: 0,
-                  right: 0,
-                  child: Center(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.black54,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        'Set as main',
-                        style: TextStyle(
-                          fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
-                          fontSize: 8,
-                          color: Colors.white70,
-                        ),
-                      ),
                     ),
                   ),
                 ),
