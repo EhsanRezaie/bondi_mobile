@@ -265,6 +265,31 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settings_logout_confirm => 'Are you sure you want to log out?';
 
   @override
+  String get settings_premium_title => 'Go Premium';
+
+  @override
+  String get settings_premium_subtitle =>
+      'Unlock unlimited likes, chats and profile boosts';
+
+  @override
+  String get settings_premium_perk_likes => 'Unlimited likes';
+
+  @override
+  String get settings_premium_perk_chats => 'Unlimited chats';
+
+  @override
+  String get settings_premium_perk_boost => 'Profile boost';
+
+  @override
+  String get settings_premium_cta => 'Upgrade now';
+
+  @override
+  String get notifications_title => 'Notifications';
+
+  @override
+  String get notifications_empty => 'No notifications yet';
+
+  @override
   String get error_email_exists => 'This email is already registered';
 
   @override

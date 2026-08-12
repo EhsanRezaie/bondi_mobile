@@ -4,6 +4,7 @@ import 'package:dating_app/config/app_theme.dart';
 import 'package:dating_app/models/notification.dart';
 import 'package:dating_app/providers/notifications_provider.dart';
 import 'package:dating_app/utils/responsive.dart';
+import 'package:dating_app/generated/app_localizations.dart';
 import 'package:intl/intl.dart';
 
 class NotificationsScreen extends StatefulWidget {
@@ -24,6 +25,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     final isDark = context.isDarkMode;
     final bgColor = isDark ? AppTheme.darkBackground : AppTheme.lightBackground;
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
@@ -32,6 +34,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         ? AppTheme.darkTextMuted
         : AppTheme.lightTextMuted;
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
+    final isPersian = !Localizations.localeOf(
+      context,
+    ).languageCode.contains('en');
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -40,11 +45,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         elevation: 0,
         centerTitle: true,
         title: Text(
-          'Notifications',
-          style: TextStyle(
-            fontFamily: 'Inter',
+          t.notifications_title,
+          style: (isPersian ? AppTheme.h2Fa : AppTheme.h2).copyWith(
             fontSize: 20,
-            fontWeight: FontWeight.w600,
             color: textColor,
           ),
         ),
@@ -61,34 +64,37 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             return RefreshIndicator(
               onRefresh: () =>
                   context.read<NotificationsProvider>().loadNotifications(),
-              child: ListView(
+              child: ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
-                children: [
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.6,
-                    child: Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.notifications_none,
-                            size: 64,
-                            color: borderColor,
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            'No notifications yet',
-                            style: TextStyle(
-                              fontFamily: 'Inter',
-                              fontSize: 16,
-                              color: mutedColor,
+                itemCount: 1,
+                itemBuilder: (context, index) => SizedBox(
+                  height: MediaQuery.of(context).size.height * 0.6,
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.notifications_none,
+                          size: 64,
+                          color: borderColor,
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          t.notifications_empty,
+                          style: TextStyle(
+                            fontFamily: AppTheme.fontFor(
+                              !Localizations.localeOf(
+                                context,
+                              ).languageCode.contains('en'),
                             ),
+                            fontSize: 16,
+                            color: mutedColor,
                           ),
-                        ],
-                      ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
+                ),
               ),
             );
           }
@@ -106,7 +112,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               },
               child: ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(vertical: 4),
+                padding: const EdgeInsets.symmetric(vertical: 12),
                 itemCount:
                     provider.notifications.length + (provider.hasMore ? 1 : 0),
                 itemBuilder: (context, index) {
@@ -139,6 +145,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         ? AppTheme.darkTextMuted
         : AppTheme.lightTextMuted;
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
+    final isPersian = !Localizations.localeOf(
+      context,
+    ).languageCode.contains('en');
 
     final time = DateFormat('HH:mm').format(item.createdAt.toLocal());
 
@@ -154,70 +163,83 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       onDismissed: (_) {
         context.read<NotificationsProvider>().deleteNotification(item.id);
       },
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: Stack(
-          children: [
-            CircleAvatar(
-              radius: AppLayout.s(context, 22),
-              backgroundColor: borderColor,
-              child: Icon(
-                _iconFor(item.type),
-                size: AppLayout.s(context, 22),
-                color: _iconColorFor(item.type, isDark),
-              ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        child: Material(
+          color: isDark ? AppTheme.darkSurface : AppTheme.lightSurface,
+          borderRadius: BorderRadius.circular(AppTheme.radiusModule),
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 8,
             ),
-            if (!item.isRead)
-              Positioned(
-                right: 0,
-                bottom: 0,
-                child: Container(
-                  width: AppLayout.s(context, 12),
-                  height: AppLayout.s(context, 12),
-                  decoration: BoxDecoration(
-                    color: AppTheme.lightSuccess,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: isDark
-                          ? AppTheme.darkSurface
-                          : AppTheme.lightSurface,
-                      width: 2,
-                    ),
+            leading: Stack(
+              children: [
+                CircleAvatar(
+                  radius: AppLayout.s(context, 22),
+                  backgroundColor: borderColor,
+                  child: Icon(
+                    _iconFor(item.type),
+                    size: AppLayout.s(context, 22),
+                    color: _iconColorFor(item.type, isDark),
                   ),
                 ),
+                if (!item.isRead)
+                  Positioned(
+                    right: 0,
+                    bottom: 0,
+                    child: Container(
+                      width: AppLayout.s(context, 12),
+                      height: AppLayout.s(context, 12),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? AppTheme.darkSuccess
+                            : AppTheme.lightSuccess,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isDark
+                              ? AppTheme.darkSurface
+                              : AppTheme.lightSurface,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            title: Text(
+              item.title,
+              style: (isPersian ? AppTheme.bodyBoldFa : AppTheme.bodyBold)
+                  .copyWith(
+                fontSize: 15,
+                fontWeight: item.isRead ? FontWeight.w500 : FontWeight.w700,
+                color: textColor,
               ),
-          ],
-        ),
-        title: Text(
-          item.title,
-          style: TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 15,
-            fontWeight: item.isRead ? FontWeight.w500 : FontWeight.w700,
-            color: textColor,
+            ),
+            subtitle: item.body != null && item.body!.isNotEmpty
+                ? Text(
+                    item.body!,
+                    style:
+                        (isPersian ? AppTheme.bodyFa : AppTheme.body).copyWith(
+                      fontSize: 13,
+                      color: mutedColor,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  )
+                : null,
+            trailing: Text(
+              time,
+              style:
+                  (isPersian ? AppTheme.captionFa : AppTheme.caption).copyWith(
+                fontSize: 11,
+                color: mutedColor,
+              ),
+            ),
+            onTap: () =>
+                context.read<NotificationsProvider>().markRead([item.id]),
           ),
         ),
-        subtitle: item.body != null && item.body!.isNotEmpty
-            ? Text(
-                item.body!,
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 13,
-                  color: mutedColor,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              )
-            : null,
-        trailing: Text(
-          time,
-          style: TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 11,
-            color: mutedColor,
-          ),
-        ),
-        onTap: () => context.read<NotificationsProvider>().markRead([item.id]),
       ),
     );
   }

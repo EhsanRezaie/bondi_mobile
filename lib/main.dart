@@ -82,8 +82,14 @@ class AppView extends StatelessWidget {
 
     return MaterialApp(
       title: 'AURA',
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
+      theme: AppTheme.themeFor(
+        brightness: Brightness.light,
+        isPersian: !langProv.isEnglish,
+      ),
+      darkTheme: AppTheme.themeFor(
+        brightness: Brightness.dark,
+        isPersian: !langProv.isEnglish,
+      ),
       themeMode: settingsProv.darkMode ? ThemeMode.dark : ThemeMode.light,
       debugShowCheckedModeBanner: false,
       locale: langProv.locale,

@@ -173,7 +173,7 @@ class _InterestsScreenState extends State<InterestsScreen> {
               Text(
                 'Interests',
                 style: TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                   color: onSurfaceColor,
@@ -246,7 +246,7 @@ class _InterestsScreenState extends State<InterestsScreen> {
                                       child: Text(
                                         _errorMessage!,
                                         style: TextStyle(
-                                          fontFamily: 'Inter',
+                                          fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                           fontSize: 14,
                                           color: errorColor,
                                           fontWeight: FontWeight.w500,
@@ -289,7 +289,7 @@ class _InterestsScreenState extends State<InterestsScreen> {
                                 Text(
                                   'Selected: $selectedCount',
                                   style: TextStyle(
-                                    fontFamily: 'Inter',
+                                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                     fontSize: 13,
                                     fontWeight: FontWeight.w500,
                                     color: isEnough
@@ -302,7 +302,7 @@ class _InterestsScreenState extends State<InterestsScreen> {
                                       ? '✅ Great!'
                                       : '$remaining more needed',
                                   style: TextStyle(
-                                    fontFamily: 'Inter',
+                                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                     fontSize: 13,
                                     fontWeight: FontWeight.w500,
                                     color: isEnough
@@ -362,17 +362,7 @@ class _InterestsScreenState extends State<InterestsScreen> {
                             Expanded(
                               child: OutlinedButton(
                                 onPressed: () => Navigator.pop(context),
-                                style: OutlinedButton.styleFrom(
-                                  side: BorderSide(
-                                    color: borderColor,
-                                    width: 1.5,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  minimumSize: const Size(double.infinity, 56),
-                                  foregroundColor: onSurfaceColor,
-                                ),
+                                style: AppTheme.outlineButton,
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
@@ -384,7 +374,7 @@ class _InterestsScreenState extends State<InterestsScreen> {
                                     const SizedBox(width: 8),
                                     Text(
                                       'Back',
-                                      style: AppTheme.buttonText.copyWith(
+                                      style: AppTheme.button.copyWith(
                                         color: onSurfaceColor,
                                       ),
                                     ),
@@ -395,21 +385,11 @@ class _InterestsScreenState extends State<InterestsScreen> {
                             const SizedBox(width: 16),
                             // Next Button
                             Expanded(
-                              child: ElevatedButton(
+                              child: AppTheme.gradientButton(
+                                enabled: isEnough && !_isSubmitting,
                                 onPressed: _isSubmitting || !isEnough
                                     ? null
                                     : _handleNext,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: isEnough
-                                      ? primaryColor
-                                      : Colors.grey.shade400,
-                                  foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  elevation: 0,
-                                  minimumSize: const Size(double.infinity, 56),
-                                ),
                                 child: _isSubmitting
                                     ? const SizedBox(
                                         height: 24,
@@ -419,31 +399,30 @@ class _InterestsScreenState extends State<InterestsScreen> {
                                           color: Colors.white,
                                         ),
                                       )
-                                    : Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            isEnough
-                                                ? 'Continue'
-                                                : 'Select ${8 - selectedCount} more',
-                                            style: AppTheme.buttonText.copyWith(
-                                              color: isEnough
-                                                  ? Colors.white
-                                                  : Colors.white.withValues(
-                                                      alpha: 0.7,
-                                                    ),
+                                    : FittedBox(
+                                        fit: BoxFit.scaleDown,
+                                        child: Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              isEnough
+                                                  ? 'Continue'
+                                                  : 'Select ${8 - selectedCount} more',
+                                              style: AppTheme.button.copyWith(
+                                                color: Colors.white,
+                                              ),
                                             ),
-                                          ),
-                                          if (isEnough) ...[
-                                            const SizedBox(width: 8),
-                                            const Icon(
-                                              Icons.arrow_forward,
-                                              size: 20,
-                                              color: Colors.white,
-                                            ),
+                                            if (isEnough) ...[
+                                              const SizedBox(width: 8),
+                                              const Icon(
+                                                Icons.arrow_forward,
+                                                size: 20,
+                                                color: Colors.white,
+                                              ),
+                                            ],
                                           ],
-                                        ],
+                                        ),
                                       ),
                               ),
                             ),
@@ -516,7 +495,7 @@ class _InterestsScreenState extends State<InterestsScreen> {
                       child: Text(
                         '$selectedInCategory',
                         style: TextStyle(
-                          fontFamily: 'Inter',
+                          fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: primaryColor,
@@ -578,7 +557,7 @@ class _InterestsScreenState extends State<InterestsScreen> {
                           Text(
                             _formatInterestName(interest.name),
                             style: TextStyle(
-                              fontFamily: 'Inter',
+                              fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                               fontSize: 14,
                               fontWeight: isSelected
                                   ? FontWeight.w600

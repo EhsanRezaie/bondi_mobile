@@ -1,11 +1,10 @@
 import 'dart:async';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dating_app/config/app_theme.dart';
 import 'package:dating_app/models/discover_profile.dart';
 import 'package:dating_app/utils/responsive.dart';
-import 'package:dating_app/widgets/shimmer_avatar.dart';
+import 'package:dating_app/utils/cached_image.dart';
 
 class UserCard extends StatefulWidget {
   final DiscoverProfile profile;
@@ -37,6 +36,11 @@ class UserCardState extends State<UserCard>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
+  /// Notifies the [AnimatedBuilder] when a drag moves the card, so only the
+  /// transform wrapper rebuilds per pan frame — not the whole card subtree.
+  final ValueNotifier<int> _dragNotifier = ValueNotifier<int>(0);
+  late final Listenable _transformListenable;
+
   double _dx = 0;
   double _dy = 0;
   double _rotation = 0;
@@ -47,6 +51,12 @@ class UserCardState extends State<UserCard>
   Completer<void>? _currentAnimationCompleter;
   bool _isAnimatingOut = false;
 
+  // Controller-driven transform animation (no per-frame setState).
+  bool _animatingTransform = false;
+  double _startX = 0, _startY = 0, _startR = 0;
+  double _endX = 0, _endY = 0, _endR = 0;
+  Curve _animCurve = Curves.easeIn;
+
   @override
   void initState() {
     super.initState();
@@ -54,6 +64,7 @@ class UserCardState extends State<UserCard>
       vsync: this,
       duration: const Duration(milliseconds: 300),
     );
+    _transformListenable = Listenable.merge([_controller, _dragNotifier]);
     // Notify parent that this card is ready for programmatic control
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
@@ -66,24 +77,23 @@ class UserCardState extends State<UserCard>
   void dispose() {
     _currentAnimationCompleter?.complete();
     _currentAnimationCompleter = null;
+    _dragNotifier.dispose();
     _controller.dispose();
     super.dispose();
   }
 
   void _onPanUpdate(DragUpdateDetails d) {
     if (!widget.isTop) return;
-    setState(() {
-      _dx += d.delta.dx;
-      _dy += d.delta.dy;
-      _rotation = (_dx / 500).clamp(-0.3, 0.3);
-      if (_dx > 40) {
-        _swipeLabel = 'LIKE';
-      } else if (_dx < -40) {
-        _swipeLabel = 'NOPE';
-      } else {
-        _swipeLabel = null;
-      }
-    });
+    _dx += d.delta.dx;
+    _dy += d.delta.dy;
+    _rotation = (_dx / 500).clamp(-0.3, 0.3);
+    final label = _dx > 40 ? 'LIKE' : (_dx < -40 ? 'NOPE' : null);
+    if (label != _swipeLabel) {
+      setState(() {
+        _swipeLabel = label;
+      });
+    }
+    _dragNotifier.value++;
   }
 
   void _onPanEnd(DragEndDetails d) {
@@ -104,26 +114,19 @@ class UserCardState extends State<UserCard>
     _isAnimatingOut = true;
     _controller.reset();
 
-    final startX = _dx;
-    final startY = _dy;
-    final startR = _rotation;
-    final endX = direction * 600.0;
-    final endY = _dy + 100.0;
-    final endR = direction * 0.3;
+    _startX = _dx;
+    _startY = _dy;
+    _startR = _rotation;
+    _endX = direction * 600.0;
+    _endY = _dy + 100.0;
+    _endR = direction * 0.3;
+    _animCurve = Curves.easeIn;
+    _animatingTransform = true;
 
-    void listener() {
-      final t = Curves.easeIn.transform(_controller.value);
-      setState(() {
-        _dx = startX + (endX - startX) * t;
-        _dy = startY + (endY - startY) * t;
-        _rotation = startR + (endR - startR) * t;
-      });
-    }
-
-    _controller.addListener(listener);
-    _controller.addStatusListener((status) {
+    void onDone(AnimationStatus status) {
       if (status == AnimationStatus.completed) {
-        _controller.removeListener(listener);
+        _controller.removeStatusListener(onDone);
+        _animatingTransform = false;
         _isAnimatingOut = false;
         if (fireCallbacks) {
           if (direction > 0) {
@@ -133,35 +136,40 @@ class UserCardState extends State<UserCard>
           }
         }
       }
-    });
+    }
 
+    _controller.addStatusListener(onDone);
     _controller.forward();
   }
 
   void _animateSnapBack() {
     _controller.reset();
-    setState(() { _swipeLabel = null; });
-    final startX = _dx;
-    final startY = _dy;
-    final startR = _rotation;
-
-    void listener() {
-      final t = Curves.elasticOut.transform(_controller.value);
-      setState(() {
-        _dx = startX * (1 - t);
-        _dy = startY * (1 - t);
-        _rotation = startR * (1 - t);
-      });
-    }
-
-    _controller.addListener(listener);
-    _controller.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        _controller.removeListener(listener);
-        _isDismissed = false;
-      }
+    setState(() {
+      _swipeLabel = null;
     });
 
+    _startX = _dx;
+    _startY = _dy;
+    _startR = _rotation;
+    _endX = 0;
+    _endY = 0;
+    _endR = 0;
+    _animCurve = Curves.elasticOut;
+    _animatingTransform = true;
+
+    void onDone(AnimationStatus status) {
+      if (status == AnimationStatus.completed) {
+        _controller.removeStatusListener(onDone);
+        _animatingTransform = false;
+        _isDismissed = false;
+        _dx = 0;
+        _dy = 0;
+        _rotation = 0;
+        _dragNotifier.value++;
+      }
+    }
+
+    _controller.addStatusListener(onDone);
     _controller.forward();
   }
 
@@ -180,32 +188,26 @@ class UserCardState extends State<UserCard>
     });
     _controller.reset();
 
-    final startX = _dx;
-    final startY = _dy;
-    final startR = _rotation;
-    final endX = direction * 600.0;
-    final endY = _dy + 100.0;
-    final endR = direction * 0.3;
+    _startX = _dx;
+    _startY = _dy;
+    _startR = _rotation;
+    _endX = direction * 600.0;
+    _endY = _dy + 100.0;
+    _endR = direction * 0.3;
+    _animCurve = Curves.easeIn;
+    _animatingTransform = true;
 
-    void listener() {
-      final t = Curves.easeIn.transform(_controller.value);
-      setState(() {
-        _dx = startX + (endX - startX) * t;
-        _dy = startY + (endY - startY) * t;
-        _rotation = startR + (endR - startR) * t;
-      });
-    }
-
-    _controller.addListener(listener);
-    _controller.addStatusListener((status) {
+    void onDone(AnimationStatus status) {
       if (status == AnimationStatus.completed) {
-        _controller.removeListener(listener);
+        _controller.removeStatusListener(onDone);
+        _animatingTransform = false;
         _isAnimatingOut = false;
         _currentAnimationCompleter?.complete();
         _currentAnimationCompleter = null;
       }
-    });
+    }
 
+    _controller.addStatusListener(onDone);
     _controller.forward();
     return _currentAnimationCompleter!.future;
   }
@@ -219,29 +221,33 @@ class UserCardState extends State<UserCard>
     _currentAnimationCompleter = null;
 
     final completer = Completer<void>();
-    setState(() { _swipeLabel = null; });
-    final startX = _dx;
-    final startY = _dy;
-    final startR = _rotation;
-
-    void listener() {
-      final t = Curves.elasticOut.transform(_controller.value);
-      setState(() {
-        _dx = startX * (1 - t);
-        _dy = startY * (1 - t);
-        _rotation = startR * (1 - t);
-      });
-    }
-
-    _controller.addListener(listener);
-    _controller.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        _controller.removeListener(listener);
-        _isDismissed = false;
-        completer.complete();
-      }
+    setState(() {
+      _swipeLabel = null;
     });
 
+    _startX = _dx;
+    _startY = _dy;
+    _startR = _rotation;
+    _endX = 0;
+    _endY = 0;
+    _endR = 0;
+    _animCurve = Curves.elasticOut;
+    _animatingTransform = true;
+
+    void onDone(AnimationStatus status) {
+      if (status == AnimationStatus.completed) {
+        _controller.removeStatusListener(onDone);
+        _animatingTransform = false;
+        _isDismissed = false;
+        _dx = 0;
+        _dy = 0;
+        _rotation = 0;
+        _dragNotifier.value++;
+        completer.complete();
+      }
+    }
+
+    _controller.addStatusListener(onDone);
     _controller.forward();
     return completer.future;
   }
@@ -251,9 +257,9 @@ class UserCardState extends State<UserCard>
     widget.onTap?.call();
   }
 
-  double _getOpacity() {
+  double _getOpacity(double dx) {
     if (!widget.isTop) return 1.0;
-    final dist = _dx.abs() / 300;
+    final dist = dx.abs() / 300;
     return (1.0 - dist.clamp(0.0, 0.5));
   }
 
@@ -262,31 +268,53 @@ class UserCardState extends State<UserCard>
     final isDark = context.isDarkMode;
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
 
-    final card = Transform.translate(
-      offset: Offset(_dx, _dy),
-      child: Transform.rotate(
-        angle: _rotation * math.pi / 180,
-        child: Opacity(
-          opacity: _getOpacity(),
-          child: _buildCardContent(context, isDark, primaryColor),
-        ),
-      ),
+    // Only the transform wrapper rebuilds per drag frame / animation tick —
+    // the card content subtree is passed as a cached `child`.
+    final card = AnimatedBuilder(
+      animation: _transformListenable,
+      child: _buildCardContent(context, isDark, primaryColor),
+      builder: (context, child) {
+        var dx = _dx;
+        var dy = _dy;
+        var rot = _rotation;
+        if (_animatingTransform) {
+          final t = _animCurve.transform(_controller.value);
+          dx = _startX + (_endX - _startX) * t;
+          dy = _startY + (_endY - _startY) * t;
+          rot = _startR + (_endR - _startR) * t;
+        }
+        return Transform.translate(
+          offset: Offset(dx, dy),
+          child: Transform.rotate(
+            angle: rot * math.pi / 180,
+            child: Opacity(
+              opacity: _getOpacity(dx),
+              child: child,
+            ),
+          ),
+        );
+      },
     );
 
-    return Transform.scale(
-      scale: widget.scale,
-      child: widget.isTop
-          ? GestureDetector(
-              onPanUpdate: _onPanUpdate,
-              onPanEnd: _onPanEnd,
-              child: card,
-            )
-          : card,
+    return RepaintBoundary(
+      child: Transform.scale(
+        scale: widget.scale,
+        child: widget.isTop
+            ? GestureDetector(
+                onPanUpdate: _onPanUpdate,
+                onPanEnd: _onPanEnd,
+                child: card,
+              )
+            : card,
+      ),
     );
   }
 
   Widget _buildCardContent(
-      BuildContext context, bool isDark, Color primaryColor) {
+    BuildContext context,
+    bool isDark,
+    Color primaryColor,
+  ) {
     return GestureDetector(
       onTap: _onTapCard,
       child: _buildCardFront(context, isDark, primaryColor),
@@ -294,274 +322,331 @@ class UserCardState extends State<UserCard>
   }
 
   Widget _buildCardFront(
-      BuildContext context, bool isDark, Color primaryColor) {
+    BuildContext context,
+    bool isDark,
+    Color primaryColor,
+  ) {
     final profile = widget.profile;
+    final isPersian = !Localizations.localeOf(
+      context,
+    ).languageCode.contains('en');
+    final font = AppTheme.fontFor(isPersian);
 
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
-        color: isDark ? AppTheme.darkSurface : Colors.white,
-        boxShadow: [
-          BoxShadow(
-            color: isDark
-                ? AppTheme.darkShadow
-                : AppTheme.lightShadow,
-            blurRadius: 24,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            if (profile.displayPhotoUrl.isNotEmpty)
-              CachedNetworkImage(
-                imageUrl: profile.displayPhotoUrl,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => const ShimmerAvatar(),
-                errorWidget: (context, url, error) => Container(
-                  color: isDark ? AppTheme.darkSecondary : Colors.grey.shade200,
-                  child: Icon(Icons.person, size: 64,
-                      color: isDark ? AppTheme.darkTextMuted : Colors.grey),
-                ),
-              )
-            else
-              Container(
-                color: isDark ? AppTheme.darkSecondary : Colors.grey.shade200,
-                child: Icon(Icons.person, size: 64,
-                    color: isDark ? AppTheme.darkTextMuted : Colors.grey),
-              ),
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.transparent,
-                    Colors.black.withValues(alpha: 0.3),
-                    Colors.black.withValues(alpha: 0.75),
-                  ],
-                  stops: const [0.0, 0.4, 0.7, 1.0],
-                ),
+    // Mode A: photo flush to screen edges — no card shell, no radius, no shadow.
+    final screenSize = MediaQuery.of(context).size;
+    final placeholderColor = isDark
+        ? AppTheme.darkSecondary
+        : Colors.grey.shade200;
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        if (profile.displayPhotoUrl.isNotEmpty)
+          CachedImage.widget(
+            profile.displayPhotoUrl,
+            width: screenSize.width,
+            height: screenSize.height,
+            fit: BoxFit.cover,
+            placeholder: Container(
+              color: placeholderColor,
+              child: const Icon(
+                Icons.person,
+                size: 64,
+                color: Colors.grey,
               ),
             ),
-            if (_swipeLabel != null)
-              Positioned(
-                top: AppLayout.s(context, 40),
-                left: _swipeLabel == 'LIKE' ? 24 : null,
-                right: _swipeLabel == 'NOPE' ? 24 : null,
-                child: Transform.rotate(
-                  angle: _swipeLabel == 'LIKE' ? -0.2 : 0.2,
-                  child: Container(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: AppLayout.s(context, 16),
-                        vertical: AppLayout.s(context, 8)),
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                        color: _swipeLabel == 'LIKE'
-                            ? (isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary)
-                            : (isDark ? AppTheme.darkError : AppTheme.lightError),
-                        width: 3,
-                      ),
-                      borderRadius: BorderRadius.circular(AppLayout.s(context, 8)),
-                    ),
-                    child: Text(
-                      _swipeLabel!,
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: AppLayout.s(context, 32),
-                        fontWeight: FontWeight.w900,
-                        color: _swipeLabel == 'LIKE'
-                            ? (isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary)
-                            : (isDark ? AppTheme.darkError : AppTheme.lightError),
-                        letterSpacing: 2,
-                      ),
-                    ),
+            errorWidget: Container(
+              color: placeholderColor,
+              child: const Icon(
+                Icons.person,
+                size: 64,
+                color: Colors.grey,
+              ),
+            ),
+          )
+        else
+          Container(
+            color: isDark ? AppTheme.darkSecondary : Colors.grey.shade200,
+            child: Icon(
+              Icons.person,
+              size: 64,
+              color: isDark ? AppTheme.darkTextMuted : Colors.grey,
+            ),
+          ),
+        Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.black.withValues(alpha: 0.35),
+                Colors.transparent,
+                Colors.transparent,
+                Colors.transparent,
+              ],
+              stops: const [0.0, 0.2, 0.45, 1.0],
+            ),
+          ),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.transparent,
+                Colors.transparent,
+                Colors.black.withValues(alpha: 0.35),
+                Colors.black.withValues(alpha: 0.65),
+              ],
+              stops: const [0.0, 0.55, 0.78, 1.0],
+            ),
+          ),
+        ),
+        if (_swipeLabel != null)
+          Positioned(
+            top: AppLayout.s(context, 40),
+            left: _swipeLabel == 'LIKE' ? 24 : null,
+            right: _swipeLabel == 'NOPE' ? 24 : null,
+            child: Transform.rotate(
+              angle: _swipeLabel == 'LIKE' ? -0.2 : 0.2,
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppLayout.s(context, 16),
+                  vertical: AppLayout.s(context, 8),
+                ),
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: _swipeLabel == 'LIKE'
+                        ? (isDark
+                              ? AppTheme.darkPrimary
+                              : AppTheme.lightPrimary)
+                        : (isDark ? AppTheme.darkError : AppTheme.lightError),
+                    width: 3,
+                  ),
+                  borderRadius: BorderRadius.circular(AppLayout.s(context, 8)),
+                ),
+                child: Text(
+                  _swipeLabel!,
+                  style: TextStyle(
+                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                    fontSize: AppLayout.s(context, 32),
+                    fontWeight: FontWeight.w900,
+                    color: _swipeLabel == 'LIKE'
+                        ? (isDark
+                              ? AppTheme.darkPrimary
+                              : AppTheme.lightPrimary)
+                        : (isDark ? AppTheme.darkError : AppTheme.lightError),
+                    letterSpacing: 2,
                   ),
                 ),
               ),
-            Positioned(
-              top: AppLayout.s(context, 12),
-              right: AppLayout.s(context, 12),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (profile.isPremium)
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                          horizontal: AppLayout.s(context, 8),
-                          vertical: AppLayout.s(context, 4)),
-                      decoration: BoxDecoration(
-                        color: isDark ? AppTheme.darkError : AppTheme.lightError,
-                        borderRadius: BorderRadius.circular(AppLayout.s(context, 12)),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.workspace_premium,
-                              size: AppLayout.s(context, 12), color: Colors.white),
-                          SizedBox(width: AppLayout.s(context, 3)),
-                          Text('Premium',
-                              style: TextStyle(
-                                  fontSize: AppLayout.s(context, 10),
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white)),
-                        ],
-                      ),
-                    ),
-                  if (profile.isVerified) ...[
-                    SizedBox(width: AppLayout.s(context, 6)),
-                    Container(
-                      padding: EdgeInsets.all(AppLayout.s(context, 5)),
-                      decoration: BoxDecoration(
-                        color: isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(Icons.verified,
-                          size: AppLayout.s(context, 14), color: Colors.white),
-                    ),
-                  ],
-                ],
-              ),
             ),
-            Positioned(
-              left: 16,
-              right: 16,
-              bottom: 16,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.baseline,
-                    textBaseline: TextBaseline.alphabetic,
+          ),
+        Positioned(
+          top: AppLayout.s(context, 12),
+          right: AppLayout.s(context, 12),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (profile.isPremium)
+                Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: AppLayout.s(context, 10),
+                    vertical: AppLayout.s(context, 4),
+                  ),
+                  decoration: BoxDecoration(
+                    gradient: AppTheme.likeGradient(isDark: isDark),
+                    borderRadius: BorderRadius.circular(
+                      AppLayout.s(context, 12),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Flexible(
-                        child: Text(
-                          profile.name,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 24,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
+                      Icon(
+                        Icons.workspace_premium,
+                        size: AppLayout.s(context, 12),
+                        color: Colors.white,
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: AppLayout.s(context, 3)),
                       Text(
-                        '${profile.age}',
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 22,
-                          fontWeight: FontWeight.w400,
+                        'Premium',
+                        style: TextStyle(
+                          fontFamily: font,
+                          fontSize: AppLayout.s(context, 10),
+                          fontWeight: FontWeight.w700,
                           color: Colors.white,
                         ),
                       ),
-                      const SizedBox(width: 6),
+                    ],
+                  ),
+                ),
+              if (profile.isVerified) ...[
+                SizedBox(width: AppLayout.s(context, 6)),
+                Container(
+                  padding: EdgeInsets.all(AppLayout.s(context, 5)),
+                  decoration: BoxDecoration(
+                    gradient: AppTheme.primaryGradient(),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.verified,
+                    size: AppLayout.s(context, 14),
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+        Positioned(
+          left: 16,
+          right: 16,
+          bottom: 96,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
+                children: [
+                  Flexible(
+                    child: Text(
+                      profile.name,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: font,
+                        fontSize: 28,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    '${profile.age}',
+                    style: TextStyle(
+                      fontFamily: font,
+                      fontSize: 24,
+                      fontWeight: FontWeight.w400,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Icon(
+                    profile.gender == 'male' ? Icons.male : Icons.female,
+                    size: 18,
+                    color: profile.gender == 'male'
+                        ? (isDark
+                              ? AppTheme.darkPrimary
+                              : AppTheme.lightPrimary)
+                        : (isDark ? AppTheme.darkError : AppTheme.lightError),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              if (profile.distanceKm != null)
+                Row(
+                  children: [
+                    Icon(
+                      Icons.near_me,
+                      size: 13,
+                      color: Colors.white.withValues(alpha: 0.8),
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      '${profile.distanceKm!.round()} km away',
+                      style: TextStyle(
+                        fontFamily: font,
+                        fontSize: 13,
+                        color: Colors.white.withValues(alpha: 0.85),
+                      ),
+                    ),
+                  ],
+                ),
+              const SizedBox(height: 4),
+              if (profile.locationDisplay.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 4),
+                  child: Row(
+                    children: [
                       Icon(
-                        profile.gender == 'male'
-                            ? Icons.male
-                            : Icons.female,
-                        size: 18,
-                        color: profile.gender == 'male'
-                            ? (isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary)
-                            : (isDark ? AppTheme.darkError : AppTheme.lightError),
+                        Icons.location_on,
+                        size: 14,
+                        color: Colors.white.withValues(alpha: 0.8),
+                      ),
+                      const SizedBox(width: 4),
+                      Flexible(
+                        child: Text(
+                          profile.locationDisplay,
+                          style: TextStyle(
+                            fontFamily: font,
+                            fontSize: 13,
+                            color: Colors.white.withValues(alpha: 0.85),
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 4),
-                  if (profile.distanceKm != null)
-                    Row(
-                      children: [
-                        Icon(Icons.near_me, size: 13,
-                            color: Colors.white.withValues(alpha: 0.8)),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${profile.distanceKm!.round()} km away',
-                          style: TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 13,
-                            color: Colors.white.withValues(alpha: 0.8),
-                          ),
-                        ),
-                      ],
-                    ),
-                  const SizedBox(height: 4),
-                  if (profile.locationDisplay.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 4),
-                      child: Row(
-                        children: [
-                          Icon(Icons.location_on, size: 14,
-                              color: Colors.white.withValues(alpha: 0.8)),
-                          const SizedBox(width: 4),
-                          Flexible(
-                            child: Text(
-                              profile.locationDisplay,
-                              style: TextStyle(
-                                fontFamily: 'Inter',
-                                fontSize: 13,
-                                color: Colors.white.withValues(alpha: 0.85),
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
-            ),
-            Positioned(
-              top: AppLayout.s(context, 12),
-              left: AppLayout.s(context, 12),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (profile.isOnline)
-                    Container(
-                      width: AppLayout.s(context, 12),
-                      height: AppLayout.s(context, 12),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF22C55E),
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  if (profile.isOnline) SizedBox(width: AppLayout.s(context, 6)),
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: AppLayout.s(context, 8),
-                        vertical: AppLayout.s(context, 4)),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.4),
-                      borderRadius: BorderRadius.circular(AppLayout.s(context, 10)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.touch_app,
-                            size: AppLayout.s(context, 12), color: Colors.white70),
-                        SizedBox(width: AppLayout.s(context, 4)),
-                        Text('Tap for more',
-                            style: TextStyle(
-                                fontSize: AppLayout.s(context, 10),
-                                color: Colors.white70,
-                                fontFamily: 'Inter')),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+                ),
+            ],
+          ),
         ),
-      ),
+        Positioned(
+          top: AppLayout.s(context, 12),
+          left: AppLayout.s(context, 12),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (profile.isOnline)
+                Container(
+                  width: AppLayout.s(context, 12),
+                  height: AppLayout.s(context, 12),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? AppTheme.darkSuccess
+                        : AppTheme.lightSuccess,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              if (profile.isOnline) SizedBox(width: AppLayout.s(context, 6)),
+              Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: AppLayout.s(context, 8),
+                  vertical: AppLayout.s(context, 4),
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.black.withValues(alpha: 0.4),
+                  borderRadius: BorderRadius.circular(AppLayout.s(context, 10)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.touch_app,
+                      size: AppLayout.s(context, 12),
+                      color: Colors.white70,
+                    ),
+                    SizedBox(width: AppLayout.s(context, 4)),
+                    Text(
+                      'Tap for more',
+                      style: TextStyle(
+                        fontSize: AppLayout.s(context, 10),
+                        color: Colors.white70,
+                        fontFamily: font,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
-
 }

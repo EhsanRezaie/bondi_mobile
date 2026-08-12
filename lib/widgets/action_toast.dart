@@ -135,8 +135,8 @@ class _ActionToastState extends State<_ActionToast>
                               widget.message,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontFamily: 'Inter',
+                              style: TextStyle(
+                                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                 fontSize: 13,
                                 fontWeight: FontWeight.w500,
                                 color: Colors.white,

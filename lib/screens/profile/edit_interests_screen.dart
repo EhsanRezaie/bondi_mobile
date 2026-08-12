@@ -176,7 +176,7 @@ class _EditInterestsScreenState extends State<EditInterestsScreen> {
         title: Text(
           'Edit Interests',
           style: TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
             fontSize: 18,
             fontWeight: FontWeight.w700,
             color: onSurfaceColor,
@@ -207,7 +207,7 @@ class _EditInterestsScreenState extends State<EditInterestsScreen> {
                           Text(
                             'What are your interests?',
                             style: TextStyle(
-                              fontFamily: 'Inter',
+                              fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                               fontSize: 28,
                               fontWeight: FontWeight.w800,
                               color: onSurfaceColor,
@@ -217,7 +217,7 @@ class _EditInterestsScreenState extends State<EditInterestsScreen> {
                           Text(
                             'Select at least 8 interests that represent you',
                             style: TextStyle(
-                              fontFamily: 'Inter',
+                              fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                               fontSize: 16,
                               color: textMutedColor,
                             ),
@@ -239,7 +239,7 @@ class _EditInterestsScreenState extends State<EditInterestsScreen> {
                                     child: Text(
                                       _errorMessage!,
                                       style: TextStyle(
-                                        fontFamily: 'Inter',
+                                        fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                         fontSize: 14,
                                         color: errorColor,
                                         fontWeight: FontWeight.w500,
@@ -274,7 +274,7 @@ class _EditInterestsScreenState extends State<EditInterestsScreen> {
                               Text(
                                 'Selected: $selectedCount',
                                 style: TextStyle(
-                                  fontFamily: 'Inter',
+                                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                   fontSize: 13,
                                   fontWeight: FontWeight.w500,
                                   color: isEnough ? Colors.green : textMutedColor,
@@ -283,7 +283,7 @@ class _EditInterestsScreenState extends State<EditInterestsScreen> {
                               Text(
                                 isEnough ? '✅ Great!' : '$remaining more needed',
                                 style: TextStyle(
-                                  fontFamily: 'Inter',
+                                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                   fontSize: 13,
                                   fontWeight: FontWeight.w500,
                                   color: isEnough ? Colors.green : textMutedColor,
@@ -343,7 +343,7 @@ class _EditInterestsScreenState extends State<EditInterestsScreen> {
                               : Text(
                                   isEnough ? 'Save' : 'Select ${8 - selectedCount} more',
                                   style: TextStyle(
-                                    fontFamily: 'Inter',
+                                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
                                     color: isEnough ? Colors.white : Colors.white.withValues(alpha: 0.7),
@@ -400,7 +400,7 @@ class _EditInterestsScreenState extends State<EditInterestsScreen> {
                     child: Text(
                       category,
                       style: TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                         color: onSurfaceColor,
@@ -418,7 +418,7 @@ class _EditInterestsScreenState extends State<EditInterestsScreen> {
                       child: Text(
                         '$selectedInCategory',
                         style: TextStyle(
-                          fontFamily: 'Inter',
+                          fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: primaryColor,
@@ -480,7 +480,7 @@ class _EditInterestsScreenState extends State<EditInterestsScreen> {
                           Text(
                             _formatInterestName(interest.name),
                             style: TextStyle(
-                              fontFamily: 'Inter',
+                              fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                               fontSize: 14,
                               fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                               color: isSelected ? Colors.white : onSurfaceColor,

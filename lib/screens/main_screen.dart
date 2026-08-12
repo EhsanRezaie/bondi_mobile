@@ -172,8 +172,7 @@ class _MainScreenState extends State<MainScreen> {
         index: _currentIndex,
         children: _screens,
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.fixed,
+      bottomNavigationBar: _GradientNavBar(
         currentIndex: _currentIndex,
         onTap: (index) {
           setState(() {
@@ -187,30 +186,116 @@ class _MainScreenState extends State<MainScreen> {
             chatProvider.refreshLimits();
           }
         },
-        selectedItemColor: primaryColor,
-        unselectedItemColor: Colors.grey,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.search_outlined),
-            activeIcon: Icon(Icons.search),
-            label: 'Search',
+      ),
+    );
+  }
+}
+
+/// Full-width gradient bottom nav per the Warm Orange spec:
+/// primaryGradient background, top corners radiusModule, white icons at 60%
+/// opacity (inactive) / 100% + small dot (active). No card/pill shell.
+class _GradientNavBar extends StatelessWidget {
+  final int currentIndex;
+  final ValueChanged<int> onTap;
+
+  const _GradientNavBar({
+    required this.currentIndex,
+    required this.onTap,
+  });
+
+  static const _labels = ['Search', 'Discover', 'Chats', 'Profile'];
+  static const _icons = [
+    Icons.search_outlined,
+    Icons.explore_outlined,
+    Icons.chat_outlined,
+    Icons.person_outline,
+  ];
+  static const _activeIcons = [
+    Icons.search,
+    Icons.explore,
+    Icons.chat,
+    Icons.person,
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: AppTheme.primaryGradient(),
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(AppTheme.radiusModule),
+        ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: List.generate(_labels.length, (i) {
+              final selected = i == currentIndex;
+              return _NavItem(
+                label: _labels[i],
+                icon: selected ? _activeIcons[i] : _icons[i],
+                selected: selected,
+                onTap: () => onTap(i),
+              );
+            }),
           ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.explore_outlined),
-            activeIcon: Icon(Icons.explore),
-            label: 'Discover',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.chat_outlined),
-            activeIcon: Icon(Icons.chat),
-            label: 'Chats',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person_outline),
-            activeIcon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NavItem extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _NavItem({
+    required this.label,
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    const active = Colors.white;
+    final inactive = Colors.white.withValues(alpha: 0.60);
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: selected ? active : inactive, size: 24),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: TextStyle(
+                fontFamily: AppTheme.fontFamily,
+                fontSize: 11,
+                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                color: selected ? active : inactive,
+              ),
+            ),
+            const SizedBox(height: 2),
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 5,
+              height: 5,
+              decoration: BoxDecoration(
+                color: selected ? active : Colors.transparent,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dating_app/config/app_theme.dart';
 import 'package:dating_app/generated/app_localizations.dart';
 import 'package:dating_app/models/discover_profile.dart';
 import 'package:dating_app/providers/chat_provider.dart';
 import 'package:dating_app/screens/chats/chat_detail_screen.dart';
 import 'package:dating_app/utils/responsive.dart';
-import 'package:dating_app/widgets/shimmer_avatar.dart';
+import 'package:dating_app/utils/cached_image.dart';
 import 'package:dating_app/widgets/discover_action_button.dart';
 import 'package:dating_app/widgets/action_toast.dart';
 
@@ -141,42 +140,41 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
     Color borderColor,
     List<String> photos,
   ) {
+    final isPersian = !Localizations.localeOf(
+      context,
+    ).languageCode.contains('en');
+    final font = AppTheme.fontFor(isPersian);
+    final screenSize = MediaQuery.of(context).size;
+    final photoW = screenSize.width;
+    final photoH = (screenSize.height * 0.42).clamp(220.0, 560.0);
+    final photoPlaceholder = isDark
+        ? AppTheme.darkSecondary
+        : Colors.grey.shade200;
+    final photoError = Container(
+      color: photoPlaceholder,
+      child: Icon(
+        Icons.person,
+        size: 80,
+        color: isDark ? AppTheme.darkTextMuted : Colors.grey,
+      ),
+    );
+
     return Column(
       children: [
         Stack(
           children: [
             SizedBox(
-              height: (MediaQuery.of(context).size.height * 0.42).clamp(
-                220.0,
-                560.0,
-              ),
+              height: photoH,
               width: double.infinity,
               child: photos.isNotEmpty
-                  ? CachedNetworkImage(
-                      imageUrl: photos[_currentPhotoIndex],
+                  ? CachedImage.widget(
+                      photos[_currentPhotoIndex],
+                      width: photoW,
+                      height: photoH,
                       fit: BoxFit.cover,
-                      placeholder: (context, url) => const ShimmerAvatar(),
-                      errorWidget: (context, url, error) => Container(
-                        color: isDark
-                            ? AppTheme.darkSecondary
-                            : Colors.grey.shade200,
-                        child: Icon(
-                          Icons.person,
-                          size: 80,
-                          color: isDark ? AppTheme.darkTextMuted : Colors.grey,
-                        ),
-                      ),
+                      errorWidget: photoError,
                     )
-                  : Container(
-                      color: isDark
-                          ? AppTheme.darkSecondary
-                          : Colors.grey.shade200,
-                      child: Icon(
-                        Icons.person,
-                        size: 80,
-                        color: isDark ? AppTheme.darkTextMuted : Colors.grey,
-                      ),
-                    ),
+                  : photoError,
             ),
             Container(
               decoration: BoxDecoration(
@@ -276,10 +274,10 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                           profile.name,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontFamily: 'Inter',
-                            fontSize: 26,
-                            fontWeight: FontWeight.w700,
+                          style: TextStyle(
+                            fontFamily: font,
+                            fontSize: 28,
+                            fontWeight: FontWeight.w800,
                             color: Colors.white,
                           ),
                         ),
@@ -287,8 +285,8 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                       const SizedBox(width: 8),
                       Text(
                         '${profile.age}',
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
+                        style: TextStyle(
+                          fontFamily: font,
                           fontSize: 24,
                           fontWeight: FontWeight.w400,
                           color: Colors.white,
@@ -310,13 +308,11 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
+                            horizontal: 10,
                             vertical: 3,
                           ),
                           decoration: BoxDecoration(
-                            color: isDark
-                                ? AppTheme.darkError
-                                : AppTheme.lightError,
+                            gradient: AppTheme.likeGradient(isDark: isDark),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Row(
@@ -330,7 +326,8 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                               const SizedBox(width: 3),
                               Text(
                                 t.discover_premium,
-                                style: const TextStyle(
+                                style: TextStyle(
+                                  fontFamily: font,
                                   fontSize: 10,
                                   fontWeight: FontWeight.w700,
                                   color: Colors.white,
@@ -355,7 +352,7 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                         Text(
                           t.discover_km_away(profile.distanceKm!.round()),
                           style: TextStyle(
-                            fontFamily: 'Inter',
+                            fontFamily: font,
                             fontSize: 13,
                             color: Colors.white.withValues(alpha: 0.8),
                           ),
@@ -372,7 +369,7 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                         Text(
                           profile.locationDisplay,
                           style: TextStyle(
-                            fontFamily: 'Inter',
+                            fontFamily: font,
                             fontSize: 13,
                             color: Colors.white.withValues(alpha: 0.85),
                           ),
@@ -383,9 +380,7 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                         Container(
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
-                            color: isDark
-                                ? AppTheme.darkPrimary
-                                : AppTheme.lightPrimary,
+                            gradient: AppTheme.primaryGradient(),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -400,7 +395,9 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                         Container(
                           padding: const EdgeInsets.all(3),
                           decoration: BoxDecoration(
-                            color: Colors.red,
+                            color: isDark
+                                ? AppTheme.darkError
+                                : AppTheme.lightError,
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -448,24 +445,24 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                         width: 2.5,
                       ),
                     ),
-                    child: ClipRRect(
+                    child: CachedImage.widget(
+                      photos[index],
+                      width: AppLayout.s(context, 56),
+                      height: AppLayout.s(context, 56),
+                      fit: BoxFit.cover,
                       borderRadius: BorderRadius.circular(
                         AppLayout.s(context, 8),
                       ),
-                      child: CachedNetworkImage(
-                        imageUrl: photos[index],
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => Container(
-                          color: isDark
-                              ? AppTheme.darkSecondary
-                              : Colors.grey.shade200,
-                        ),
-                        errorWidget: (context, url, error) => Container(
-                          color: isDark
-                              ? AppTheme.darkSecondary
-                              : Colors.grey.shade200,
-                          child: const Icon(Icons.broken_image, size: 20),
-                        ),
+                      placeholder: Container(
+                        color: isDark
+                            ? AppTheme.darkSecondary
+                            : Colors.grey.shade200,
+                      ),
+                      errorWidget: Container(
+                        color: isDark
+                            ? AppTheme.darkSecondary
+                            : Colors.grey.shade200,
+                        child: const Icon(Icons.broken_image, size: 20),
                       ),
                     ),
                   ),
@@ -682,7 +679,7 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
             Text(
               t.profile_section_about,
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: primaryColor,
@@ -702,7 +699,7 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
           child: Text(
             profile.bio!,
             style: TextStyle(
-              fontFamily: 'Inter',
+              fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
               fontSize: 15,
               height: 1.5,
               color: textColor,
@@ -731,7 +728,7 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
             Text(
               title,
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: context.isDarkMode
@@ -768,7 +765,7 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
       child: Text(
         '$emoji $value',
         style: TextStyle(
-          fontFamily: 'Inter',
+          fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
           fontSize: 13,
           fontWeight: FontWeight.w500,
           color: textColor,
@@ -799,7 +796,7 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
             Text(
               title,
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: primaryColor,
@@ -824,7 +821,7 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
               child: Text(
                 icon != null ? '$icon $item' : item,
                 style: TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                   color: textColor,
@@ -857,7 +854,7 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
             Text(
               t.profile_section_prompts,
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: primaryColor,
@@ -885,7 +882,7 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                 Text(
                   question,
                   style: TextStyle(
-                    fontFamily: 'Inter',
+                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: primaryColor,
@@ -896,7 +893,7 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                 Text(
                   answer,
                   style: TextStyle(
-                    fontFamily: 'Inter',
+                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                     fontSize: 15,
                     height: 1.4,
                     color: textColor,
@@ -981,7 +978,7 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
               leading: Icon(Icons.flag, color: errorColor),
               title: Text(
                 'Report Profile',
-                style: TextStyle(fontFamily: 'Inter', color: textColor),
+                style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), color: textColor),
               ),
               onTap: () {
                 Navigator.pop(sheetContext);
@@ -993,7 +990,7 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                 leading: Icon(Icons.block, color: errorColor),
                 title: Text(
                   'Block User',
-                  style: TextStyle(fontFamily: 'Inter', color: textColor),
+                  style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), color: textColor),
                 ),
                 onTap: () {
                   Navigator.pop(sheetContext);
@@ -1017,9 +1014,9 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
         backgroundColor: Theme.of(dialogContext).brightness == Brightness.dark
             ? AppTheme.darkSurface
             : AppTheme.lightSurface,
-        title: const Text(
+        title: Text(
           'Report Profile',
-          style: TextStyle(fontFamily: 'Inter'),
+          style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en'))),
         ),
         content: TextField(
           controller: controller,
@@ -1033,14 +1030,14 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Cancel', style: TextStyle(fontFamily: 'Inter')),
+            child: Text('Cancel', style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')))),
           ),
           TextButton(
             onPressed: () {
               if (controller.text.trim().length < 5) return;
               Navigator.pop(dialogContext, true);
             },
-            child: const Text('Send', style: TextStyle(fontFamily: 'Inter')),
+            child: Text('Send', style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')))),
           ),
         ],
       ),
@@ -1060,19 +1057,19 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
         backgroundColor: Theme.of(dialogContext).brightness == Brightness.dark
             ? AppTheme.darkSurface
             : AppTheme.lightSurface,
-        title: const Text('Block User', style: TextStyle(fontFamily: 'Inter')),
-        content: const Text(
+        title: Text('Block User', style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')))),
+        content: Text(
           'You will no longer see each other. Their messages will stop.',
-          style: TextStyle(fontFamily: 'Inter'),
+          style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en'))),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Cancel', style: TextStyle(fontFamily: 'Inter')),
+            child: Text('Cancel', style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')))),
           ),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Block', style: TextStyle(fontFamily: 'Inter')),
+            child: Text('Block', style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')))),
           ),
         ],
       ),
@@ -1157,7 +1154,7 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
         title: Text(
           'Daily limit reached',
           style: TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
             fontWeight: FontWeight.w600,
             color: isDark ? AppTheme.darkText : AppTheme.lightText,
           ),
@@ -1167,7 +1164,7 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
               ? t.search_limit_reached_likes
               : t.search_limit_reached_chats,
           style: TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
             color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
           ),
         ),
@@ -1228,7 +1225,7 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                       Text(
                         t.discover_say_something,
                         style: TextStyle(
-                          fontFamily: 'Inter',
+                          fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                           color: isDark
@@ -1243,7 +1240,7 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                         maxLines: 3,
                         maxLength: 200,
                         style: TextStyle(
-                          fontFamily: 'Inter',
+                          fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                           color: isDark
                               ? AppTheme.darkText
                               : AppTheme.lightText,
@@ -1283,8 +1280,8 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                           ),
                           child: Text(
                             t.discover_send_and_like,
-                            style: const TextStyle(
-                              fontFamily: 'Inter',
+                            style: TextStyle(
+                              fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                               fontWeight: FontWeight.w600,
                             ),
                           ),
@@ -1304,97 +1301,141 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
 
   void _showMatchDialog(Map<String, dynamic> result) {
     final t = AppLocalizations.of(context)!;
-    final isDark = context.isDarkMode;
-    final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
+    final isPersian = !Localizations.localeOf(
+      context,
+    ).languageCode.contains('en');
     final bool messageSent = result['message_sent'] == true;
+    final heroStyle =
+        (isPersian ? AppTheme.heroDisplayFa : AppTheme.heroDisplay).copyWith(
+          fontSize: 30,
+          color: Colors.white,
+        );
+    final bodyStyle = (isPersian ? AppTheme.bodyFa : AppTheme.body).copyWith(
+      color: Colors.white.withValues(alpha: 0.85),
+      fontSize: 15,
+    );
 
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const SizedBox(height: 16),
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: AppTheme.likeGradient(isDark: isDark),
-              ),
-              child: const Icon(Icons.favorite, size: 40, color: Colors.white),
-            ),
-            const SizedBox(height: 20),
-            Text(
-              t.search_match_title,
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 24,
-                fontWeight: FontWeight.w700,
-                color: isDark ? AppTheme.darkText : AppTheme.lightText,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              t.search_match_subtitle(profile.name),
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 14,
-                color: isDark
-                    ? AppTheme.darkTextMuted
-                    : AppTheme.lightTextMuted,
-              ),
-            ),
-            if (messageSent) ...[
-              const SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.check_circle,
-                    size: 16,
-                    color: isDark
-                        ? AppTheme.darkSuccess
-                        : AppTheme.lightSuccess,
-                  ),
-                  const SizedBox(width: 6),
-                  Text(
-                    t.search_match_message_sent,
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 13,
-                      color: isDark
-                          ? AppTheme.darkSuccess
-                          : AppTheme.lightSuccess,
-                    ),
-                  ),
-                ],
+      builder: (ctx) => Dialog(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        child: Container(
+          padding: const EdgeInsets.all(32),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(28),
+            gradient: AppTheme.primaryGradient(),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.primaryGradientStart.withValues(alpha: 0.4),
+                blurRadius: 32,
+                offset: const Offset(0, 12),
               ),
             ],
-            const SizedBox(height: 24),
-            SizedBox(
-              width: double.infinity,
-              height: 48,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(ctx);
-                  Navigator.pop(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: primaryColor,
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Stack(
+                clipBehavior: Clip.none,
+                alignment: Alignment.center,
+                children: [
+                  Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.white.withValues(alpha: 0.2),
+                      border: Border.all(
+                        color: Colors.white.withValues(alpha: 0.6),
+                        width: 2,
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.favorite,
+                      size: 34,
+                      color: Colors.white,
+                    ),
+                  ),
+                  if (profile.mainPhotoUrl != null &&
+                      profile.mainPhotoUrl!.isNotEmpty)
+                    Positioned(
+                      top: -40,
+                      child: ClipOval(
+                        child: SizedBox(
+                          width: 56,
+                          height: 56,
+                          child: Image.network(
+                            profile.mainPhotoUrl!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 56),
+              Text(
+                t.search_match_title,
+                textAlign: TextAlign.center,
+                style: heroStyle,
+              ),
+              const SizedBox(height: 8),
+              Text(
+                t.search_match_subtitle(profile.name),
+                textAlign: TextAlign.center,
+                style: bodyStyle,
+              ),
+              if (messageSent) ...[
+                const SizedBox(height: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    const Icon(
+                      Icons.check_circle,
+                      size: 16,
+                      color: Colors.white,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      t.search_match_message_sent,
+                      style: bodyStyle.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(ctx);
+                    Navigator.pop(context);
+                  },
+                  style: AppTheme.primaryButton.copyWith(
+                    backgroundColor: const WidgetStatePropertyAll<Color>(
+                      Colors.white,
+                    ),
+                    foregroundColor: const WidgetStatePropertyAll<Color>(
+                      AppTheme.primaryGradientStart,
+                    ),
+                    elevation: const WidgetStatePropertyAll<double>(0),
+                  ),
+                  child: Text(
+                    t.search_continue_browsing,
+                    style: (isPersian ? AppTheme.buttonFa : AppTheme.button)
+                        .copyWith(color: AppTheme.primaryGradientStart),
                   ),
                 ),
-                child: Text(t.search_continue_browsing),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

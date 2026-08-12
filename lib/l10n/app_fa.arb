@@ -88,6 +88,15 @@
   "settings_logout": "خروج",
   "settings_logout_desc": "از حساب کاربری خود خارج شوید",
   "settings_logout_confirm": "آیا مطمئن هستید که می‌خواهید خارج شوید؟",
+  "settings_premium_title": "پرمیوم بخرید",
+  "settings_premium_subtitle": "لایک، چت و افزایش بازدید نامحدود را فعال کنید",
+  "settings_premium_perk_likes": "لایک نامحدود",
+  "settings_premium_perk_chats": "چت نامحدود",
+  "settings_premium_perk_boost": "افزایش بازدید پروفایل",
+  "settings_premium_cta": "همین حالا ارتقا دهید",
+
+  "notifications_title": "اعلان‌ها",
+  "notifications_empty": "هنوز اعلانی ندارید",
 
   "error_email_exists": "این ایمیل قبلاً ثبت نام کرده است",
   "error_email_invalid_format": "فرمت ایمیل نامعتبر است",

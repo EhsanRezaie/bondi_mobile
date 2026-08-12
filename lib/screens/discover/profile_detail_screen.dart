@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dating_app/config/app_theme.dart';
 import 'package:dating_app/generated/app_localizations.dart';
 import 'package:dating_app/models/discover_profile.dart';
 import 'package:dating_app/utils/responsive.dart';
-import 'package:dating_app/widgets/shimmer_avatar.dart';
+import 'package:dating_app/utils/cached_image.dart';
 import 'package:dating_app/widgets/discover_action_button.dart';
 
 class ProfileDetailScreen extends StatefulWidget {
@@ -177,7 +176,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
   }
 
   @override
-  Widget build(BuildContext context) {
+   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
     final isDark = context.isDarkMode;
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
@@ -260,6 +259,23 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
     Color borderColor,
     List<String> photos,
   ) {
+    final isPersian = !Localizations.localeOf(
+      context,
+    ).languageCode.contains('en');
+    final font = AppTheme.fontFor(isPersian);
+    final screenSize = MediaQuery.of(context).size;
+    final heroH = (screenSize.height * 0.42).clamp(220.0, 560.0);
+    final photoPlaceholder = isDark
+        ? AppTheme.darkSecondary
+        : Colors.grey.shade200;
+    final photoError = Container(
+      color: photoPlaceholder,
+      child: Icon(
+        Icons.person,
+        size: 80,
+        color: isDark ? AppTheme.darkTextMuted : Colors.grey,
+      ),
+    );
     return Column(
       children: [
         Stack(
@@ -267,37 +283,17 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
             SizedBox(
               // Bounded hero height: ~42% on phones, capped on tall tablets so
               // the photo never dominates the screen.
-              height: (MediaQuery.of(context).size.height * 0.42).clamp(
-                220.0,
-                560.0,
-              ),
-              width: double.infinity,
-              child: photos.isNotEmpty
-                  ? CachedNetworkImage(
-                      imageUrl: _getDisplayUrl(photos[_currentPhotoIndex]),
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => const ShimmerAvatar(),
-                      errorWidget: (context, url, error) => Container(
-                        color: isDark
-                            ? AppTheme.darkSecondary
-                            : Colors.grey.shade200,
-                        child: Icon(
-                          Icons.person,
-                          size: 80,
-                          color: isDark ? AppTheme.darkTextMuted : Colors.grey,
-                        ),
-                      ),
-                    )
-                  : Container(
-                      color: isDark
-                          ? AppTheme.darkSecondary
-                          : Colors.grey.shade200,
-                      child: Icon(
-                        Icons.person,
-                        size: 80,
-                        color: isDark ? AppTheme.darkTextMuted : Colors.grey,
-                      ),
-                    ),
+               height: heroH,
+               width: double.infinity,
+               child: photos.isNotEmpty
+                   ? CachedImage.widget(
+                       _getDisplayUrl(photos[_currentPhotoIndex]),
+                       width: screenSize.width,
+                       height: heroH,
+                       fit: BoxFit.cover,
+                       errorWidget: photoError,
+                     )
+                   : photoError,
             ),
             Container(
               decoration: BoxDecoration(
@@ -367,18 +363,18 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
                     children: [
                       Text(
                         profile.name,
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 26,
-                          fontWeight: FontWeight.w700,
+                        style: TextStyle(
+                          fontFamily: font,
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800,
                           color: Colors.white,
                         ),
                       ),
                       const SizedBox(width: 8),
                       Text(
                         '${profile.age}',
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
+                        style: TextStyle(
+                          fontFamily: font,
                           fontSize: 24,
                           fontWeight: FontWeight.w400,
                           color: Colors.white,
@@ -400,13 +396,11 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
+                            horizontal: 10,
                             vertical: 3,
                           ),
                           decoration: BoxDecoration(
-                            color: isDark
-                                ? AppTheme.darkError
-                                : AppTheme.lightError,
+                            gradient: AppTheme.likeGradient(isDark: isDark),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Row(
@@ -420,7 +414,8 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
                               const SizedBox(width: 3),
                               Text(
                                 t.discover_premium,
-                                style: const TextStyle(
+                                style: TextStyle(
+                                  fontFamily: font,
                                   fontSize: 10,
                                   fontWeight: FontWeight.w700,
                                   color: Colors.white,
@@ -445,7 +440,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
                         Text(
                           t.discover_km_away(profile.distanceKm!.round()),
                           style: TextStyle(
-                            fontFamily: 'Inter',
+                            fontFamily: font,
                             fontSize: 13,
                             color: Colors.white.withValues(alpha: 0.8),
                           ),
@@ -462,7 +457,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
                         Text(
                           profile.locationDisplay,
                           style: TextStyle(
-                            fontFamily: 'Inter',
+                            fontFamily: font,
                             fontSize: 13,
                             color: Colors.white.withValues(alpha: 0.85),
                           ),
@@ -473,9 +468,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
                         Container(
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
-                            color: isDark
-                                ? AppTheme.darkPrimary
-                                : AppTheme.lightPrimary,
+                            gradient: AppTheme.primaryGradient(),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -523,26 +516,22 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
                         width: 2.5,
                       ),
                     ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(
-                        AppLayout.s(context, 8),
-                      ),
-                      child: CachedNetworkImage(
-                        imageUrl: _getDisplayUrl(photos[index]),
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => Container(
-                          color: isDark
-                              ? AppTheme.darkSecondary
-                              : Colors.grey.shade200,
-                        ),
-                        errorWidget: (context, url, error) => Container(
-                          color: isDark
-                              ? AppTheme.darkSecondary
-                              : Colors.grey.shade200,
-                          child: const Icon(Icons.broken_image, size: 20),
-                        ),
-                      ),
-                    ),
+                     child: CachedImage.widget(
+                       _getDisplayUrl(photos[index]),
+                       width: AppLayout.s(context, 56),
+                       height: AppLayout.s(context, 56),
+                       fit: BoxFit.cover,
+                       borderRadius: BorderRadius.circular(
+                         AppLayout.s(context, 8),
+                       ),
+                       placeholder: Container(
+                         color: photoPlaceholder,
+                       ),
+                       errorWidget: Container(
+                         color: photoPlaceholder,
+                         child: const Icon(Icons.broken_image, size: 20),
+                       ),
+                     ),
                   ),
                 );
               },
@@ -757,7 +746,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
             Text(
               t.profile_section_about,
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: primaryColor,
@@ -777,7 +766,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
           child: Text(
             profile.bio!,
             style: TextStyle(
-              fontFamily: 'Inter',
+              fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
               fontSize: 15,
               height: 1.5,
               color: textColor,
@@ -806,7 +795,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
             Text(
               title,
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: context.isDarkMode
@@ -843,7 +832,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
       child: Text(
         '$emoji $value',
         style: TextStyle(
-          fontFamily: 'Inter',
+          fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
           fontSize: 13,
           fontWeight: FontWeight.w500,
           color: textColor,
@@ -874,7 +863,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
             Text(
               title,
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: primaryColor,
@@ -899,7 +888,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
               child: Text(
                 icon != null ? '$icon $item' : item,
                 style: TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                   color: textColor,
@@ -932,7 +921,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
             Text(
               t.profile_section_prompts,
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: primaryColor,
@@ -960,7 +949,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
                 Text(
                   question,
                   style: TextStyle(
-                    fontFamily: 'Inter',
+                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: primaryColor,
@@ -971,7 +960,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
                 Text(
                   answer,
                   style: TextStyle(
-                    fontFamily: 'Inter',
+                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                     fontSize: 15,
                     height: 1.4,
                     color: textColor,

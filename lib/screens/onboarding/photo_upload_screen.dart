@@ -256,7 +256,7 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
               Text(
                 'Photos',
                 style: TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                   color: onSurfaceColor,
@@ -313,7 +313,7 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
                               child: Text(
                                 _errorMessage!,
                                 style: TextStyle(
-                                  fontFamily: 'Inter',
+                                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                   fontSize: 12,
                                   color: errorColor,
                                   fontWeight: FontWeight.w500,
@@ -342,24 +342,31 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
                   horizontal: 24.0,
                   vertical: 4.0,
                 ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                child: Wrap(
+                  alignment: WrapAlignment.center,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  spacing: 12,
+                  runSpacing: 4,
                   children: [
-                    Icon(Icons.drag_handle, size: 14, color: textMutedColor),
-                    const SizedBox(width: 6),
-                    Text(
-                      'Drag to reorder photos',
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 11,
-                        color: textMutedColor,
-                      ),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.drag_handle, size: 14, color: textMutedColor),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Drag to reorder photos',
+                          style: TextStyle(
+                            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                            fontSize: 11,
+                            color: textMutedColor,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 12),
                     Text(
                       'Tips: Clear, high-quality photos work best.',
                       style: TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                         fontSize: 11,
                         fontStyle: FontStyle.italic,
                         color: textMutedColor,
@@ -380,21 +387,9 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
                 ),
                 child: SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton(
+                  child: AppTheme.gradientButton(
+                    enabled: canProceed && !_isUploading,
                     onPressed: _isUploading ? null : _handleComplete,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: canProceed
-                          ? primaryColor
-                          : primaryColor.withValues(alpha: 0.2),
-                      foregroundColor: canProceed
-                          ? Colors.white
-                          : primaryColor.withValues(alpha: 0.4),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      elevation: 0,
-                      minimumSize: const Size(double.infinity, 50),
-                    ),
                     child: _isUploading
                         ? const SizedBox(
                             height: 20,
@@ -408,9 +403,10 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
                             canProceed
                                 ? 'Complete'
                                 : 'Add ${minPhotos - selectedCount} more',
-                            style: AppTheme.buttonText.copyWith(
+                            style: AppTheme.button.copyWith(
                               fontSize: 15,
                               fontWeight: FontWeight.w600,
+                              color: Colors.white,
                             ),
                           ),
                   ),
@@ -768,7 +764,7 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
                         Text(
                           'Main',
                           style: TextStyle(
-                            fontFamily: 'Inter',
+                            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                             fontSize: 9,
                             fontWeight: FontWeight.w600,
                             color: Colors.white,
@@ -839,7 +835,7 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
                       child: Text(
                         'Set as main',
                         style: TextStyle(
-                          fontFamily: 'Inter',
+                          fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                           fontSize: 8,
                           color: Colors.white70,
                         ),

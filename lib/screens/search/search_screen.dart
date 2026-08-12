@@ -88,16 +88,17 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
     final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
     final mutedColor = isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted;
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
+    final isPersian = !Localizations.localeOf(
+      context,
+    ).languageCode.contains('en');
 
     return Scaffold(
       backgroundColor: bgColor,
       appBar: AppBar(
         title: Text(
           t.search_title,
-          style: TextStyle(
-            fontFamily: 'Inter',
+          style: (isPersian ? AppTheme.h2Fa : AppTheme.h2).copyWith(
             fontSize: 20,
-            fontWeight: FontWeight.w600,
             color: textColor,
           ),
         ),
@@ -120,7 +121,7 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
                         child: Container(
                           padding: const EdgeInsets.all(4),
                           decoration: const BoxDecoration(
-                            color: Color(0xFFDC3545),
+                            color: AppTheme.accentLike,
                             shape: BoxShape.circle,
                           ),
                           child: Text(
@@ -267,17 +268,27 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
     required Color borderColor,
     required VoidCallback onTap,
   }) {
+    final isPersian = !Localizations.localeOf(
+      context,
+    ).languageCode.contains('en');
+    final fill = isSelected
+        ? primaryColor.withValues(alpha: 0.16)
+        : isDark
+            ? AppTheme.darkSecondary.withValues(alpha: 0.55)
+            : AppTheme.lightSecondary.withValues(alpha: 0.6);
+    final fg = isSelected ? primaryColor : textColor;
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected
-              ? primaryColor.withValues(alpha: 0.1)
-              : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
+          color: fill,
+          borderRadius: BorderRadius.circular(AppTheme.radiusChip),
           border: Border.all(
-            color: isSelected ? primaryColor : borderColor,
+            color: isSelected
+                ? primaryColor.withValues(alpha: 0.5)
+                : borderColor.withValues(alpha: 0.4),
             width: 1,
           ),
         ),
@@ -288,11 +299,10 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
             const SizedBox(width: 6),
             Text(
               label,
-              style: TextStyle(
-                fontFamily: 'Inter',
+              style: (isPersian ? AppTheme.bodyBoldFa : AppTheme.bodyBold)
+                  .copyWith(
                 fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: isSelected ? primaryColor : textColor,
+                color: fg,
               ),
             ),
           ],
@@ -319,7 +329,7 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
   Widget _buildLoadingGrid(bool isDark) {
     return Padding(
       padding: const EdgeInsets.all(8),
-      child: GridView(
+      child: GridView.builder(
         gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
           maxCrossAxisExtent: 160,
           mainAxisSpacing: 6,
@@ -327,20 +337,24 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
           childAspectRatio: 0.58,
         ),
         physics: const NeverScrollableScrollPhysics(),
-        children: List.generate(9, (index) {
+        itemCount: 9,
+        itemBuilder: (context, index) {
           return Container(
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(AppTheme.radiusModule),
               color: isDark ? AppTheme.darkSecondary : Colors.grey.shade200,
             ),
             child: const ShimmerAvatar(),
           );
-        }),
+        },
       ),
     );
   }
 
   Widget _buildErrorState(SearchProvider provider, bool isDark, Color primaryColor) {
+    final isPersian = !Localizations.localeOf(
+      context,
+    ).languageCode.contains('en');
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -357,21 +371,14 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
               provider.errorMessage ?? 'Error',
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: AppTheme.fontFor(isPersian),
                 fontSize: 16,
                 color: isDark ? AppTheme.darkTextMuted : Colors.grey,
               ),
             ),
             const SizedBox(height: 16),
-            ElevatedButton(
+            AppTheme.gradientButton(
               onPressed: () => provider.refresh(),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
               child: const Text('Retry'),
             ),
           ],
@@ -382,6 +389,9 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
 
   Widget _buildEmptyState(SearchProvider provider, bool isDark, Color primaryColor) {
     final t = AppLocalizations.of(context)!;
+    final isPersian = !Localizations.localeOf(
+      context,
+    ).languageCode.contains('en');
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -396,10 +406,7 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
             const SizedBox(height: 16),
             Text(
               t.search_no_results,
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
+              style: (isPersian ? AppTheme.h2Fa : AppTheme.h2).copyWith(
                 color: isDark ? AppTheme.darkText : AppTheme.lightText,
               ),
             ),
@@ -407,21 +414,14 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
             Text(
               t.search_no_results_hint,
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: AppTheme.fontFor(isPersian),
                 fontSize: 14,
                 color: isDark ? AppTheme.darkTextMuted : Colors.grey,
               ),
             ),
             const SizedBox(height: 16),
-            ElevatedButton(
+            AppTheme.gradientButton(
               onPressed: () => provider.refresh(),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: primaryColor,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
               child: Text(t.discover_refresh),
             ),
           ],
@@ -476,7 +476,7 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
       context: context,
       backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (ctx) {
         return StatefulBuilder(
@@ -492,7 +492,9 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
                       width: 40,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade400,
+                        color: isDark
+                            ? AppTheme.darkBorder
+                            : Colors.grey.shade300,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -500,10 +502,7 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
                   const SizedBox(height: 16),
                   Text(
                     t.search_filter_gender,
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
+                    style: (!Localizations.localeOf(context).languageCode.contains('en') ? AppTheme.h2Fa : AppTheme.h2).copyWith(
                       color: isDark ? AppTheme.darkText : AppTheme.lightText,
                     ),
                   ),
@@ -560,7 +559,7 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
       context: context,
       backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (ctx) {
         double minAge = provider.ageMin.toDouble();
@@ -579,7 +578,9 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
                       width: 40,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade400,
+                        color: isDark
+                            ? AppTheme.darkBorder
+                            : Colors.grey.shade300,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -587,10 +588,7 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
                   const SizedBox(height: 16),
                   Text(
                     t.search_filter_age_range,
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
+                    style: (!Localizations.localeOf(context).languageCode.contains('en') ? AppTheme.h2Fa : AppTheme.h2).copyWith(
                       color: isDark ? AppTheme.darkText : AppTheme.lightText,
                     ),
                   ),
@@ -598,7 +596,11 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
                   Text(
                     t.discover_filter_years(minAge.round(), maxAge >= 100 ? 100 : maxAge.round()),
                     style: TextStyle(
-                      fontFamily: 'Inter',
+                      fontFamily: AppTheme.fontFor(
+                        !Localizations.localeOf(
+                          context,
+                        ).languageCode.contains('en'),
+                      ),
                       fontSize: 14,
                       color: isDark ? AppTheme.darkText : AppTheme.lightText,
                     ),
@@ -621,19 +623,12 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
                   const SizedBox(height: 16),
                   SizedBox(
                     width: double.infinity,
-                    child: ElevatedButton(
+                    child: AppTheme.gradientButton(
                       onPressed: () {
                         final apiMax = maxAge >= 100 ? null : maxAge.round();
                         provider.setAgeRange(minAge.round(), apiMax);
                         Navigator.pop(ctx);
                       },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryColor,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
                       child: Text(t.discover_filter_apply),
                     ),
                   ),
@@ -657,7 +652,7 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
       context: context,
       backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (ctx) {
         double distance = (provider.distanceKm ?? 500).toDouble();
@@ -675,7 +670,9 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
                       width: 40,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade400,
+                        color: isDark
+                            ? AppTheme.darkBorder
+                            : Colors.grey.shade300,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -683,10 +680,7 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
                   const SizedBox(height: 16),
                   Text(
                     t.search_filter_distance_km,
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
+                    style: (!Localizations.localeOf(context).languageCode.contains('en') ? AppTheme.h2Fa : AppTheme.h2).copyWith(
                       color: isDark ? AppTheme.darkText : AppTheme.lightText,
                     ),
                   ),
@@ -694,7 +688,11 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
                   Text(
                     distance >= 500 ? '500+ km' : t.discover_filter_km(distance.round()),
                     style: TextStyle(
-                      fontFamily: 'Inter',
+                      fontFamily: AppTheme.fontFor(
+                        !Localizations.localeOf(
+                          context,
+                        ).languageCode.contains('en'),
+                      ),
                       fontSize: 14,
                       color: isDark ? AppTheme.darkText : AppTheme.lightText,
                     ),
@@ -716,19 +714,12 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
                   const SizedBox(height: 16),
                   SizedBox(
                     width: double.infinity,
-                    child: ElevatedButton(
+                    child: AppTheme.gradientButton(
                       onPressed: () {
                         final apiDistance = distance >= 500 ? null : distance.round();
                         provider.setDistance(apiDistance);
                         Navigator.pop(ctx);
                       },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: primaryColor,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
                       child: Text(t.discover_filter_apply),
                     ),
                   ),
@@ -752,7 +743,7 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
       context: context,
       backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (ctx) {
         return StatefulBuilder(
@@ -768,7 +759,9 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
                       width: 40,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: Colors.grey.shade400,
+                        color: isDark
+                            ? AppTheme.darkBorder
+                            : Colors.grey.shade300,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -776,10 +769,7 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
                   const SizedBox(height: 16),
                   Text(
                     t.search_sort_by,
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
+                    style: (!Localizations.localeOf(context).languageCode.contains('en') ? AppTheme.h2Fa : AppTheme.h2).copyWith(
                       color: isDark ? AppTheme.darkText : AppTheme.lightText,
                     ),
                   ),
@@ -850,24 +840,39 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
     required Color primaryColor,
     required VoidCallback onTap,
   }) {
+    final isDark = context.isDarkMode;
+    final isPersian = !Localizations.localeOf(
+      context,
+    ).languageCode.contains('en');
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         decoration: BoxDecoration(
-          color: selected ? primaryColor : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
+          color: selected
+              ? primaryColor
+              : isDark
+                  ? AppTheme.darkSecondary.withValues(alpha: 0.4)
+                  : Colors.white,
+          borderRadius: BorderRadius.circular(AppTheme.radiusChip),
           border: Border.all(
-            color: selected ? primaryColor : Colors.grey.shade300,
+            color: selected
+                ? primaryColor
+                : isDark
+                    ? AppTheme.darkBorder
+                    : Colors.grey.shade300,
           ),
         ),
         child: Text(
           label,
-          style: TextStyle(
-            fontFamily: 'Inter',
+          style: (isPersian ? AppTheme.bodyBoldFa : AppTheme.bodyBold)
+              .copyWith(
             fontSize: 14,
-            fontWeight: FontWeight.w500,
-            color: selected ? Colors.white : Colors.grey,
+            color: selected
+                ? Colors.white
+                : isDark
+                    ? AppTheme.darkText
+                    : Colors.grey.shade700,
           ),
         ),
       ),

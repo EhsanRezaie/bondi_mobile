@@ -191,7 +191,7 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
         return Container(
           decoration: BoxDecoration(
             color: bgColor,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
           ),
           child: Column(
             children: [
@@ -201,7 +201,9 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade400,
+                  color: isDark
+                      ? AppTheme.darkBorder
+                      : Colors.grey.shade300,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -214,7 +216,11 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
                     Text(
                       t.search_advanced_filters,
                       style: TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: AppTheme.fontFor(
+                          !Localizations.localeOf(
+                            context,
+                          ).languageCode.contains('en'),
+                        ),
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                         color: textColor,
@@ -228,7 +234,11 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
                       child: Text(
                         t.search_reset_filters,
                         style: TextStyle(
-                          fontFamily: 'Inter',
+                          fontFamily: AppTheme.fontFor(
+                            !Localizations.localeOf(
+                              context,
+                            ).languageCode.contains('en'),
+                          ),
                           color: mutedColor,
                         ),
                       ),
@@ -239,20 +249,32 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
               const Divider(height: 1),
               // Content
               Expanded(
-                child: ListView(
+                child: ListView.builder(
                   controller: scrollController,
                   padding: const EdgeInsets.all(20),
-                  children: [
-                    _buildLocationSection(t, isDark, primaryColor, textColor, mutedColor, borderColor),
-                    _buildBasicSection(t, isDark, primaryColor, textColor, mutedColor, borderColor),
-                    _buildPhysicalSection(t, isDark, primaryColor, textColor, mutedColor, borderColor),
-                    _buildLifestyleSection(t, isDark, primaryColor, textColor, mutedColor, borderColor),
-                    _buildBackgroundSection(t, isDark, primaryColor, textColor, mutedColor, borderColor),
-                    _buildInterestsSection(t, isDark, primaryColor, textColor, mutedColor, borderColor),
-                    _buildLanguagesSection(t, isDark, primaryColor, textColor, mutedColor, borderColor),
-                    _buildVerificationSection(t, isDark, primaryColor, textColor, mutedColor, borderColor),
-                    const SizedBox(height: 16),
-                  ],
+                  itemCount: 9,
+                  itemBuilder: (context, index) {
+                    switch (index) {
+                      case 0:
+                        return _buildLocationSection(t, isDark, primaryColor, textColor, mutedColor, borderColor);
+                      case 1:
+                        return _buildBasicSection(t, isDark, primaryColor, textColor, mutedColor, borderColor);
+                      case 2:
+                        return _buildPhysicalSection(t, isDark, primaryColor, textColor, mutedColor, borderColor);
+                      case 3:
+                        return _buildLifestyleSection(t, isDark, primaryColor, textColor, mutedColor, borderColor);
+                      case 4:
+                        return _buildBackgroundSection(t, isDark, primaryColor, textColor, mutedColor, borderColor);
+                      case 5:
+                        return _buildInterestsSection(t, isDark, primaryColor, textColor, mutedColor, borderColor);
+                      case 6:
+                        return _buildLanguagesSection(t, isDark, primaryColor, textColor, mutedColor, borderColor);
+                      case 7:
+                        return _buildVerificationSection(t, isDark, primaryColor, textColor, mutedColor, borderColor);
+                      default:
+                        return const SizedBox(height: 16);
+                    }
+                  },
                 ),
               ),
               // Apply button
@@ -267,25 +289,13 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
                   color: bgColor,
                   border: Border(top: BorderSide(color: borderColor, width: 0.5)),
                 ),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 50,
-                  child: ElevatedButton(
-                    onPressed: _applyFilters,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryColor,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: Text(
-                      t.search_apply_filters,
-                      style: const TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
+                child: AppTheme.gradientButton(
+                  onPressed: _applyFilters,
+                  child: Text(
+                    t.search_apply_filters,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                 ),
@@ -332,6 +342,9 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
   }
 
   Widget _buildSectionHeader(String emoji, String title, bool isDark, Color primaryColor) {
+    final isPersian = !Localizations.localeOf(
+      context,
+    ).languageCode.contains('en');
     return Padding(
       padding: const EdgeInsets.only(top: 24, bottom: 12),
       child: Row(
@@ -340,10 +353,10 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
           const SizedBox(width: 8),
           Text(
             title,
-            style: TextStyle(
-              fontFamily: 'Inter',
+            style: (isPersian ? AppTheme.bodyBoldFa : AppTheme.bodyBold)
+                .copyWith(
               fontSize: 16,
-              fontWeight: FontWeight.w600,
+              fontWeight: FontWeight.w700,
               color: primaryColor,
             ),
           ),
@@ -372,19 +385,33 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
           child: Container(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
-              color: isSelected ? primaryColor : Colors.transparent,
-              borderRadius: BorderRadius.circular(20),
+              color: isSelected
+                  ? primaryColor
+                  : isDark
+                      ? AppTheme.darkSecondary.withValues(alpha: 0.4)
+                      : Colors.white,
+              borderRadius: BorderRadius.circular(AppTheme.radiusChip),
               border: Border.all(
-                color: isSelected ? primaryColor : (isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
+                color: isSelected
+                    ? primaryColor
+                    : (isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
               ),
             ),
             child: Text(
               label[0].toUpperCase() + label.substring(1),
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: AppTheme.fontFor(
+                  !Localizations.localeOf(
+                    context,
+                  ).languageCode.contains('en'),
+                ),
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
-                color: isSelected ? Colors.white : textColor,
+                color: isSelected
+                    ? Colors.white
+                    : isDark
+                        ? AppTheme.darkText
+                        : AppTheme.lightText,
               ),
             ),
           ),
@@ -399,7 +426,7 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
       children: [
         _buildSectionHeader('📍', t.search_filter_location, isDark, primaryColor),
         // Country
-        Text(t.search_filter_country, style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: mutedColor)),
+        Text(t.search_filter_country, style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), fontSize: 13, color: mutedColor)),
         const SizedBox(height: 8),
         _buildDropdown<CountryResponse>(
           value: _selectedCountry,
@@ -421,7 +448,7 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
         ),
         const SizedBox(height: 12),
         // Province
-        Text(t.search_filter_province, style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: mutedColor)),
+        Text(t.search_filter_province, style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), fontSize: 13, color: mutedColor)),
         const SizedBox(height: 8),
         if (_loadingProvinces)
           const Center(child: CircularProgressIndicator())
@@ -444,7 +471,7 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
           ),
         const SizedBox(height: 12),
         // City
-        Text(t.search_filter_city, style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: mutedColor)),
+        Text(t.search_filter_city, style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), fontSize: 13, color: mutedColor)),
         const SizedBox(height: 8),
         if (_loadingCities)
           const Center(child: CircularProgressIndicator())
@@ -475,14 +502,21 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
         border: Border.all(color: borderColor),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(AppTheme.radiusModule),
       ),
       child: DropdownButton<T>(
         value: value,
         isExpanded: true,
         underline: const SizedBox(),
         dropdownColor: isDark ? AppTheme.darkSurface : Colors.white,
-        style: TextStyle(fontFamily: 'Inter', color: textColor),
+        style: TextStyle(
+          fontFamily: AppTheme.fontFor(
+            !Localizations.localeOf(
+              context,
+            ).languageCode.contains('en'),
+          ),
+          color: textColor,
+        ),
         hint: Text('Select', style: TextStyle(color: isDark ? AppTheme.darkTextMuted : Colors.grey)),
         items: items.map((item) {
           return DropdownMenuItem<T>(
@@ -510,7 +544,7 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
           labelBuilder: (v) => v == 'all' ? t.discover_filter_all : v == 'male' ? t.discover_filter_male : t.discover_filter_female,
         ),
         _buildSectionHeader('🎂', t.search_filter_age_range, isDark, primaryColor),
-        Text('${_ageMin.round()} - ${_ageMax != null ? _ageMax!.round() : '100+'}', style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: textColor)),
+        Text('${_ageMin.round()} - ${_ageMax != null ? _ageMax!.round() : '100+'}', style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), fontSize: 14, color: textColor)),
         RangeSlider(
           values: RangeValues(_ageMin.toDouble(), (_ageMax ?? 100).toDouble()),
           min: 18, max: 100, divisions: 82,
@@ -518,7 +552,7 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
           onChanged: (v) => setState(() { _ageMin = v.start.round(); _ageMax = v.end.round() == 100 ? null : v.end.round(); }),
         ),
         _buildSectionHeader('📏', t.search_filter_distance_km, isDark, primaryColor),
-        Text(_distanceKm != null ? '$_distanceKm km' : '500+ km', style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: textColor)),
+        Text(_distanceKm != null ? '$_distanceKm km' : '500+ km', style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), fontSize: 14, color: textColor)),
         Slider(
           value: (_distanceKm ?? 500).toDouble(),
           min: 1, max: 500, divisions: 499,
@@ -534,9 +568,9 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionHeader('💪', 'Physical', isDark, primaryColor),
-        Text(t.search_filter_height, style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: mutedColor)),
+        Text(t.search_filter_height, style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), fontSize: 13, color: mutedColor)),
         const SizedBox(height: 8),
-        Text('${_heightMin ?? 50} - ${_heightMax != null ? _heightMax! : '250+'} cm', style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: textColor)),
+        Text('${_heightMin ?? 50} - ${_heightMax != null ? _heightMax! : '250+'} cm', style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), fontSize: 14, color: textColor)),
         RangeSlider(
           values: RangeValues((_heightMin ?? 50).toDouble(), (_heightMax ?? 250).toDouble()),
           min: 50, max: 250, divisions: 200,
@@ -546,9 +580,9 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
             _heightMax = v.end.round() >= 250 ? null : v.end.round();
           }),
         ),
-        Text(t.search_filter_weight, style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: mutedColor)),
+        Text(t.search_filter_weight, style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), fontSize: 13, color: mutedColor)),
         const SizedBox(height: 8),
-        Text('${_weightMin ?? 30} - ${_weightMax != null ? _weightMax! : '300+'} kg', style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: textColor)),
+        Text('${_weightMin ?? 30} - ${_weightMax != null ? _weightMax! : '300+'} kg', style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), fontSize: 14, color: textColor)),
         RangeSlider(
           values: RangeValues((_weightMin ?? 30).toDouble(), (_weightMax ?? 300).toDouble()),
           min: 30, max: 300, divisions: 270,
@@ -573,7 +607,7 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionHeader('🏠', 'Lifestyle', isDark, primaryColor),
-        Text(t.search_filter_relationship, style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: mutedColor)),
+        Text(t.search_filter_relationship, style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), fontSize: 13, color: mutedColor)),
         const SizedBox(height: 8),
         _buildChipRow(
           options: ['single', 'divorced', 'widowed', 'separated'],
@@ -582,7 +616,7 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
           isDark: isDark, primaryColor: primaryColor, textColor: textColor,
         ),
         const SizedBox(height: 12),
-        Text(t.search_filter_education, style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: mutedColor)),
+        Text(t.search_filter_education, style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), fontSize: 13, color: mutedColor)),
         const SizedBox(height: 8),
         _buildChipRow(
           options: ['high_school', 'bachelor', 'master', 'phd'],
@@ -591,7 +625,7 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
           isDark: isDark, primaryColor: primaryColor, textColor: textColor,
         ),
         const SizedBox(height: 12),
-        Text(t.search_filter_smoking, style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: mutedColor)),
+        Text(t.search_filter_smoking, style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), fontSize: 13, color: mutedColor)),
         const SizedBox(height: 8),
         _buildChipRow(
           options: ['never', 'occasionally', 'regularly'],
@@ -600,7 +634,7 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
           isDark: isDark, primaryColor: primaryColor, textColor: textColor,
         ),
         const SizedBox(height: 12),
-        Text(t.search_filter_drinking, style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: mutedColor)),
+        Text(t.search_filter_drinking, style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), fontSize: 13, color: mutedColor)),
         const SizedBox(height: 8),
         _buildChipRow(
           options: ['never', 'socially', 'regularly'],
@@ -609,7 +643,7 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
           isDark: isDark, primaryColor: primaryColor, textColor: textColor,
         ),
         const SizedBox(height: 12),
-        Text(t.search_filter_political, style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: mutedColor)),
+        Text(t.search_filter_political, style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), fontSize: 13, color: mutedColor)),
         const SizedBox(height: 8),
         _buildChipRow(
           options: ['liberal', 'conservative', 'moderate', 'apolitical'],
@@ -618,7 +652,7 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
           isDark: isDark, primaryColor: primaryColor, textColor: textColor,
         ),
         const SizedBox(height: 12),
-        Text(t.search_filter_children, style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: mutedColor)),
+        Text(t.search_filter_children, style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), fontSize: 13, color: mutedColor)),
         const SizedBox(height: 8),
         _buildChipRow(
           options: ['have', 'dont_have', 'want', 'dont_want'],
@@ -627,7 +661,7 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
           isDark: isDark, primaryColor: primaryColor, textColor: textColor,
         ),
         const SizedBox(height: 12),
-        Text(t.search_filter_living, style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: mutedColor)),
+        Text(t.search_filter_living, style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), fontSize: 13, color: mutedColor)),
         const SizedBox(height: 8),
         _buildChipRow(
           options: ['alone', 'with_family', 'with_roommate', 'with_partner'],
@@ -647,7 +681,7 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildSectionHeader('🌍', 'Background', isDark, primaryColor),
-        Text(t.search_filter_religion, style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: mutedColor)),
+        Text(t.search_filter_religion, style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), fontSize: 13, color: mutedColor)),
         const SizedBox(height: 8),
         _buildChipRow(
           options: religions,
@@ -656,7 +690,7 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
           isDark: isDark, primaryColor: primaryColor, textColor: textColor,
         ),
         const SizedBox(height: 12),
-        Text(t.search_filter_ethnicity, style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: mutedColor)),
+        Text(t.search_filter_ethnicity, style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), fontSize: 13, color: mutedColor)),
         const SizedBox(height: 8),
         _buildChipRow(
           options: ethnicities,
@@ -689,7 +723,7 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(name, style: const TextStyle(fontFamily: 'Inter', fontSize: 11, color: Colors.white)),
+                      Text(name, style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), fontSize: 11, color: Colors.white)),
                       const SizedBox(width: 4),
                       GestureDetector(
                         onTap: () => setState(() => _interests.remove(name)),
@@ -711,7 +745,7 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
                 Text(
                   entry.key.replaceAll('_', ' '),
                   style: TextStyle(
-                    fontFamily: 'Inter',
+                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: textColor,
@@ -751,8 +785,12 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: isSelected ? primaryColor : Colors.transparent,
-                        borderRadius: BorderRadius.circular(16),
+                        color: isSelected
+                            ? primaryColor
+                            : isDark
+                                ? AppTheme.darkSecondary.withValues(alpha: 0.4)
+                                : Colors.white,
+                        borderRadius: BorderRadius.circular(AppTheme.radiusChip),
                         border: Border.all(
                           color: isSelected ? primaryColor : borderColor,
                         ),
@@ -760,9 +798,17 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
                       child: Text(
                         '${interest.icon ?? ''} ${interest.name}'.trim(),
                         style: TextStyle(
-                          fontFamily: 'Inter',
+                          fontFamily: AppTheme.fontFor(
+                            !Localizations.localeOf(
+                              context,
+                            ).languageCode.contains('en'),
+                          ),
                           fontSize: 12,
-                          color: isSelected ? Colors.white : textColor,
+                          color: isSelected
+                              ? Colors.white
+                              : isDark
+                                  ? AppTheme.darkText
+                                  : AppTheme.lightText,
                         ),
                       ),
                     ),
@@ -813,8 +859,12 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
-                  color: isSelected ? primaryColor : Colors.transparent,
-                  borderRadius: BorderRadius.circular(20),
+                  color: isSelected
+                      ? primaryColor
+                      : isDark
+                          ? AppTheme.darkSecondary.withValues(alpha: 0.4)
+                          : Colors.white,
+                  borderRadius: BorderRadius.circular(AppTheme.radiusChip),
                   border: Border.all(
                     color: isSelected ? primaryColor : borderColor,
                   ),
@@ -822,10 +872,18 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
                 child: Text(
                   languageNames[lang] ?? lang,
                   style: TextStyle(
-                    fontFamily: 'Inter',
+                    fontFamily: AppTheme.fontFor(
+                      !Localizations.localeOf(
+                        context,
+                      ).languageCode.contains('en'),
+                    ),
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
-                    color: isSelected ? Colors.white : textColor,
+                    color: isSelected
+                        ? Colors.white
+                        : isDark
+                            ? AppTheme.darkText
+                            : AppTheme.lightText,
                   ),
                 ),
               ),
@@ -873,7 +931,18 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: TextStyle(fontFamily: 'Inter', fontSize: 14, color: textColor)),
+        Text(
+          label,
+          style: TextStyle(
+            fontFamily: AppTheme.fontFor(
+              !Localizations.localeOf(
+                context,
+              ).languageCode.contains('en'),
+            ),
+            fontSize: 14,
+            color: textColor,
+          ),
+        ),
         Switch(
           value: value,
           onChanged: onChanged,

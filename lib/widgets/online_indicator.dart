@@ -36,7 +36,7 @@ class OnlineIndicator extends StatelessWidget {
           Text(
             'Online',
             style: TextStyle(
-              fontFamily: 'Inter',
+              fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
               fontSize: 12,
               fontWeight: FontWeight.w500,
               color: successColor,
@@ -53,7 +53,7 @@ class OnlineIndicator extends StatelessWidget {
         return Text(
           'Last seen $text',
           style: TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
             fontSize: 12,
             color: mutedColor,
           ),

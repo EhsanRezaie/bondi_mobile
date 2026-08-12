@@ -88,7 +88,16 @@
   "settings_logout": "Log Out",
   "settings_logout_desc": "Sign out of your account",
   "settings_logout_confirm": "Are you sure you want to log out?",
-  
+  "settings_premium_title": "Go Premium",
+  "settings_premium_subtitle": "Unlock unlimited likes, chats and profile boosts",
+  "settings_premium_perk_likes": "Unlimited likes",
+  "settings_premium_perk_chats": "Unlimited chats",
+  "settings_premium_perk_boost": "Profile boost",
+  "settings_premium_cta": "Upgrade now",
+
+  "notifications_title": "Notifications",
+  "notifications_empty": "No notifications yet",
+
   "error_email_exists": "This email is already registered",
   "error_email_invalid_format": "Invalid email format",
   "error_too_many_attempts": "Too many attempts. Please wait a moment",

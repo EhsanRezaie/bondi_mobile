@@ -531,7 +531,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
           child: Text(
             labelText,
             style: TextStyle(
-              fontFamily: 'Inter',
+              fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
               fontSize: 14,
               fontWeight: FontWeight.w600,
               color: isEnabled
@@ -618,7 +618,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
               },
               textStyle: WidgetStatePropertyAll(
                 TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                   fontSize: 15,
                   color: isEnabled
                       ? Theme.of(context).colorScheme.onSurface
@@ -629,7 +629,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
               ),
               hintStyle: WidgetStatePropertyAll(
                 TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                   fontSize: 15,
                   color: isEnabled
                       ? Theme.of(
@@ -645,10 +645,10 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
           suggestionsBuilder: (context, searchController) {
             if (!isEnabled) {
               return [
-                const ListTile(
+                ListTile(
                   title: Text(
                     'Please select a country first',
-                    style: TextStyle(fontFamily: 'Inter', color: Colors.grey),
+                    style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), color: Colors.grey),
                   ),
                 ),
               ];
@@ -669,7 +669,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                   title: Text(
                     'No results found',
                     style: TextStyle(
-                      fontFamily: 'Inter',
+                      fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                       color: Theme.of(
                         context,
                       ).colorScheme.onSurface.withValues(alpha: 0.5),
@@ -687,7 +687,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                 title: Text(
                   displayName(item),
                   style: TextStyle(
-                    fontFamily: 'Inter',
+                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
@@ -762,7 +762,9 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                       decoration: BoxDecoration(
                         color: index == 0
                             ? primaryColor
-                            : (isDark ? Colors.white12 : Colors.black12),
+                            : isDark
+                                ? AppTheme.darkSecondary
+                                : AppTheme.lightSecondary,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -773,7 +775,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
               Text(
                 'Basic Info',
                 style: TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                   color: onSurfaceColor,
@@ -846,7 +848,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                                         child: Text(
                                           _errorMessage!,
                                           style: TextStyle(
-                                            fontFamily: 'Inter',
+                                            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                             fontSize: 14,
                                             color: errorColor,
                                             fontWeight: FontWeight.w500,
@@ -916,7 +918,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                                     child: Text(
                                       'Gender',
                                       style: TextStyle(
-                                        fontFamily: 'Inter',
+                                        fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                         fontSize: 14,
                                         fontWeight: FontWeight.w600,
                                         color: onSurfaceColor,
@@ -997,7 +999,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                                         child: Text(
                                           'Location',
                                           style: TextStyle(
-                                            fontFamily: 'Inter',
+                                            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                             fontSize: 14,
                                             fontWeight: FontWeight.w600,
                                             color: onSurfaceColor,
@@ -1042,7 +1044,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                                               ? 'Locating...'
                                               : 'GPS',
                                           style: TextStyle(
-                                            fontFamily: 'Inter',
+                                            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                             fontSize: 12,
                                             fontWeight: FontWeight.w700,
                                             color: primaryColor,
@@ -1128,17 +1130,8 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                         ),
                         child: SizedBox(
                           width: double.infinity,
-                          child: ElevatedButton(
+                          child: AppTheme.gradientButton(
                             onPressed: _isLoading ? null : _handleNext,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: primaryColor,
-                              foregroundColor: Colors.white,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
-                              elevation: 0,
-                              minimumSize: const Size(double.infinity, 56),
-                            ),
                             child: _isLoading
                                 ? const SizedBox(
                                     height: 24,
@@ -1148,7 +1141,12 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                                       color: Colors.white,
                                     ),
                                   )
-                                : Text('Continue', style: AppTheme.buttonText),
+                                : Text(
+                                    'Continue',
+                                    style: AppTheme.button.copyWith(
+                                      color: Colors.white,
+                                    ),
+                                  ),
                           ),
                         ),
                       ),
@@ -1224,7 +1222,7 @@ class _GenderOption extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                 fontSize: 15,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 color: isSelected ? primaryColor : onSurfaceColor,

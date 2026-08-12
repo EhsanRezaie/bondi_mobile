@@ -244,7 +244,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
         title: Text(
           t.discover_limit_reached_title,
           style: TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
             fontWeight: FontWeight.w700,
             color: isDark ? AppTheme.darkText : AppTheme.lightText,
           ),
@@ -254,7 +254,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
               ? t.discover_limit_reached_likes
               : t.discover_limit_reached_chats,
           style: TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
             color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
           ),
         ),
@@ -264,7 +264,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             child: Text(
               'OK',
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                 fontWeight: FontWeight.w600,
                 color: isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary,
               ),
@@ -319,7 +319,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                       Text(
                         t.discover_say_something,
                         style: TextStyle(
-                          fontFamily: 'Inter',
+                          fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
                           color: isDark
@@ -367,79 +367,109 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   }) {
     if (!mounted) return;
     final t = AppLocalizations.of(context)!;
-    final isDark = context.isDarkMode;
+    final isPersian = !Localizations.localeOf(
+      context,
+    ).languageCode.contains('en');
+    final heroStyle =
+        (isPersian ? AppTheme.heroDisplayFa : AppTheme.heroDisplay).copyWith(
+          fontSize: 30,
+        );
+    final bodyStyle = (isPersian ? AppTheme.bodyFa : AppTheme.body).copyWith(
+      color: Colors.white.withValues(alpha: 0.85),
+      fontSize: 15,
+    );
 
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (ctx) {
         return Dialog(
-          backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(28),
-          ),
-          child: Padding(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Container(
             padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(28),
+              gradient: AppTheme.primaryGradient(),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.primaryGradientStart.withValues(alpha: 0.4),
+                  blurRadius: 32,
+                  offset: const Offset(0, 12),
+                ),
+              ],
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: AppTheme.likeGradient(isDark: isDark),
-                  ),
-                  child: const Icon(
-                    Icons.favorite,
-                    size: 48,
-                    color: Colors.white,
-                  ),
+                Stack(
+                  clipBehavior: Clip.none,
+                  alignment: Alignment.center,
+                  children: [
+                    Container(
+                      width: 72,
+                      height: 72,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withValues(alpha: 0.2),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.6),
+                          width: 2,
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.favorite,
+                        size: 34,
+                        color: Colors.white,
+                      ),
+                    ),
+                    if (profile.mainPhotoUrl != null &&
+                        profile.mainPhotoUrl!.isNotEmpty)
+                      Positioned(
+                        top: -40,
+                        child: ClipOval(
+                          child: SizedBox(
+                            width: 56,
+                            height: 56,
+                            child: Image.network(
+                              profile.mainPhotoUrl!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) =>
+                                  const SizedBox.shrink(),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 56),
                 Text(
                   t.discover_match_title,
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 28,
-                    fontWeight: FontWeight.w700,
-                    color: isDark ? AppTheme.darkText : AppTheme.lightText,
-                  ),
+                  textAlign: TextAlign.center,
+                  style: heroStyle.copyWith(color: Colors.white),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   t.discover_match_subtitle(profile.name),
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 14,
-                    color: isDark
-                        ? AppTheme.darkTextMuted
-                        : AppTheme.lightTextMuted,
-                  ),
+                  style: bodyStyle,
                 ),
                 if (messageSent) ...[
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.check_circle,
                         size: 16,
-                        color: isDark
-                            ? AppTheme.darkSuccess
-                            : AppTheme.lightSuccess,
+                        color: Colors.white,
                       ),
                       const SizedBox(width: 6),
                       Text(
                         t.discover_match_message_sent,
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 13,
-                          color: isDark
-                              ? AppTheme.darkSuccess
-                              : AppTheme.lightSuccess,
-                          fontWeight: FontWeight.w500,
+                        style: bodyStyle.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
                         ),
                       ),
                     ],
@@ -448,6 +478,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                 const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
+                  height: 52,
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.pop(ctx);
@@ -455,7 +486,20 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                         _switchToChatsTab();
                       }
                     },
-                    child: Text(t.discover_send_message),
+                    style: AppTheme.primaryButton.copyWith(
+                      backgroundColor: const WidgetStatePropertyAll<Color>(
+                        Colors.white,
+                      ),
+                      foregroundColor: const WidgetStatePropertyAll<Color>(
+                        AppTheme.primaryGradientStart,
+                      ),
+                      elevation: const WidgetStatePropertyAll<double>(0),
+                    ),
+                    child: Text(
+                      t.discover_send_message,
+                      style: (isPersian ? AppTheme.buttonFa : AppTheme.button)
+                          .copyWith(color: AppTheme.primaryGradientStart),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -463,13 +507,8 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                   onPressed: () => Navigator.pop(ctx),
                   child: Text(
                     t.discover_keep_swiping,
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 14,
-                      color: isDark
-                          ? AppTheme.darkTextMuted
-                          : AppTheme.lightTextMuted,
-                    ),
+                    style: (isPersian ? AppTheme.bodyBoldFa : AppTheme.bodyBold)
+                        .copyWith(color: Colors.white, fontSize: 15),
                   ),
                 ),
               ],
@@ -518,37 +557,9 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     final isDark = context.isDarkMode;
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
     final bgColor = isDark ? AppTheme.darkBackground : AppTheme.lightBackground;
-    final onSurfaceColor = Theme.of(context).colorScheme.onSurface;
 
     return Scaffold(
       backgroundColor: bgColor,
-      appBar: AppBar(
-        title: Text(
-          t.discover_title,
-          style: TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 22,
-            fontWeight: FontWeight.w800,
-            color: onSurfaceColor,
-          ),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.notifications_outlined, color: onSurfaceColor),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute<void>(
-                  builder: (_) => const NotificationsScreen(),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
       body: Consumer<DiscoverProvider>(
         builder: (context, provider, _) {
           if (provider.isLoading && provider.profiles.isEmpty) {
@@ -559,21 +570,130 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             return _buildErrorState(provider, t, isDark, primaryColor);
           }
 
-          return Column(
-            children: [
-              _buildFilterBar(provider, t, isDark, primaryColor),
-              Expanded(
-                child: provider.hasProfiles
-                    ? _buildCardStack(provider, isDark)
-                    : _buildEmptyState(provider, t, isDark, primaryColor),
-              ),
-              if (provider.hasProfiles)
-                _buildActionButtons(provider, t, isDark),
-              const SizedBox(height: 16),
-            ],
-          );
+          if (!provider.hasProfiles) {
+            return _buildEmptyState(provider, t, isDark, primaryColor);
+          }
+
+          // Mode A: photo flush to the screen edges. A top scrim hosts the
+          // Stories-style progress strip, wordmark + notifications, and the
+          // filter pills; the floating circular actions hover the bottom scrim.
+          return _buildFullBleedDeck(provider, t, isDark);
         },
       ),
+    );
+  }
+
+  Widget _buildFullBleedDeck(
+    DiscoverProvider provider,
+    AppLocalizations t,
+    bool isDark,
+  ) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        _buildCardStack(provider, isDark),
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: _buildTopOverlay(provider, t, isDark),
+        ),
+        if (provider.visibleProfiles.isNotEmpty)
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: _buildActionButtons(provider, t, isDark),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildTopOverlay(
+    DiscoverProvider provider,
+    AppLocalizations t,
+    bool isDark,
+  ) {
+    final isPersian = !Localizations.localeOf(
+      context,
+    ).languageCode.contains('en');
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Colors.black.withValues(alpha: 0.45), Colors.transparent],
+          stops: const [0.0, 1.0],
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildProgressStrip(provider),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      t.discover_title,
+                      style: (isPersian ? AppTheme.h1Fa : AppTheme.h1).copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(
+                      Icons.notifications_outlined,
+                      color: Colors.white,
+                    ),
+                    onPressed: _openNotifications,
+                  ),
+                ],
+              ),
+            ),
+            _buildFilterBar(provider, t, isDark),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Stories-style progress strip on the top edge — one segment per queued
+  /// profile, first segment highlighted (the currently shown card).
+  Widget _buildProgressStrip(DiscoverProvider provider) {
+    final segments = provider.profiles.length.clamp(1, 6);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
+      child: Row(
+        children: List.generate(segments, (i) {
+          final isActive = i == 0;
+          return Expanded(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 300),
+              height: 3,
+              margin: const EdgeInsets.symmetric(horizontal: 2),
+              decoration: BoxDecoration(
+                color: isActive
+                    ? Colors.white
+                    : Colors.white.withValues(alpha: 0.4),
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          );
+        }),
+      ),
+    );
+  }
+
+  void _openNotifications() {
+    Navigator.push(
+      context,
+      MaterialPageRoute<void>(builder: (_) => const NotificationsScreen()),
     );
   }
 
@@ -591,7 +711,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           Text(
             t.discover_loading,
             style: TextStyle(
-              fontFamily: 'Inter',
+              fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
               fontSize: 14,
               color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
             ),
@@ -623,7 +743,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
               provider.errorMessage ?? t.error_something_wrong,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                 fontSize: 14,
                 color: isDark
                     ? AppTheme.darkTextMuted
@@ -665,7 +785,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             Text(
               canWiden ? t.discover_widen_title : t.discover_no_profiles,
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
                 color: isDark ? AppTheme.darkText : AppTheme.lightText,
@@ -677,7 +797,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                   ? t.discover_widen_subtitle
                   : t.discover_no_profiles_hint,
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                 fontSize: 14,
                 color: isDark
                     ? AppTheme.darkTextMuted
@@ -748,7 +868,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             Text(
               label,
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: primaryColor,
@@ -764,10 +884,13 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     DiscoverProvider provider,
     AppLocalizations t,
     bool isDark,
-    Color primaryColor,
   ) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+    final isPersian = !Localizations.localeOf(
+      context,
+    ).languageCode.contains('en');
+    final font = AppTheme.fontFor(isPersian);
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
@@ -781,8 +904,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                         : t.discover_filter_female
                   : t.discover_filter_all,
               onTap: () => _showGenderPicker(provider),
-              isDark: isDark,
-              primaryColor: primaryColor,
+              font: font,
             ),
             const SizedBox(width: 8),
             _buildFilterChip(
@@ -791,16 +913,14 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                   ? '${provider.ageMin}-100+'
                   : '${provider.ageMin}-${provider.ageMax}',
               onTap: () => _showAgePicker(provider),
-              isDark: isDark,
-              primaryColor: primaryColor,
+              font: font,
             ),
             const SizedBox(width: 8),
             _buildFilterChip(
               icon: Icons.near_me,
               label: formatDistanceKm(provider.distanceKm?.toDouble()),
               onTap: () => _showDistancePicker(provider),
-              isDark: isDark,
-              primaryColor: primaryColor,
+              font: font,
             ),
           ],
         ),
@@ -812,39 +932,36 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     required IconData icon,
     required String label,
     required VoidCallback onTap,
-    required bool isDark,
-    required Color primaryColor,
+    required String font,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: isDark ? AppTheme.darkSurface : Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder,
-          ),
+          color: Colors.black.withValues(alpha: 0.35),
+          borderRadius: BorderRadius.circular(AppTheme.radiusChip),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 16, color: primaryColor),
+            Icon(icon, size: 16, color: Colors.white),
             const SizedBox(width: 6),
             Text(
               label,
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: font,
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
-                color: isDark ? AppTheme.darkText : AppTheme.lightText,
+                color: Colors.white,
               ),
             ),
             const SizedBox(width: 4),
             Icon(
               Icons.arrow_drop_down,
               size: 18,
-              color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
+              color: Colors.white.withValues(alpha: 0.7),
             ),
           ],
         ),
@@ -873,7 +990,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
               Text(
                 t.discover_filter_show,
                 style: TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
                   color: isDark ? AppTheme.darkText : AppTheme.lightText,
@@ -895,7 +1012,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                           ? t.discover_filter_male
                           : t.discover_filter_female,
                       style: TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                         fontWeight: FontWeight.w500,
                         color: selected ? Colors.white : null,
                       ),
@@ -947,7 +1064,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                   Text(
                     t.discover_filter_age_range,
                     style: TextStyle(
-                      fontFamily: 'Inter',
+                      fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: isDark ? AppTheme.darkText : AppTheme.lightText,
@@ -957,7 +1074,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                   Text(
                     '${ageLabel(min)} - ${ageLabel(max)} years',
                     style: TextStyle(
-                      fontFamily: 'Inter',
+                      fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                       fontSize: 14,
                       color: isDark
                           ? AppTheme.darkTextMuted
@@ -1022,7 +1139,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                   Text(
                     t.discover_filter_max_distance,
                     style: TextStyle(
-                      fontFamily: 'Inter',
+                      fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: isDark ? AppTheme.darkText : AppTheme.lightText,
@@ -1032,7 +1149,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                   Text(
                     formatDistanceKm(distance),
                     style: TextStyle(
-                      fontFamily: 'Inter',
+                      fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                       fontSize: 14,
                       color: isDark
                           ? AppTheme.darkTextMuted
@@ -1079,12 +1196,12 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     return LayoutBuilder(
       builder: (context, constraints) {
         final horizontalMargin = EdgeInsets.symmetric(
-          // On tablets the deck is capped to a comfortable card width and
-          // centered, otherwise it uses 16dp side margins.
+          // Mode A: photo is flush to the screen edges. On tablets the deck is
+          // still capped to a comfortable card width and centered.
           horizontal: switch (constraints.maxWidth) {
             final w when w >= Breakpoints.tablet =>
               (constraints.maxWidth - 520) / 2,
-            _ => 16,
+            _ => 0,
           },
         );
 
@@ -1117,7 +1234,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     if (profile == null) return const SizedBox.shrink();
 
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [

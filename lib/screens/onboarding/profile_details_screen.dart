@@ -385,7 +385,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
               Text(
                 'Profile Details',
                 style: TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
                   color: onSurfaceColor,
@@ -458,7 +458,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                                         child: Text(
                                           _errorMessage!,
                                           style: TextStyle(
-                                            fontFamily: 'Inter',
+                                            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                             fontSize: 14,
                                             color: errorColor,
                                             fontWeight: FontWeight.w500,
@@ -481,7 +481,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                                       Text(
                                         '📏 Height',
                                         style: TextStyle(
-                                          fontFamily: 'Inter',
+                                          fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                           fontSize: 15,
                                           fontWeight: FontWeight.w600,
                                           color: onSurfaceColor,
@@ -502,8 +502,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                                     divisions: 80,
                                     activeColor: primaryColor,
                                     inactiveColor: isDark
-                                        ? Colors.white12
-                                        : Colors.black12,
+                                        ? AppTheme.darkSecondary : AppTheme.lightSecondary,
                                     onChanged: (value) {
                                       setState(() {
                                         _height = value;
@@ -524,7 +523,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                                       Text(
                                         '🏋️ Weight',
                                         style: TextStyle(
-                                          fontFamily: 'Inter',
+                                          fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                           fontSize: 15,
                                           fontWeight: FontWeight.w600,
                                           color: onSurfaceColor,
@@ -545,8 +544,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                                     divisions: 100,
                                     activeColor: primaryColor,
                                     inactiveColor: isDark
-                                        ? Colors.white12
-                                        : Colors.black12,
+                                        ? AppTheme.darkSecondary : AppTheme.lightSecondary,
                                     onChanged: (value) {
                                       setState(() {
                                         _weight = value;
@@ -685,7 +683,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                                     child: Text(
                                       '🗣️ Languages (Multi-select)',
                                       style: TextStyle(
-                                        fontFamily: 'Inter',
+                                        fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                         fontSize: 14,
                                         fontWeight: FontWeight.w600,
                                         color: onSurfaceColor,
@@ -728,7 +726,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                                           child: Text(
                                             language,
                                             style: TextStyle(
-                                              fontFamily: 'Inter',
+                                              fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                               fontSize: 14,
                                               fontWeight: isSelected
                                                   ? FontWeight.w600
@@ -783,17 +781,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                             Expanded(
                               child: OutlinedButton(
                                 onPressed: () => Navigator.pop(context),
-                                style: OutlinedButton.styleFrom(
-                                  side: BorderSide(
-                                    color: borderColor,
-                                    width: 1.5,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  minimumSize: const Size(double.infinity, 56),
-                                  foregroundColor: onSurfaceColor,
-                                ),
+                                style: AppTheme.outlineButton,
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
@@ -805,7 +793,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                                     const SizedBox(width: 8),
                                     Text(
                                       'Back',
-                                      style: AppTheme.buttonText.copyWith(
+                                      style: AppTheme.button.copyWith(
                                         color: onSurfaceColor,
                                       ),
                                     ),
@@ -815,17 +803,9 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                             ),
                             const SizedBox(width: 16),
                             Expanded(
-                              child: ElevatedButton(
+                              child: AppTheme.gradientButton(
+                                enabled: !_isLoading,
                                 onPressed: _isLoading ? null : _handleNext,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: primaryColor,
-                                  foregroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  elevation: 0,
-                                  minimumSize: const Size(double.infinity, 56),
-                                ),
                                 child: _isLoading
                                     ? const SizedBox(
                                         height: 24,
@@ -841,7 +821,9 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                                         children: [
                                           Text(
                                             'Continue',
-                                            style: AppTheme.buttonText,
+                                            style: AppTheme.button.copyWith(
+                                              color: Colors.white,
+                                            ),
                                           ),
                                           const SizedBox(width: 8),
                                           const Icon(
@@ -887,7 +869,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
           child: Text(
             label,
             style: TextStyle(
-              fontFamily: 'Inter',
+              fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
               fontSize: 14,
               fontWeight: FontWeight.w600,
               color: onSurfaceColor,
@@ -921,7 +903,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                 child: Text(
                   option,
                   style: TextStyle(
-                    fontFamily: 'Inter',
+                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                     fontSize: 14,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                     color: isSelected

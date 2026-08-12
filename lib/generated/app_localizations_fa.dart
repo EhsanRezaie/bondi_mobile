@@ -264,6 +264,31 @@ class AppLocalizationsFa extends AppLocalizations {
       'آیا مطمئن هستید که می‌خواهید خارج شوید؟';
 
   @override
+  String get settings_premium_title => 'پرمیوم بخرید';
+
+  @override
+  String get settings_premium_subtitle =>
+      'لایک، چت و افزایش بازدید نامحدود را فعال کنید';
+
+  @override
+  String get settings_premium_perk_likes => 'لایک نامحدود';
+
+  @override
+  String get settings_premium_perk_chats => 'چت نامحدود';
+
+  @override
+  String get settings_premium_perk_boost => 'افزایش بازدید پروفایل';
+
+  @override
+  String get settings_premium_cta => 'همین حالا ارتقا دهید';
+
+  @override
+  String get notifications_title => 'اعلان‌ها';
+
+  @override
+  String get notifications_empty => 'هنوز اعلانی ندارید';
+
+  @override
   String get error_email_exists => 'این ایمیل قبلاً ثبت نام کرده است';
 
   @override

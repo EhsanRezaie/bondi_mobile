@@ -251,7 +251,7 @@ class _EditPromptsScreenState extends State<EditPromptsScreen> {
         title: Text(
           'Edit Prompts',
           style: TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
             fontSize: 18,
             fontWeight: FontWeight.w700,
             color: onSurfaceColor,
@@ -276,7 +276,7 @@ class _EditPromptsScreenState extends State<EditPromptsScreen> {
                     Text(
                       'Answer up to 3 questions',
                       style: TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                         fontSize: 28,
                         fontWeight: FontWeight.w800,
                         color: onSurfaceColor,
@@ -286,7 +286,7 @@ class _EditPromptsScreenState extends State<EditPromptsScreen> {
                     Text(
                       'Choose prompts and write your answers',
                       style: TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                         fontSize: 16,
                         color: textMutedColor,
                       ),
@@ -310,7 +310,7 @@ class _EditPromptsScreenState extends State<EditPromptsScreen> {
                           Text(
                             'Selected: $selectedCount / 3',
                             style: TextStyle(
-                              fontFamily: 'Inter',
+                              fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: selectedCount > 0
@@ -332,7 +332,7 @@ class _EditPromptsScreenState extends State<EditPromptsScreen> {
                             child: Text(
                               '$selectedCount',
                               style: TextStyle(
-                                fontFamily: 'Inter',
+                                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.white,
@@ -368,7 +368,7 @@ class _EditPromptsScreenState extends State<EditPromptsScreen> {
                               child: Text(
                                 _errorMessage!,
                                 style: TextStyle(
-                                  fontFamily: 'Inter',
+                                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                   fontSize: 14,
                                   color: errorColor,
                                   fontWeight: FontWeight.w500,
@@ -391,7 +391,7 @@ class _EditPromptsScreenState extends State<EditPromptsScreen> {
                         child: Text(
                           'No prompts available',
                           style: TextStyle(
-                            fontFamily: 'Inter',
+                            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                             fontSize: 16,
                             color: textMutedColor,
                           ),
@@ -434,7 +434,7 @@ class _EditPromptsScreenState extends State<EditPromptsScreen> {
                                           child: Text(
                                             category,
                                             style: TextStyle(
-                                              fontFamily: 'Inter',
+                                              fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                               fontSize: 18,
                                               fontWeight: FontWeight.w600,
                                               color: onSurfaceColor,
@@ -460,7 +460,7 @@ class _EditPromptsScreenState extends State<EditPromptsScreen> {
                                             child: Text(
                                               '$selectedInCategory',
                                               style: TextStyle(
-                                                fontFamily: 'Inter',
+                                                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                                 fontSize: 13,
                                                 fontWeight: FontWeight.w600,
                                                 color: primaryColor,
@@ -546,7 +546,7 @@ class _EditPromptsScreenState extends State<EditPromptsScreen> {
                         : Text(
                             'Save',
                             style: TextStyle(
-                              fontFamily: 'Inter',
+                              fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                               fontSize: 16,
                               fontWeight: FontWeight.w600,
                               color: isComplete
@@ -612,7 +612,7 @@ class _EditPromptsScreenState extends State<EditPromptsScreen> {
                   child: Text(
                     prompt.question,
                     style: TextStyle(
-                      fontFamily: 'Inter',
+                      fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                       fontSize: 16,
                       fontWeight: isSelected
                           ? FontWeight.w700
@@ -645,7 +645,7 @@ class _EditPromptsScreenState extends State<EditPromptsScreen> {
                 decoration: InputDecoration(
                   hintText: 'Write your answer...',
                   hintStyle: TextStyle(
-                    fontFamily: 'Inter',
+                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                     fontSize: 14,
                     color: textMutedColor,
                   ),
@@ -672,14 +672,14 @@ class _EditPromptsScreenState extends State<EditPromptsScreen> {
                   contentPadding: const EdgeInsets.all(12),
                   isDense: true,
                   errorStyle: TextStyle(
-                    fontFamily: 'Inter',
+                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                     fontSize: 12,
                     color: errorColor,
                   ),
                 ),
                 onChanged: (value) => _updateAnswer(prompt.id, value),
                 style: TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                   fontSize: 15,
                   color: onSurfaceColor,
                 ),
@@ -690,7 +690,7 @@ class _EditPromptsScreenState extends State<EditPromptsScreen> {
                   child: Text(
                     'Please write an answer',
                     style: TextStyle(
-                      fontFamily: 'Inter',
+                      fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                       fontSize: 12,
                       color: errorColor,
                       fontWeight: FontWeight.w500,

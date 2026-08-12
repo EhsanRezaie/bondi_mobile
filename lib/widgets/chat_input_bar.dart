@@ -192,7 +192,7 @@ class _ChatInputBarState extends State<ChatInputBar> {
         child: Text(
           'Waiting for a reply to continue chatting...',
           style: TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
             fontSize: 13,
             color: mutedColor,
             fontStyle: FontStyle.italic,
@@ -251,7 +251,7 @@ class _ChatInputBarState extends State<ChatInputBar> {
             child: Text(
               widget.replyToContent!,
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                 fontSize: 12,
                 color: mutedColor,
               ),
@@ -284,7 +284,7 @@ class _ChatInputBarState extends State<ChatInputBar> {
           Text(
             'Editing message',
             style: TextStyle(
-              fontFamily: 'Inter',
+              fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
               fontSize: 12,
               color: primaryColor,
               fontWeight: FontWeight.w500,
@@ -319,7 +319,7 @@ class _ChatInputBarState extends State<ChatInputBar> {
           Text(
             _formatRecordTime(_recordSeconds),
             style: TextStyle(
-              fontFamily: 'Inter',
+              fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
               fontSize: 16,
               fontWeight: FontWeight.w600,
               color: textColor,
@@ -395,7 +395,7 @@ class _ChatInputBarState extends State<ChatInputBar> {
                 }
               },
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                 fontSize: 15,
                 color: textColor,
               ),
@@ -406,7 +406,7 @@ class _ChatInputBarState extends State<ChatInputBar> {
                 hintText:
                     widget.isEditing ? 'Edit message...' : 'Type a message...',
                 hintStyle: TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                   fontSize: 15,
                   color: mutedColor,
                 ),
@@ -479,7 +479,7 @@ class _ChatInputBarState extends State<ChatInputBar> {
             const SizedBox(height: 12),
             ListTile(
               leading: const Icon(Icons.photo_library_outlined),
-              title: const Text('Gallery', style: TextStyle(fontFamily: 'Inter')),
+              title: Text('Gallery', style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')))),
               onTap: () {
                 Navigator.pop(sheetContext);
                 widget.onAttachPhoto();
@@ -487,7 +487,7 @@ class _ChatInputBarState extends State<ChatInputBar> {
             ),
             ListTile(
               leading: const Icon(Icons.photo_camera_outlined),
-              title: const Text('Camera', style: TextStyle(fontFamily: 'Inter')),
+              title: Text('Camera', style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')))),
               onTap: () {
                 Navigator.pop(sheetContext);
                 widget.onAttachPhoto();

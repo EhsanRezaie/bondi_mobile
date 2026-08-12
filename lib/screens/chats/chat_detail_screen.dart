@@ -14,6 +14,7 @@ import 'package:dating_app/utils/media_url.dart';
 import 'package:dating_app/screens/shared/profile_detail_loader.dart';
 import 'package:dating_app/screens/search/search_profile_detail.dart';
 import 'package:dating_app/generated/app_localizations.dart';
+import 'package:intl/intl.dart';
 
 class ChatDetailScreen extends StatefulWidget {
   final String identifier;
@@ -48,6 +49,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   String? _replyToContent;
   String? _currentUserId;
   ChatProvider? _chatProvider;
+  bool _showScrollToBottom = false;
 
   @override
   void didChangeDependencies() {
@@ -82,6 +84,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   void _onScroll() {
     if (_scrollController.position.pixels <= 0) {
       context.read<ChatProvider>().loadMoreMessages();
+    }
+    final atBottom =
+        _scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200;
+    if (atBottom != _showScrollToBottom) {
+      setState(() => _showScrollToBottom = !atBottom);
     }
   }
 
@@ -128,7 +136,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       context: context,
       backgroundColor: surfaceColor,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (context) => SafeArea(
         child: Column(
@@ -139,7 +147,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               height: 4,
               margin: const EdgeInsets.only(top: 12),
               decoration: BoxDecoration(
-                color: Colors.grey.shade400,
+                color: isDark ? AppTheme.darkBorder : Colors.grey.shade300,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -149,7 +157,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 leading: Icon(Icons.copy, color: primaryColor),
                 title: Text(
                   'Copy',
-                  style: TextStyle(fontFamily: 'Inter', color: textColor),
+                  style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), color: textColor),
                 ),
                 onTap: () async {
                   await Clipboard.setData(
@@ -164,7 +172,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 leading: Icon(Icons.edit, color: primaryColor),
                 title: Text(
                   'Edit',
-                  style: TextStyle(fontFamily: 'Inter', color: textColor),
+                  style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), color: textColor),
                 ),
                 onTap: () {
                   Navigator.pop(context);
@@ -175,7 +183,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 leading: Icon(Icons.delete_outline, color: errorColor),
                 title: Text(
                   'Delete',
-                  style: TextStyle(fontFamily: 'Inter', color: textColor),
+                  style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), color: textColor),
                 ),
                 onTap: () {
                   Navigator.pop(context);
@@ -187,7 +195,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               leading: Icon(Icons.reply, color: primaryColor),
               title: Text(
                 'Reply',
-                style: TextStyle(fontFamily: 'Inter', color: textColor),
+                style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), color: textColor),
               ),
               onTap: () {
                 Navigator.pop(context);
@@ -201,7 +209,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               leading: Icon(Icons.flag, color: errorColor),
               title: Text(
                 'Report',
-                style: TextStyle(fontFamily: 'Inter', color: textColor),
+                style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), color: textColor),
               ),
               onTap: () {
                 Navigator.pop(context);
@@ -234,7 +242,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         title: Text(
           'Report Message',
           style: TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
             color: textColor,
             fontWeight: FontWeight.w600,
           ),
@@ -247,7 +255,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           decoration: InputDecoration(
             hintText: 'Tell us what went wrong...',
             border: const OutlineInputBorder(),
-            hintStyle: TextStyle(fontFamily: 'Inter', color: textColor),
+            hintStyle: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), color: textColor),
           ),
         ),
         actions: [
@@ -255,7 +263,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
             onPressed: () => Navigator.pop(dialogContext),
             child: Text(
               'Cancel',
-              style: TextStyle(fontFamily: 'Inter', color: textColor),
+              style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), color: textColor),
             ),
           ),
           TextButton(
@@ -265,7 +273,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
             },
             child: Text(
               'Send',
-              style: TextStyle(fontFamily: 'Inter', color: textColor),
+              style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), color: textColor),
             ),
           ),
         ],
@@ -306,7 +314,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 Text(
                   'Delete Message',
                   style: TextStyle(
-                    fontFamily: 'Inter',
+                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                     color: textColor,
                     fontWeight: FontWeight.w600,
                   ),
@@ -319,7 +327,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                   },
                   title: Text(
                     'Delete for ${widget.userName} too',
-                    style: TextStyle(fontFamily: 'Inter', color: textColor),
+                    style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), color: textColor),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -330,7 +338,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       onPressed: () => Navigator.pop(dialogContext),
                       child: Text(
                         'Cancel',
-                        style: TextStyle(fontFamily: 'Inter', color: textColor),
+                        style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), color: textColor),
                       ),
                     ),
                     TextButton(
@@ -344,7 +352,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       child: Text(
                         'Delete',
                         style: TextStyle(
-                          fontFamily: 'Inter',
+                          fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                           color: errorColor,
                         ),
                       ),
@@ -384,7 +392,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       context: context,
       backgroundColor: surfaceColor,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
       ),
       builder: (sheetContext) => SafeArea(
         child: Column(
@@ -395,7 +403,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               leading: const Icon(Icons.person_outline),
               title: Text(
                 'View Profile',
-                style: TextStyle(fontFamily: 'Inter', color: textColor),
+                style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), color: textColor),
               ),
               onTap: () {
                 Navigator.pop(sheetContext);
@@ -406,7 +414,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               leading: const Icon(Icons.delete_outline),
               title: Text(
                 'Delete Chat',
-                style: TextStyle(fontFamily: 'Inter', color: textColor),
+                style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), color: textColor),
               ),
               onTap: () {
                 Navigator.pop(sheetContext);
@@ -427,19 +435,19 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: surfaceColor,
-        title: const Text('Delete Chat', style: TextStyle(fontFamily: 'Inter')),
-        content: const Text(
+        title: Text('Delete Chat', style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')))),
+        content: Text(
           'This deletes the chat on your side.',
-          style: TextStyle(fontFamily: 'Inter'),
+          style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en'))),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Cancel', style: TextStyle(fontFamily: 'Inter')),
+            child: Text('Cancel', style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')))),
           ),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Delete', style: TextStyle(fontFamily: 'Inter')),
+            child: Text('Delete', style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')))),
           ),
         ],
       ),
@@ -469,7 +477,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         t.chat_conversation_over(widget.userName),
         textAlign: TextAlign.center,
         style: TextStyle(
-          fontFamily: 'Inter',
+          fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
           fontSize: 13,
           color: mutedColor,
           fontStyle: FontStyle.italic,
@@ -502,93 +510,105 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         onAvatarTap: _openPeerProfile,
         onMenuPressed: _openChatMenu,
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Consumer<ChatProvider>(
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppTheme.primaryGradientStart.withValues(alpha: 0.04),
+              Colors.transparent,
+            ],
+          ),
+        ),
+        child: Column(
+          children: [
+            Expanded(
+              child: Consumer<ChatProvider>(
+                builder: (context, provider, _) {
+                  if (provider.isLoading && provider.messages.isEmpty) {
+                    return Center(
+                      child: CircularProgressIndicator(
+                        color: isDark
+                            ? AppTheme.darkPrimary
+                            : AppTheme.lightPrimary,
+                      ),
+                    );
+                  }
+
+                  return _buildMessageList(
+                    provider,
+                    isDark,
+                    textColor,
+                    mutedColor,
+                  );
+                },
+              ),
+            ),
+            Consumer<ChatProvider>(
               builder: (context, provider, _) {
-                if (provider.isLoading && provider.messages.isEmpty) {
-                  return Center(
-                    child: CircularProgressIndicator(
-                      color: isDark
-                          ? AppTheme.darkPrimary
-                          : AppTheme.lightPrimary,
-                    ),
+                if (provider.isRecipientWaiting) {
+                  return _buildAcceptCard(context, provider, isDark);
+                }
+                if (provider.isInitiatorWaiting) {
+                  return _buildWaitingBanner(context, isDark, mutedColor);
+                }
+                if (provider.conversationIsOver) {
+                  return _buildConversationOverBanner(
+                    context,
+                    isDark,
+                    mutedColor,
                   );
                 }
-
-                return _buildMessageList(
-                  provider,
-                  isDark,
-                  textColor,
-                  mutedColor,
+                return ChatInputBar(
+                  canSend: provider.canSendMessage,
+                  replyToId: _replyToId,
+                  replyToContent: _replyToContent,
+                  onCancelReply: () {
+                    setState(() {
+                      _replyToId = null;
+                      _replyToContent = null;
+                    });
+                  },
+                  isEditing: provider.editingMessageId != null,
+                  editingContent: provider.editingMessageId != null
+                      ? provider.messages
+                            .where((m) => m.id == provider.editingMessageId)
+                            .map((m) => m.content)
+                            .firstOrNull
+                      : null,
+                  onCancelEdit: () => provider.cancelEditing(),
+                  onEditSave: (content) {
+                    provider.editMessage(provider.editingMessageId!, content);
+                  },
+                  onTyping: () => provider.setTyping(),
+                  onTypingStopped: () => provider.stopTyping(),
+                  onSendText: (text, {replyToId}) async {
+                    final success = await provider.sendText(
+                      widget.identifier,
+                      text,
+                      replyToId: replyToId,
+                    );
+                    if (success) _scrollToBottom();
+                    setState(() {
+                      _replyToId = null;
+                      _replyToContent = null;
+                    });
+                  },
+                  onSendVoice: (path, duration) async {
+                    final success = await provider.sendVoice(
+                      widget.identifier,
+                      path,
+                      duration,
+                    );
+                    if (success) _scrollToBottom();
+                  },
+                  onAttachPhoto: _attachPhoto,
                 );
               },
             ),
-          ),
-          Consumer<ChatProvider>(
-            builder: (context, provider, _) {
-              if (provider.isRecipientWaiting) {
-                return _buildAcceptCard(context, provider, isDark);
-              }
-              if (provider.isInitiatorWaiting) {
-                return _buildWaitingBanner(context, isDark, mutedColor);
-              }
-              if (provider.conversationIsOver) {
-                return _buildConversationOverBanner(
-                  context,
-                  isDark,
-                  mutedColor,
-                );
-              }
-              return ChatInputBar(
-                canSend: provider.canSendMessage,
-                replyToId: _replyToId,
-                replyToContent: _replyToContent,
-                onCancelReply: () {
-                  setState(() {
-                    _replyToId = null;
-                    _replyToContent = null;
-                  });
-                },
-                isEditing: provider.editingMessageId != null,
-                editingContent: provider.editingMessageId != null
-                    ? provider.messages
-                          .where((m) => m.id == provider.editingMessageId)
-                          .map((m) => m.content)
-                          .firstOrNull
-                    : null,
-                onCancelEdit: () => provider.cancelEditing(),
-                onEditSave: (content) {
-                  provider.editMessage(provider.editingMessageId!, content);
-                },
-                onTyping: () => provider.setTyping(),
-                onTypingStopped: () => provider.stopTyping(),
-                onSendText: (text, {replyToId}) async {
-                  final success = await provider.sendText(
-                    widget.identifier,
-                    text,
-                    replyToId: replyToId,
-                  );
-                  if (success) _scrollToBottom();
-                  setState(() {
-                    _replyToId = null;
-                    _replyToContent = null;
-                  });
-                },
-                onSendVoice: (path, duration) async {
-                  final success = await provider.sendVoice(
-                    widget.identifier,
-                    path,
-                    duration,
-                  );
-                  if (success) _scrollToBottom();
-                },
-                onAttachPhoto: _attachPhoto,
-              );
-            },
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -619,7 +639,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
             t.chat_accept_title(widget.userName),
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontFamily: 'Inter',
+              fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
               fontSize: 13,
               color: textColor,
             ),
@@ -640,22 +660,14 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       ),
                     ),
                   )
-                : ElevatedButton(
+                : AppTheme.gradientButton(
                     onPressed: () async {
                       await provider.acceptChat(widget.identifier);
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryColor,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                    ),
                     child: Text(
                       t.chat_accept,
-                      style: const TextStyle(
-                        fontFamily: 'Inter',
+                      style: TextStyle(
+                        fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
@@ -687,7 +699,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         t.chat_waiting_accept(widget.userName),
         textAlign: TextAlign.center,
         style: TextStyle(
-          fontFamily: 'Inter',
+          fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
           fontSize: 13,
           color: mutedColor,
           fontStyle: FontStyle.italic,
@@ -704,57 +716,153 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   ) {
     final userId = _currentUserId ?? '';
 
-    return NotificationListener<ScrollNotification>(
-      onNotification: (notification) {
-        if (notification is ScrollEndNotification &&
-            notification.metrics.pixels <= 0) {
-          provider.loadMoreMessages();
-        }
-        return false;
-      },
-      child: ListView.builder(
-        controller: _scrollController,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        itemCount: provider.messages.length + (provider.isTyping ? 1 : 0),
-        itemBuilder: (context, index) {
-          if (index == provider.messages.length) {
-            return Align(
-              alignment: Alignment.centerLeft,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: TypingIndicator(),
-              ),
-            );
-          }
+    return Stack(
+      children: [
+        NotificationListener<ScrollNotification>(
+          onNotification: (notification) {
+            if (notification is ScrollEndNotification &&
+                notification.metrics.pixels <= 0) {
+              provider.loadMoreMessages();
+            }
+            return false;
+          },
+          child: ListView.builder(
+            controller: _scrollController,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            itemCount: provider.messages.length + (provider.isTyping ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index == provider.messages.length) {
+                return Align(
+                  alignment: Alignment.centerLeft,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: TypingIndicator(),
+                  ),
+                );
+              }
 
-          final message = provider.messages[index];
+              final message = provider.messages[index];
 
-          if (message.isDeleted) {
-            return Align(
-              alignment: Alignment.center,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Text(
-                  'This message was deleted',
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 12,
-                    color: mutedColor,
-                    fontStyle: FontStyle.italic,
+              final bool showDatePill =
+                  index == 0 ||
+                  !_isSameDay(
+                    provider.messages[index - 1].sentAt,
+                    message.sentAt,
+                  );
+
+              if (message.isDeleted) {
+                return Column(
+                  children: [
+                    if (showDatePill) _buildDatePill(message.sentAt),
+                    Align(
+                      alignment: Alignment.center,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 4),
+                        child: Text(
+                          'This message was deleted',
+                          style: TextStyle(
+                            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                            fontSize: 12,
+                            color: mutedColor,
+                            fontStyle: FontStyle.italic,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              }
+
+              return Column(
+                children: [
+                  if (showDatePill) _buildDatePill(message.sentAt),
+                  ChatMessageBubble(
+                    message: message,
+                    isMine: message.senderId == userId,
+                    onLongPress: () => _showMessageOptions(message),
+                    onTap: () => _showMessageOptions(message),
+                    onReplyTap: () => _setReplyFromSwipeRight(message),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
+        Positioned(
+          right: 12,
+          bottom: 12,
+          child: AnimatedOpacity(
+            duration: const Duration(milliseconds: 200),
+            opacity: _showScrollToBottom ? 1 : 0,
+            child: IgnorePointer(
+              ignoring: !_showScrollToBottom,
+              child: Material(
+                color: isDark ? AppTheme.darkSurface : AppTheme.lightSurface,
+                shape: const CircleBorder(),
+                elevation: 4,
+                child: IconButton(
+                  onPressed: _scrollToBottom,
+                  icon: Icon(
+                    Icons.keyboard_arrow_down,
+                    color: isDark ? AppTheme.darkText : AppTheme.lightText,
                   ),
                 ),
               ),
-            );
-          }
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 
-          return ChatMessageBubble(
-            message: message,
-            isMine: message.senderId == userId,
-            onLongPress: () => _showMessageOptions(message),
-            onTap: () => _showMessageOptions(message),
-            onReplyTap: () => _setReplyFromSwipeRight(message),
-          );
-        },
+  bool _isSameDay(DateTime a, DateTime b) {
+    return a.year == b.year && a.month == b.month && a.day == b.day;
+  }
+
+  Widget _buildDatePill(DateTime date) {
+    final isDark = context.isDarkMode;
+    final mutedColor =
+        isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted;
+    final now = DateTime.now();
+    final isPersian = !Localizations.localeOf(
+      context,
+    ).languageCode.contains('en');
+
+    final String label;
+    if (_isSameDay(date, now)) {
+      label = 'Today';
+    } else if (_isSameDay(
+      date,
+      now.subtract(const Duration(days: 1)),
+    )) {
+      label = 'Yesterday';
+    } else {
+      label = DateFormat('MMM d, yyyy').format(date);
+    }
+
+    return Align(
+      alignment: Alignment.center,
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+        decoration: BoxDecoration(
+          color: isDark
+              ? AppTheme.darkSurface.withValues(alpha: 0.9)
+              : AppTheme.lightSurface.withValues(alpha: 0.9),
+          borderRadius: BorderRadius.circular(AppTheme.radiusChip),
+          border: Border.all(
+            color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder,
+            width: 0.5,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontFamily: AppTheme.fontFor(isPersian),
+            fontSize: 12,
+            color: mutedColor,
+          ),
+        ),
       ),
     );
   }

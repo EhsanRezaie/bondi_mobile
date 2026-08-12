@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../config/app_theme.dart';
 
 class OnboardingProgressBar extends StatelessWidget {
   final int currentStep;
@@ -12,6 +13,7 @@ class OnboardingProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
       child: Row(
@@ -24,10 +26,12 @@ class OnboardingProgressBar extends StatelessWidget {
               margin: const EdgeInsets.symmetric(horizontal: 4),
               decoration: BoxDecoration(
                 color: isCompleted
-                    ? (isCurrent 
-                        ? const Color(0xFF3498DB) 
-                        : const Color(0xFF2C3E50))
-                    : Colors.grey.shade300,
+                    ? (isCurrent
+                        ? (isDark
+                            ? AppTheme.darkPrimary
+                            : AppTheme.lightPrimary)
+                        : AppTheme.moduleFillTinted(isDark: isDark))
+                    : (isDark ? AppTheme.darkBorder : AppTheme.lightDivider),
                 borderRadius: BorderRadius.circular(2),
               ),
             ),

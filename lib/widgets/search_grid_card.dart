@@ -1,28 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dating_app/config/app_theme.dart';
 import 'package:dating_app/models/discover_profile.dart';
+import 'package:dating_app/utils/cached_image.dart';
 import 'package:dating_app/widgets/shimmer_avatar.dart';
 
 class SearchGridCard extends StatelessWidget {
   final DiscoverProfile profile;
   final VoidCallback? onTap;
 
-  const SearchGridCard({
-    super.key,
-    required this.profile,
-    this.onTap,
-  });
+  const SearchGridCard({super.key, required this.profile, this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final isDark = context.isDarkMode;
-    final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
+    final isPersian = !Localizations.localeOf(
+      context,
+    ).languageCode.contains('en');
+    final font = AppTheme.fontFor(isPersian);
     final photoUrl = profile.mainPhotoUrl;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
+    return RepaintBoundary(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(10),
           boxShadow: [
@@ -38,25 +38,32 @@ class SearchGridCard extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              // Photo
+              // Photo — grid tiles are maxCrossAxisExtent(160) × 0.58 (~93),
+              // so decode at that display resolution rather than full source.
               if (photoUrl != null && photoUrl.isNotEmpty)
-                CachedNetworkImage(
-                  imageUrl: photoUrl,
+                CachedImage.widget(
+                  photoUrl,
+                  width: 160,
+                  height: 93,
                   fit: BoxFit.cover,
-                  placeholder: (context, url) => const ShimmerAvatar(),
-                  errorWidget: (context, url, error) => Container(
+                  placeholder: const ShimmerAvatar(),
+                  errorWidget: Container(
                     color: isDark ? AppTheme.darkSecondary : Colors.grey.shade200,
-                    child: Icon(Icons.person,
-                        size: 32,
-                        color: isDark ? AppTheme.darkTextMuted : Colors.grey),
+                    child: Icon(
+                      Icons.person,
+                      size: 32,
+                      color: isDark ? AppTheme.darkTextMuted : Colors.grey,
+                    ),
                   ),
                 )
               else
                 Container(
                   color: isDark ? AppTheme.darkSecondary : Colors.grey.shade200,
-                  child: Icon(Icons.person,
-                      size: 32,
-                      color: isDark ? AppTheme.darkTextMuted : Colors.grey),
+                  child: Icon(
+                    Icons.person,
+                    size: 32,
+                    color: isDark ? AppTheme.darkTextMuted : Colors.grey,
+                  ),
                 ),
 
               // Gradient overlay
@@ -91,21 +98,32 @@ class SearchGridCard extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(2),
                           decoration: BoxDecoration(
-                            color: isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary,
+                            gradient: AppTheme.primaryGradient(),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.verified, size: 10, color: Colors.white),
+                          child: const Icon(
+                            Icons.verified,
+                            size: 10,
+                            color: Colors.white,
+                          ),
                         ),
-                      if (profile.isVerified && profile.currentUserAction == 'like')
+                      if (profile.isVerified &&
+                          profile.currentUserAction == 'like')
                         const SizedBox(width: 2),
                       if (profile.currentUserAction == 'like')
                         Container(
                           padding: const EdgeInsets.all(2),
                           decoration: BoxDecoration(
-                            color: Colors.red,
+                            color: isDark
+                                ? AppTheme.darkError
+                                : AppTheme.lightError,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.favorite, size: 10, color: Colors.white),
+                          child: const Icon(
+                            Icons.favorite,
+                            size: 10,
+                            color: Colors.white,
+                          ),
                         ),
                     ],
                   ),
@@ -122,20 +140,30 @@ class SearchGridCard extends StatelessWidget {
                       Container(
                         width: 8,
                         height: 8,
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF22C55E),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? AppTheme.darkSuccess
+                              : AppTheme.lightSuccess,
                           shape: BoxShape.circle,
                         ),
                       ),
-                    if (profile.isOnline && profile.isPremium) const SizedBox(width: 3),
+                    if (profile.isOnline && profile.isPremium)
+                      const SizedBox(width: 3),
                     if (profile.isPremium)
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 4,
+                          vertical: 1,
+                        ),
                         decoration: BoxDecoration(
-                          color: isDark ? AppTheme.darkError : AppTheme.lightError,
+                          gradient: AppTheme.likeGradient(isDark: isDark),
                           borderRadius: BorderRadius.circular(6),
                         ),
-                        child: const Icon(Icons.workspace_premium, size: 8, color: Colors.white),
+                        child: const Icon(
+                          Icons.workspace_premium,
+                          size: 8,
+                          color: Colors.white,
+                        ),
                       ),
                   ],
                 ),
@@ -156,10 +184,10 @@ class SearchGridCard extends StatelessWidget {
                           child: Text(
                             '${profile.name}, ${profile.age}',
                             style: TextStyle(
-                              fontFamily: 'Inter',
+                              fontFamily: font,
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
-                              color: textColor,
+                              color: Colors.white,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -170,8 +198,12 @@ class SearchGridCard extends StatelessWidget {
                           profile.gender == 'male' ? Icons.male : Icons.female,
                           size: 10,
                           color: profile.gender == 'male'
-                              ? (isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary)
-                              : (isDark ? AppTheme.darkError : AppTheme.lightError),
+                              ? (isDark
+                                    ? AppTheme.darkPrimary
+                                    : AppTheme.lightPrimary)
+                              : (isDark
+                                    ? AppTheme.darkError
+                                    : AppTheme.lightError),
                         ),
                       ],
                     ),
@@ -179,22 +211,22 @@ class SearchGridCard extends StatelessWidget {
                       Text(
                         '${profile.distanceKm!.round()} km',
                         style: TextStyle(
-                          fontFamily: 'Inter',
+                          fontFamily: font,
                           fontSize: 9,
                           color: Colors.white.withValues(alpha: 0.8),
                         ),
-                      ),
+                       ),
                     if (profile.locationDisplay.isNotEmpty)
                       Text(
                         profile.locationDisplay,
                         style: TextStyle(
-                          fontFamily: 'Inter',
+                          fontFamily: font,
                           fontSize: 9,
                           color: Colors.white.withValues(alpha: 0.7),
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                      ),
+                       ),
                   ],
                 ),
               ),
@@ -202,6 +234,7 @@ class SearchGridCard extends StatelessWidget {
           ),
         ),
       ),
-    );
+    ),
+  );
   }
 }

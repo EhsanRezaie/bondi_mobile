@@ -21,8 +21,6 @@ class VoiceMessagePlayer extends StatefulWidget {
 class _VoiceMessagePlayerState extends State<VoiceMessagePlayer> {
   AudioPlayer? _player;
   bool _isPlaying = false;
-  Duration _duration = Duration.zero;
-  Duration _position = Duration.zero;
 
   @override
   void initState() {
@@ -36,12 +34,6 @@ class _VoiceMessagePlayerState extends State<VoiceMessagePlayer> {
     _player = AudioPlayer();
     try {
       await _player!.setUrl(widget.audioUrl!);
-      _player!.durationStream.listen((d) {
-        if (mounted) setState(() => _duration = d ?? Duration.zero);
-      });
-      _player!.positionStream.listen((p) {
-        if (mounted) setState(() => _position = p);
-      });
       _player!.playerStateStream.listen((state) {
         if (mounted) {
           setState(() {
@@ -50,7 +42,6 @@ class _VoiceMessagePlayerState extends State<VoiceMessagePlayer> {
           if (state.processingState == ProcessingState.completed) {
             setState(() {
               _isPlaying = false;
-              _position = Duration.zero;
             });
           }
         }
@@ -87,72 +78,129 @@ class _VoiceMessagePlayerState extends State<VoiceMessagePlayer> {
 
     final isDark = context.isDarkMode;
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
-    final mutedColor =
-        isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted;
-
-    final progress = _duration.inMilliseconds > 0
-        ? _position.inMilliseconds / _duration.inMilliseconds
-        : 0.0;
 
     final maxW = MediaQuery.of(context).size.width * 0.78 - 28;
     final width = AppLayout.s(context, 200).clamp(0.0, maxW);
 
     return SizedBox(
       width: width,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              GestureDetector(
-                onTap: _togglePlay,
-                child: Icon(
-                  _isPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill,
-                  size: AppLayout.s(context, 32),
-                  color: widget.isMine ? Colors.white : primaryColor,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: SliderTheme(
-                  data: SliderThemeData(
-                    trackHeight: 3,
-                    thumbShape:
-                        const RoundSliderThumbShape(enabledThumbRadius: 5),
-                    activeTrackColor:
-                        widget.isMine ? Colors.white.withValues(alpha: 0.8) : primaryColor,
-                    inactiveTrackColor:
-                        widget.isMine ? Colors.white.withValues(alpha: 0.3) : mutedColor.withValues(alpha: 0.3),
-                    thumbColor: widget.isMine ? Colors.white : primaryColor,
-                  ),
-                  child: Slider(
-                    value: progress.clamp(0.0, 1.0),
-                    onChanged: (v) {
-                      if (_player != null) {
-                        final position = Duration(
-                          milliseconds: (v * _duration.inMilliseconds).toInt(),
-                        );
-                        _player!.seek(position);
-                      }
-                    },
-                  ),
-                ),
-              ),
-            ],
-          ),
-          Text(
-            _formatDuration(_position),
-            style: TextStyle(
-              fontFamily: 'Inter',
-              fontSize: 10,
-              color: widget.isMine
-                  ? Colors.white.withValues(alpha: 0.7)
-                  : mutedColor,
-            ),
-          ),
-        ],
+      child: _VoiceControls(
+        player: _player,
+        isPlaying: _isPlaying,
+        isDark: isDark,
+        primaryColor: primaryColor,
+        isMine: widget.isMine,
+        width: width,
+        onTogglePlay: _togglePlay,
+        formatDuration: _formatDuration,
       ),
+    );
+  }
+}
+
+class _VoiceControls extends StatelessWidget {
+  const _VoiceControls({
+    required this.player,
+    required this.isPlaying,
+    required this.isDark,
+    required this.primaryColor,
+    required this.isMine,
+    required this.width,
+    required this.onTogglePlay,
+    required this.formatDuration,
+  });
+
+  final AudioPlayer? player;
+  final bool isPlaying;
+  final bool isDark;
+  final Color primaryColor;
+  final bool isMine;
+  final double width;
+  final Future<void> Function() onTogglePlay;
+  final String Function(Duration) formatDuration;
+
+  @override
+  Widget build(BuildContext context) {
+    if (player == null) {
+      return const SizedBox.shrink();
+    }
+
+    final mutedColor =
+        isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted;
+
+    return StreamBuilder<Duration>(
+      stream: player!.positionStream,
+      builder: (context, positionSnapshot) {
+        final position =
+            positionSnapshot.data ?? Duration.zero;
+        return StreamBuilder<Duration?>(
+          stream: player!.durationStream,
+          builder: (context, durationSnapshot) {
+            final duration = durationSnapshot.data ?? Duration.zero;
+            final progress = duration.inMilliseconds > 0
+                ? position.inMilliseconds / duration.inMilliseconds
+                : 0.0;
+            return Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    GestureDetector(
+                      onTap: onTogglePlay,
+                      child: Icon(
+                        isPlaying
+                            ? Icons.pause_circle_filled
+                            : Icons.play_circle_fill,
+                        size: AppLayout.s(context, 32),
+                        color: isMine ? Colors.white : primaryColor,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: SliderTheme(
+                        data: SliderThemeData(
+                          trackHeight: 3,
+                          thumbShape: const RoundSliderThumbShape(
+                              enabledThumbRadius: 5),
+                          activeTrackColor: isMine
+                              ? Colors.white.withValues(alpha: 0.8)
+                              : primaryColor,
+                          inactiveTrackColor: isMine
+                              ? Colors.white.withValues(alpha: 0.3)
+                              : mutedColor.withValues(alpha: 0.3),
+                          thumbColor:
+                              isMine ? Colors.white : primaryColor,
+                        ),
+                        child: Slider(
+                          value: progress.clamp(0.0, 1.0),
+                          onChanged: (v) {
+                            final seekPosition = Duration(
+                              milliseconds:
+                                  (v * duration.inMilliseconds).toInt(),
+                            );
+                            player!.seek(seekPosition);
+                          },
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                Text(
+                  formatDuration(position),
+                  style: TextStyle(
+                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                    fontSize: 10,
+                    color: isMine
+                        ? Colors.white.withValues(alpha: 0.7)
+                        : mutedColor,
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }

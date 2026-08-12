@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dating_app/config/app_theme.dart';
 import 'package:dating_app/models/message.dart';
 import 'package:dating_app/utils/media_url.dart';
 import 'package:dating_app/utils/responsive.dart';
+import 'package:dating_app/utils/cached_image.dart';
 import 'package:dating_app/widgets/voice_message_player.dart';
 import 'package:intl/intl.dart';
 
@@ -47,16 +47,22 @@ class ChatMessageBubble extends StatelessWidget {
         },
         child: Container(
           constraints: BoxConstraints(
-            maxWidth: MediaQuery.of(context).size.width * 0.78,
+            maxWidth: MediaQuery.of(context).size.width * 0.75,
           ),
           margin: const EdgeInsets.symmetric(vertical: 3),
           child: Column(
             crossAxisAlignment:
                 isMine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
             children: [
-              if (message.replyTo != null) _buildReplyPreview(isDark, mutedColor),
+              if (message.replyTo != null)
+                _buildReplyPreview(context, isDark, mutedColor),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                padding: const EdgeInsets.only(
+                  left: 14,
+                  right: 14,
+                  top: 10,
+                  bottom: 6,
+                ),
                 decoration: BoxDecoration(
                   color: isMine
                       ? (isDark
@@ -78,10 +84,21 @@ class ChatMessageBubble extends StatelessWidget {
                           width: 1,
                         ),
                 ),
-                child: _buildContent(context, isDark, textColor, mutedColor),
+                child: Column(
+                  crossAxisAlignment:
+                      isMine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+                  children: [
+                    _buildContent(context, isDark, textColor, mutedColor),
+                    const SizedBox(height: 2),
+                    _buildTimestampAndStatus(
+                      context,
+                      isDark,
+                      mutedColor,
+                      successColor,
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 2),
-              _buildTimestampAndStatus(isDark, mutedColor, successColor),
             ],
           ),
         ),
@@ -89,7 +106,7 @@ class ChatMessageBubble extends StatelessWidget {
     );
   }
 
-  Widget _buildReplyPreview(bool isDark, Color mutedColor) {
+  Widget _buildReplyPreview(BuildContext context, bool isDark, Color mutedColor) {
     return Container(
       margin: const EdgeInsets.only(bottom: 4),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -109,7 +126,11 @@ class ChatMessageBubble extends StatelessWidget {
           Text(
             message.replyTo!.senderId == message.senderId ? 'You' : '',
             style: TextStyle(
-              fontFamily: 'Inter',
+              fontFamily: AppTheme.fontFor(
+                !Localizations.localeOf(
+                  context,
+                ).languageCode.contains('en'),
+              ),
               fontSize: 11,
               fontWeight: FontWeight.w600,
               color: isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary,
@@ -119,7 +140,11 @@ class ChatMessageBubble extends StatelessWidget {
           Text(
             message.replyTo!.content ?? '',
             style: TextStyle(
-              fontFamily: 'Inter',
+              fontFamily: AppTheme.fontFor(
+                !Localizations.localeOf(
+                  context,
+                ).languageCode.contains('en'),
+              ),
               fontSize: 12,
               color: mutedColor,
             ),
@@ -134,7 +159,7 @@ class ChatMessageBubble extends StatelessWidget {
   Widget _buildContent(BuildContext context, bool isDark, Color textColor, Color mutedColor) {
     switch (message.messageType) {
       case MessageType.text:
-        return _buildTextContent(textColor);
+        return _buildTextContent(context, textColor);
       case MessageType.photo:
         return _buildPhotoContent(context);
       case MessageType.voice:
@@ -142,14 +167,17 @@ class ChatMessageBubble extends StatelessWidget {
     }
   }
 
-  Widget _buildTextContent(Color textColor) {
+  Widget _buildTextContent(BuildContext context, Color textColor) {
+    final isPersian = !Localizations.localeOf(
+      context,
+    ).languageCode.contains('en');
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           message.content ?? '',
           style: TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: AppTheme.fontFor(isPersian),
             fontSize: 15,
             color: isMine ? Colors.white : textColor,
             height: 1.3,
@@ -161,7 +189,7 @@ class ChatMessageBubble extends StatelessWidget {
             child: Text(
               'edited',
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: AppTheme.fontFor(isPersian),
                 fontSize: 10,
                 color: isMine
                     ? Colors.white.withValues(alpha: 0.6)
@@ -179,43 +207,43 @@ class ChatMessageBubble extends StatelessWidget {
     // Scale photo to the bubble's max width; never exceeds 220 on phones.
     final maxW = MediaQuery.of(context).size.width * 0.78 - 28;
     final size = AppLayout.s(context, 220).clamp(0.0, maxW);
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
-      child: GestureDetector(
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (_) => _PhotoLightbox(imageUrl: url),
-            ),
-          );
-        },
-        child: url.isNotEmpty
-            ? CachedNetworkImage(
-                imageUrl: url,
-                width: size,
-                height: size,
-                fit: BoxFit.cover,
-                placeholder: (context, url) => Container(
-                  width: size,
-                  height: size,
-                  color: Colors.grey.shade300,
-                  child: const Center(child: CircularProgressIndicator()),
-                ),
-                errorWidget: (context, url, error) => Container(
-                  width: size,
-                  height: size,
-                  color: Colors.grey.shade300,
-                  child: const Icon(Icons.broken_image, size: 40),
-                ),
-              )
-            : Container(
-                width: size,
-                height: size,
-                color: Colors.grey.shade300,
-                child: const Icon(Icons.image, size: 40),
-              ),
-      ),
+    final borderRadius = BorderRadius.circular(12);
+    final photoPlaceholder = Container(
+      width: size,
+      height: size,
+      color: Colors.grey.shade300,
+      child: const Center(child: CircularProgressIndicator()),
     );
+    final photoError = Container(
+      width: size,
+      height: size,
+      color: Colors.grey.shade300,
+      child: const Icon(Icons.broken_image, size: 40),
+    );
+
+    return url.isNotEmpty
+        ? CachedImage.widget(
+            url,
+            width: size,
+            height: size,
+            fit: BoxFit.cover,
+            borderRadius: borderRadius,
+            placeholder: photoPlaceholder,
+            errorWidget: photoError,
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => _PhotoLightbox(imageUrl: url),
+                ),
+              );
+            },
+          )
+        : Container(
+            width: size,
+            height: size,
+            color: Colors.grey.shade300,
+            child: const Icon(Icons.image, size: 40),
+          );
   }
 
   Widget _buildVoiceContent(Color textColor, Color mutedColor) {
@@ -226,17 +254,24 @@ class ChatMessageBubble extends StatelessWidget {
   }
 
   Widget _buildTimestampAndStatus(
-      bool isDark, Color mutedColor, Color successColor) {
+      BuildContext context, bool isDark, Color mutedColor, Color successColor) {
     final timeStr = DateFormat('HH:mm').format(message.sentAt);
+    final inlineColor = isMine
+        ? Colors.white.withValues(alpha: 0.75)
+        : mutedColor;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(
           timeStr,
           style: TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 10,
-            color: mutedColor,
+            fontFamily: AppTheme.fontFor(
+              !Localizations.localeOf(
+                context,
+              ).languageCode.contains('en'),
+            ),
+            fontSize: 11,
+            color: inlineColor,
           ),
         ),
         if (isMine) ...[
@@ -249,8 +284,8 @@ class ChatMessageBubble extends StatelessWidget {
                     : Icons.done,
             size: 14,
             color: message.isRead
-                ? (isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary)
-                : successColor,
+                ? Colors.white
+                : Colors.white.withValues(alpha: 0.6),
           ),
         ],
       ],
@@ -277,13 +312,15 @@ class _PhotoLightbox extends StatelessWidget {
         maxScale: 5,
         child: Center(
           child: imageUrl.isNotEmpty
-              ? CachedNetworkImage(
-                  imageUrl: imageUrl,
+              ? CachedImage.widget(
+                  imageUrl,
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.height,
                   fit: BoxFit.contain,
-                  placeholder: (context, url) => const Center(
+                  placeholder: const Center(
                     child: CircularProgressIndicator(color: Colors.white),
                   ),
-                  errorWidget: (context, url, error) => const Icon(
+                  errorWidget: const Icon(
                     Icons.broken_image,
                     size: 64,
                     color: Colors.white54,

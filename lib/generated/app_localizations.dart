@@ -590,6 +590,54 @@ abstract class AppLocalizations {
   /// **'Are you sure you want to log out?'**
   String get settings_logout_confirm;
 
+  /// No description provided for @settings_premium_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Go Premium'**
+  String get settings_premium_title;
+
+  /// No description provided for @settings_premium_subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock unlimited likes, chats and profile boosts'**
+  String get settings_premium_subtitle;
+
+  /// No description provided for @settings_premium_perk_likes.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited likes'**
+  String get settings_premium_perk_likes;
+
+  /// No description provided for @settings_premium_perk_chats.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlimited chats'**
+  String get settings_premium_perk_chats;
+
+  /// No description provided for @settings_premium_perk_boost.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile boost'**
+  String get settings_premium_perk_boost;
+
+  /// No description provided for @settings_premium_cta.
+  ///
+  /// In en, this message translates to:
+  /// **'Upgrade now'**
+  String get settings_premium_cta;
+
+  /// No description provided for @notifications_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Notifications'**
+  String get notifications_title;
+
+  /// No description provided for @notifications_empty.
+  ///
+  /// In en, this message translates to:
+  /// **'No notifications yet'**
+  String get notifications_empty;
+
   /// No description provided for @error_email_exists.
   ///
   /// In en, this message translates to:
