@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:dating_app/config/app_theme.dart';
 import 'package:dating_app/generated/app_localizations.dart';
@@ -41,8 +42,7 @@ class _ProfileDetailLoaderState extends State<ProfileDetailLoader> {
     try {
       final response = await ChatService.getPublicProfile(widget.userId);
       if (response.statusCode == 200 && response.data != null) {
-        final profile =
-            DiscoverProfile.fromJson(response.data as Map<String, dynamic>);
+        final profile = await compute(_parseProfile, response.data);
         if (mounted) {
           setState(() {
             _profile = profile;
@@ -130,3 +130,6 @@ class _ProfileDetailLoaderState extends State<ProfileDetailLoader> {
     return widget.builder(_profile!);
   }
 }
+
+DiscoverProfile _parseProfile(dynamic data) =>
+    DiscoverProfile.fromJson(data as Map<String, dynamic>);

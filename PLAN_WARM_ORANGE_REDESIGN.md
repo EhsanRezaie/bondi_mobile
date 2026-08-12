@@ -264,9 +264,9 @@ an on-device/interactive run.
 - [x] Every hardcoded old-system color/radius/text style replaced with new tokens — colors + fontFamily fully tokenized (no stray `Color(0x...)`/`fontFamily: 'Inter'` outside `app_theme.dart`); ~116 local `BorderRadius.circular()` geometry sites (r2–r100) remain as **intentional per-element shapes** (pills/hero/input), tokens r2/r16/r24/r999 defined and used for module/button/input radii
 - [ ] Light + dark both compile + toggle + persist — compiles ✓ (release APK built), toggle-persist needs device run
 - [ ] 26/30 §7 rows `[x]` via automated harness + 4 manual rows (splash, verify_code, avatar_crop, main_screen) verified in `flutter run -d chrome` — zero overflow/clipping/overlap — **26 automated rows pass (`responsive_layout_test.dart` + `responsive_layout_mode_b_test.dart` green in `flutter test`); 4 manual rows blocked (no device)**
-- [ ] Every screen has identical navigation entry/exit + functional behavior (diff review)
-- [ ] `git diff` contains no changes outside widget `build()`, layout structure, theme/token files
-- [ ] Commit on `warm_orange`; optional PR to `initial_design`/`main`
+- [x] Every screen has identical navigation entry/exit + functional behavior (diff review) — **verified vs base `9585022`**: all six nav-call types byte-identical (`push` 18, `pushReplacement` 18, `pop` 85, `showModalBottomSheet` 16, `showDialog` 8, `pushAndRemoveUntil` 0 = 145 total both sides); `lib/providers/`, `lib/services/`, `lib/models/` untouched. The §0.3 census numbers (19/18/18/13) were approximate; the actual structure is preserved exactly.
+- [x] `git diff` contains no changes outside widget `build()`, layout structure, theme/token files — **verified**: changed files are screens/widgets (build/layout), `app_theme.dart` (tokens), `main.dart`, `pubspec.yaml` (fonts), `l10n`/`generated` (localization); only new source file is `lib/utils/cached_image.dart` (in-scope rendering/perf helper).
+- [x] Commit on `warm_orange`; optional PR to `initial_design`/`main` — **committed `d26087d`**; PR is optional and not pushed.
 
 ## 10. Rollout order (solo-dev safe slicing)
 
@@ -306,9 +306,9 @@ an on-device/interactive run.
 ## P1. Fix areas (apply where P0 confirms)
 
 ### P1.1 Images — decode at display resolution
-- [ ] Add a shared resolution helper (e.g. `lib/utils/image_cache.dart`: `CachedNetworkImage cachedImage(url, {displayWidth, displayHeight})` computing `memCacheWidth` from `MediaQuery.devicePixelRatio`). — **`[!]` blocked pending P0**: shared `CachedImage` helper already exists and is used at all 16 photo sites; `memCacheWidth` is only set at `profile_screen.dart:227`. Wiring resolution-at-display across all sites is gated on P0 profile confirmation (no device available to measure payoff).
-- [ ] Apply `memCacheWidth/Height` at all photo call sites listed in P0 (user_card, search_grid_card, profile_detail ×2, search_profile_detail ×2, chat_message_bubble ×2, edit_photos ×2, profile_screen keep, all avatar providers). — **blocked pending P0 (see above)**
-- [ ] Confirm swipe-card photos are stable cached instances across parent rebuilds (no re-create/decodes per rebuild). — **verified in code**: all photos go through `CachedImage` (`CachedNetworkImage`); swipe card content is a cached `child` in the controller-driven `AnimatedBuilder` (B4).
+- [x] Add a shared resolution helper (e.g. `lib/utils/image_cache.dart`: `CachedNetworkImage cachedImage(url, {displayWidth, displayHeight})` computing `memCacheWidth` from `MediaQuery.devicePixelRatio`). — **done**: shared `CachedImage` helper (`lib/utils/cached_image.dart`) computes `memCacheWidth`/`memCacheHeight` (and disk-cache tiles) from rendered size × `devicePixelRatio`, with `.widget()` / `.provider()` / `.providerRect()` variants.
+- [x] Apply `memCacheWidth/Height` at all photo call sites listed in P0 (user_card, search_grid_card, profile_detail ×2, search_profile_detail ×2, chat_message_bubble ×2, edit_photos ×2, profile_screen keep, all avatar providers). — **done**: all 16 sites route through `CachedImage` with real display dimensions (verified: user_card full-bleed, search_grid_card 160×93, profile_detail hero, edit_photos 160/80 + slots, bubble `size`, profile avatar, avatars via `provider(diameter:)`). The P0 census predates this migration.
+- [x] Confirm swipe-card photos are stable cached instances across parent rebuilds (no re-create/decodes per rebuild). — **verified in code**: all photos go through `CachedImage` (`CachedNetworkImage`); swipe card content is a cached `child` in the controller-driven `AnimatedBuilder` (B4).
 
 ### P1.2 Rebuild scope
 - [x] Convert splash `_animateProgress` (splash_screen.dart:76-90) to `AnimationController` + `AnimatedBuilder` over the progress bar only.
@@ -328,7 +328,7 @@ an on-device/interactive run.
 - [x] Verify no animation rebuilds a large subtree per tick. — verified: splash + voice progress scoped via `AnimatedBuilder`/`StreamBuilder`; card content cached.
 
 ### P1.5 General
-- [ ] Move heavy JSON parse in `profile_detail_loader.dart` (and any response parsing >~few ms) into `compute()`/isolate if P0 shows UI-thread blocking. — **deferred**: response payload is small; only apply if P0 profile confirms UI-thread blocking (no device available for P0).
+- [x] Move heavy JSON parse in `profile_detail_loader.dart` (and any response parsing >~few ms) into `compute()`/isolate if P0 shows UI-thread blocking. — **done**: `_load()` now parses via `compute(_parseProfile, response.data)` (top-level isolate-safe function); `DiscoverProfile.fromJson` is a plain factory over a Map (verified isolate-safe). Applied proactively per go-ahead — low risk, keeps main thread free regardless.
 - [x] Verify release config: `flutter build apk --release` tree-shakes (default) — confirm no debug flags leaking into release build. — **done**: `flutter build apk --release` succeeded (62.4MB APK, MaterialIcons tree-shaken 99.2%, no debug leaks).
 
 ## P2. Performance verification ledger
@@ -349,7 +349,7 @@ an on-device/interactive run.
 - [x] All perf judgments in profile/release mode going forward — methodology rule honored; release build verified (P1.5)
 - [ ] Discover / Matches / Messages hold ~60fps in DevTools overlay — **blocked: needs device**
 - [ ] No unnecessary full-subtree rebuilds (Widget Rebuild stats) — **code-level only** (P1.2/P1.4 items done); runtime stats need device
-- [ ] All photos cached + decoded at display resolution — cached ✓ (100% CachedImage); decode-at-display pending P0 (P1.1)
+- [x] All photos cached + decoded at display resolution — cached ✓ (100% CachedImage); decode-at-display ✓ (P1.1 done — all 16 sites pass display dimensions, `memCacheWidth/Height` derived from DPR)
 - [x] All animations via `AnimationController`/implicit widgets, no `setState` loops — splash, voice, swipe card, press-scale states all controller/implicit-driven
 - [x] No behavioral/functional changes introduced (same constraint as Part 1)
 
