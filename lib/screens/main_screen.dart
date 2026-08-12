@@ -219,31 +219,38 @@ class _GradientNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: AppTheme.primaryGradient(),
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AppTheme.radiusModule),
-        ),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: List.generate(_labels.length, (i) {
-              final selected = i == currentIndex;
-              return _NavItem(
-                label: _labels[i],
-                icon: selected ? _activeIcons[i] : _icons[i],
-                selected: selected,
-                onTap: () => onTap(i),
-              );
-            }),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double horizMargin = constraints.maxWidth < 360 ? 8.0 : 16.0;
+        return SafeArea(
+          top: false,
+          minimum: const EdgeInsets.only(bottom: 12),
+          child: Container(
+            margin: EdgeInsets.symmetric(horizontal: horizMargin),
+            decoration: BoxDecoration(
+              gradient: AppTheme.primaryGradient(),
+              borderRadius: BorderRadius.all(
+                Radius.circular(AppTheme.radiusChip),
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: List.generate(_labels.length, (i) {
+                  final selected = i == currentIndex;
+                  return _NavItem(
+                    label: _labels[i],
+                    icon: selected ? _activeIcons[i] : _icons[i],
+                    selected: selected,
+                    onTap: () => onTap(i),
+                  );
+                }),
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -269,26 +276,26 @@ class _NavItem extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 1),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: selected ? active : inactive, size: 24),
-            const SizedBox(height: 2),
+            Icon(icon, color: selected ? active : inactive, size: 22),
+            const SizedBox(height: 1),
             Text(
               label,
               style: TextStyle(
                 fontFamily: AppTheme.fontFamily,
-                fontSize: 11,
+                fontSize: 10,
                 fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                 color: selected ? active : inactive,
               ),
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: 1),
             AnimatedContainer(
               duration: const Duration(milliseconds: 200),
-              width: 5,
-              height: 5,
+              width: 4,
+              height: 4,
               decoration: BoxDecoration(
                 color: selected ? active : Colors.transparent,
                 shape: BoxShape.circle,
