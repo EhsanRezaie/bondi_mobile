@@ -625,45 +625,68 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       ),
       child: SafeArea(
         bottom: false,
-        child: Align(
-          alignment: Alignment.topRight,
-          child: Padding(
-            padding: const EdgeInsets.only(top: 8, right: 8),
-            child: Stack(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.tune, color: Colors.white, size: 28),
-                  onPressed: () => _openDiscoverFilters(provider),
-                ),
-                if (activeFilters > 0)
-                  Positioned(
-                    right: 4,
-                    top: 4,
-                    child: Container(
-                      padding: const EdgeInsets.all(2),
-                      decoration: const BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                      ),
-                      constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-                      child: Center(
-                        child: Text(
-                          '$activeFilters',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
+        child: Padding(
+          padding: const EdgeInsets.only(top: 8, left: 8, right: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Stack(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.tune, color: Colors.white, size: 28),
+                    onPressed: () => _openDiscoverFilters(provider),
+                  ),
+                  if (activeFilters > 0)
+                    Positioned(
+                      right: 4,
+                      top: 4,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
+                        child: Center(
+                          child: Text(
+                            '$activeFilters',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-              ],
-            ),
+                ],
+              ),
+              IconButton(
+                icon: Icon(
+                  Icons.undo,
+                  color: provider.canRevert
+                      ? Colors.white
+                      : Colors.white.withValues(alpha: 0.35),
+                  size: 28,
+                ),
+                tooltip: t.discover_revert_pass,
+                onPressed: provider.canRevert
+                    ? () => _onRevertPass(provider)
+                    : null,
+              ),
+            ],
           ),
         ),
       ),
     );
+  }
+
+  void _onRevertPass(DiscoverProvider provider) {
+    provider.revertPass();
   }
 
 void _openDiscoverFilters(DiscoverProvider provider) {

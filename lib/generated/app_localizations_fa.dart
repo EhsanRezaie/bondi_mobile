@@ -448,6 +448,9 @@ class AppLocalizationsFa extends AppLocalizations {
   String get discover_premium => 'پریمیوم';
 
   @override
+  String get discover_revert_pass => 'بازگشت آخرین رد کردن';
+
+  @override
   String get profile_section_about => 'درباره';
 
   @override

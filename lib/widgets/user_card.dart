@@ -488,7 +488,7 @@ class UserCardState extends State<UserCard>
         Positioned(
           left: 16,
           right: 16,
-          bottom: 80,
+          bottom: AppLayout.discoverCardTextBottom,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,

@@ -146,6 +146,7 @@
   "discover_km_away": "{distance} km away",
   "discover_tap_for_more": "Tap for more",
   "discover_premium": "Premium",
+  "discover_revert_pass": "Revert last pass",
 
   "profile_section_about": "About",
   "profile_section_physical": "Physical",

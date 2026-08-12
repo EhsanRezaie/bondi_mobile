@@ -920,6 +920,12 @@ abstract class AppLocalizations {
   /// **'Premium'**
   String get discover_premium;
 
+  /// No description provided for @discover_revert_pass.
+  ///
+  /// In en, this message translates to:
+  /// **'Revert last pass'**
+  String get discover_revert_pass;
+
   /// No description provided for @profile_section_about.
   ///
   /// In en, this message translates to:

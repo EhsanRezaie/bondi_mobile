@@ -49,7 +49,15 @@ class DiscoverProvider extends ChangeNotifier {
   static const _keyAgeMax = 'discover_age_max';
   static const _keyDistance = 'discover_distance_km';
 
+  /// Number of profiles fetched per request. Also caps how many passed cards
+  /// can be reverted (the revert stack matches the page size).
+  static const int pageSize = 20;
+
+  final List<DiscoverProfile> _passed = [];
+
   List<DiscoverProfile> get profiles => _profiles;
+  List<DiscoverProfile> get passedProfiles => List.unmodifiable(_passed);
+  bool get canRevert => _passed.isNotEmpty;
   bool get isLoading => _isLoading;
   bool get isLoadingMore => _isLoadingMore;
   String? get errorMessage => _errorMessage;
@@ -130,7 +138,7 @@ class DiscoverProvider extends ChangeNotifier {
         ageMin: _ageMin,
         ageMax: _ageMax,
         distanceKm: _distanceKm,
-        limit: 20,
+        limit: pageSize,
         offset: 0,
       );
 
@@ -170,7 +178,7 @@ class DiscoverProvider extends ChangeNotifier {
         ageMin: _ageMin,
         ageMax: _ageMax,
         distanceKm: _distanceKm,
-        limit: 20,
+        limit: pageSize,
         offset: _offset,
       );
 
@@ -207,6 +215,15 @@ class DiscoverProvider extends ChangeNotifier {
         }
         return {};
       }
+      // A reverted (previously passed) card was liked. The backend still had
+      // the pass recorded; treat the like as accepted and advance the deck.
+      if (response.statusCode == 400) {
+        _profiles.removeWhere((p) => p.id == profile.id);
+        _passed.removeWhere((p) => p.id == profile.id);
+        _safeNotify();
+        _refillIfLow();
+        return {};
+      }
     } catch (_) {}
     return null;
   }
@@ -214,12 +231,30 @@ class DiscoverProvider extends ChangeNotifier {
   Future<void> swipeLeft(DiscoverProfile profile) async {
     try {
       final response = await DiscoverService.swipeUser(profile.id, 'pass');
-      if (response.statusCode == 200) {
+      // 200 = fresh pass; 400 = the card was already passed (e.g. reverted and
+      // re-passed). Either way the pass stands, so remove it and keep it in the
+      // revert stack so the user can undo again.
+      if (response.statusCode == 200 || response.statusCode == 400) {
         _profiles.removeWhere((p) => p.id == profile.id);
+        if (!_passed.any((p) => p.id == profile.id)) {
+          _passed.insert(0, profile);
+          if (_passed.length > pageSize) {
+            _passed.removeRange(pageSize, _passed.length);
+          }
+        }
         _refillIfLow();
         _safeNotify();
       }
     } catch (_) {}
+  }
+
+  /// Pops the most recently passed card back onto the top of the deck.
+  /// Local-only: the backend keeps the original pass until re-swiped.
+  void revertPass() {
+    if (_passed.isEmpty) return;
+    final profile = _passed.removeAt(0);
+    _profiles.insert(0, profile);
+    _safeNotify();
   }
 
   /// Pure chat start — no like is recorded. Creates or reuses the chat for the

@@ -446,6 +446,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get discover_premium => 'Premium';
 
   @override
+  String get discover_revert_pass => 'Revert last pass';
+
+  @override
   String get profile_section_about => 'About';
 
   @override

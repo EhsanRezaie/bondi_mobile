@@ -63,6 +63,12 @@ class AppLayout {
   /// top of the floating pill nav bar instead of floating high above it.
   static const double discoverActionRowBottom = 64;
 
+  /// Bottom offset (in logical px) for the Discover card text block (tap hint,
+  /// name/age, distance, location) so it always sits ABOVE the floating action
+  /// buttons: action row bottom (64) + row height (~94: 12 pad + 62 button +
+  /// 20 pad) + a small gap.
+  static const double discoverCardTextBottom = 170;
+
   /// A comfortable max width for single-column forms/lists. Below 600dp the
   /// full device width is used so phones are not affected.
   static double contentWidth(BuildContext context) {
