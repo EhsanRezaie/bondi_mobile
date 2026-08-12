@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:dating_app/config/app_theme.dart';
-import 'package:dating_app/utils/formatters.dart';
 import 'package:dating_app/generated/app_localizations.dart';
 import 'package:dating_app/models/discover_profile.dart';
 import 'package:dating_app/providers/discover_provider.dart';
@@ -12,7 +11,6 @@ import 'package:dating_app/widgets/discover_action_button.dart';
 import 'package:dating_app/screens/discover/profile_detail_screen.dart';
 import 'package:dating_app/screens/shared/profile_detail_loader.dart';
 import 'package:dating_app/screens/chats/chat_detail_screen.dart';
-import 'package:dating_app/screens/chats/notifications_screen.dart';
 import 'package:dating_app/widgets/action_toast.dart';
 
 class DiscoverScreen extends StatefulWidget {
@@ -39,7 +37,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     _loadInterestIcons();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = Provider.of<DiscoverProvider>(context, listen: false);
-      if (provider.profiles.isEmpty && !provider.isLoading) {
+      if (provider.profiles.isEmpty) {
         provider.loadProfiles();
       }
     });
@@ -575,8 +573,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           }
 
           // Mode A: photo flush to the screen edges. A top scrim hosts the
-          // Stories-style progress strip, wordmark + notifications, and the
-          // filter pills; the floating circular actions hover the bottom scrim.
+          // tune filter icon; the floating circular actions hover the bottom.
           return _buildFullBleedDeck(provider, t, isDark);
         },
       ),
@@ -602,7 +599,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           Positioned(
             left: 0,
             right: 0,
-            bottom: 0,
+            bottom: AppLayout.discoverActionRowBottom,
             child: _buildActionButtons(provider, t, isDark),
           ),
       ],
@@ -614,9 +611,9 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     AppLocalizations t,
     bool isDark,
   ) {
-    final isPersian = !Localizations.localeOf(
-      context,
-    ).languageCode.contains('en');
+    final activeFilters = (provider.genderFilter != null ? 1 : 0) +
+        (provider.ageMax != null ? 1 : 0) +
+        (provider.distanceKm != null ? 1 : 0);
     return Container(
       decoration: BoxDecoration(
         gradient: LinearGradient(
@@ -628,72 +625,53 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       ),
       child: SafeArea(
         bottom: false,
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildProgressStrip(provider),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      t.discover_title,
-                      style: (isPersian ? AppTheme.h1Fa : AppTheme.h1).copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w800,
+        child: Align(
+          alignment: Alignment.topRight,
+          child: Padding(
+            padding: const EdgeInsets.only(top: 8, right: 8),
+            child: Stack(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.tune, color: Colors.white, size: 28),
+                  onPressed: () => _openDiscoverFilters(provider),
+                ),
+                if (activeFilters > 0)
+                  Positioned(
+                    right: 4,
+                    top: 4,
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: const BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                      ),
+                      constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
+                      child: Center(
+                        child: Text(
+                          '$activeFilters',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                  IconButton(
-                    icon: const Icon(
-                      Icons.notifications_outlined,
-                      color: Colors.white,
-                    ),
-                    onPressed: _openNotifications,
-                  ),
-                ],
-              ),
+              ],
             ),
-            _buildFilterBar(provider, t, isDark),
-          ],
+          ),
         ),
       ),
     );
   }
 
-  /// Stories-style progress strip on the top edge — one segment per queued
-  /// profile, first segment highlighted (the currently shown card).
-  Widget _buildProgressStrip(DiscoverProvider provider) {
-    final segments = provider.profiles.length.clamp(1, 6);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 10, 12, 6),
-      child: Row(
-        children: List.generate(segments, (i) {
-          final isActive = i == 0;
-          return Expanded(
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              height: 3,
-              margin: const EdgeInsets.symmetric(horizontal: 2),
-              decoration: BoxDecoration(
-                color: isActive
-                    ? Colors.white
-                    : Colors.white.withValues(alpha: 0.4),
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-          );
-        }),
-      ),
-    );
-  }
-
-  void _openNotifications() {
-    Navigator.push(
-      context,
-      MaterialPageRoute<void>(builder: (_) => const NotificationsScreen()),
+void _openDiscoverFilters(DiscoverProvider provider) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _DiscoverFilterSheet(provider: provider),
     );
   }
 
@@ -880,313 +858,6 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     );
   }
 
-  Widget _buildFilterBar(
-    DiscoverProvider provider,
-    AppLocalizations t,
-    bool isDark,
-  ) {
-    final isPersian = !Localizations.localeOf(
-      context,
-    ).languageCode.contains('en');
-    final font = AppTheme.fontFor(isPersian);
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        child: Row(
-          children: [
-            _buildFilterChip(
-              icon: Icons.wc,
-              label: provider.genderFilter != null
-                  ? provider.genderFilter == 'male'
-                        ? t.discover_filter_male
-                        : t.discover_filter_female
-                  : t.discover_filter_all,
-              onTap: () => _showGenderPicker(provider),
-              font: font,
-            ),
-            const SizedBox(width: 8),
-            _buildFilterChip(
-              icon: Icons.cake_outlined,
-              label: provider.ageMax == null
-                  ? '${provider.ageMin}-100+'
-                  : '${provider.ageMin}-${provider.ageMax}',
-              onTap: () => _showAgePicker(provider),
-              font: font,
-            ),
-            const SizedBox(width: 8),
-            _buildFilterChip(
-              icon: Icons.near_me,
-              label: formatDistanceKm(provider.distanceKm?.toDouble()),
-              onTap: () => _showDistancePicker(provider),
-              font: font,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFilterChip({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-    required String font,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: Colors.black.withValues(alpha: 0.35),
-          borderRadius: BorderRadius.circular(AppTheme.radiusChip),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 16, color: Colors.white),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontFamily: font,
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(width: 4),
-            Icon(
-              Icons.arrow_drop_down,
-              size: 18,
-              color: Colors.white.withValues(alpha: 0.7),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showGenderPicker(DiscoverProvider provider) {
-    final t = AppLocalizations.of(context)!;
-    final isDark = context.isDarkMode;
-    final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) {
-        return Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                t.discover_filter_show,
-                style: TextStyle(
-                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: isDark ? AppTheme.darkText : AppTheme.lightText,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: ['all', 'male', 'female'].map((g) {
-                  final selected =
-                      (g == 'all' && provider.genderFilter == null) ||
-                      provider.genderFilter == g;
-                  return ChoiceChip(
-                    label: Text(
-                      g == 'all'
-                          ? t.discover_filter_all
-                          : g == 'male'
-                          ? t.discover_filter_male
-                          : t.discover_filter_female,
-                      style: TextStyle(
-                        fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
-                        fontWeight: FontWeight.w500,
-                        color: selected ? Colors.white : null,
-                      ),
-                    ),
-                    selected: selected,
-                    selectedColor: primaryColor,
-                    onSelected: (_) {
-                      Navigator.pop(ctx);
-                      provider.setGenderFilter(g == 'all' ? null : g);
-                    },
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 16),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  void _showAgePicker(DiscoverProvider provider) {
-    final t = AppLocalizations.of(context)!;
-    final isDark = context.isDarkMode;
-    final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
-    double min = provider.ageMin.toDouble().clamp(18.0, 100.0);
-    double max = (provider.ageMax ?? 100).toDouble().clamp(18.0, 100.0);
-
-    String ageLabel(double value) {
-      if (value >= 100) return '100+';
-      return '${value.round()}';
-    }
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (ctx, setSheetState) {
-            return Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    t.discover_filter_age_range,
-                    style: TextStyle(
-                      fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: isDark ? AppTheme.darkText : AppTheme.lightText,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${ageLabel(min)} - ${ageLabel(max)} years',
-                    style: TextStyle(
-                      fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
-                      fontSize: 14,
-                      color: isDark
-                          ? AppTheme.darkTextMuted
-                          : AppTheme.lightTextMuted,
-                    ),
-                  ),
-                  RangeSlider(
-                    values: RangeValues(min, max),
-                    min: 18,
-                    max: 100,
-                    divisions: 82,
-                    activeColor: primaryColor,
-                    labels: RangeLabels(ageLabel(min), ageLabel(max)),
-                    onChanged: (values) {
-                      setSheetState(() {
-                        min = values.start;
-                        max = values.end;
-                      });
-                    },
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(ctx);
-                        final apiMax = max >= 100 ? null : max.round();
-                        provider.setAgeRange(min.round(), apiMax);
-                      },
-                      child: Text(t.discover_filter_apply),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  void _showDistancePicker(DiscoverProvider provider) {
-    final t = AppLocalizations.of(context)!;
-    final isDark = context.isDarkMode;
-    final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
-    double distance = (provider.distanceKm ?? 500).toDouble().clamp(1.0, 500.0);
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (ctx, setSheetState) {
-            return Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    t.discover_filter_max_distance,
-                    style: TextStyle(
-                      fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: isDark ? AppTheme.darkText : AppTheme.lightText,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    formatDistanceKm(distance),
-                    style: TextStyle(
-                      fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
-                      fontSize: 14,
-                      color: isDark
-                          ? AppTheme.darkTextMuted
-                          : AppTheme.lightTextMuted,
-                    ),
-                  ),
-                  Slider(
-                    value: distance,
-                    min: 1,
-                    max: 500,
-                    divisions: 499,
-                    activeColor: primaryColor,
-                    label: formatDistanceKm(distance),
-                    onChanged: (v) => setSheetState(() => distance = v),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(ctx);
-                        final apiDistance = distance >= 500
-                            ? null
-                            : distance.round();
-                        provider.setDistance(apiDistance);
-                      },
-                      child: Text(t.discover_filter_apply),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
   Widget _buildCardStack(DiscoverProvider provider, bool isDark) {
     final profile = provider.visibleProfiles.isNotEmpty
         ? provider.visibleProfiles.first
@@ -1268,6 +939,215 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _DiscoverFilterSheet extends StatefulWidget {
+  final DiscoverProvider provider;
+
+  const _DiscoverFilterSheet({required this.provider});
+
+  @override
+  State<_DiscoverFilterSheet> createState() => _DiscoverFilterSheetState();
+}
+
+class _DiscoverFilterSheetState extends State<_DiscoverFilterSheet> {
+  late String? _gender;
+  late int _ageMin;
+  late int? _ageMax;
+  late double _distance;
+
+  @override
+  void initState() {
+    super.initState();
+    _gender = widget.provider.genderFilter;
+    _ageMin = widget.provider.ageMin;
+    _ageMax = widget.provider.ageMax;
+    _distance = (widget.provider.distanceKm ?? 500).toDouble().clamp(1.0, 500.0);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+    final isDark = context.isDarkMode;
+    final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
+    final isPersian = !Localizations.localeOf(context).languageCode.contains('en');
+    final font = AppTheme.fontFor(isPersian);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkSurface : Colors.white,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  t.discover_filter_show,
+                  style: TextStyle(
+                    fontFamily: font,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? AppTheme.darkText : AppTheme.lightText,
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.pop(context),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _buildGenderChoice('all', t.discover_filter_all, isDark, primaryColor, font),
+                _buildGenderChoice('male', t.discover_filter_male, isDark, primaryColor, font),
+                _buildGenderChoice('female', t.discover_filter_female, isDark, primaryColor, font),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
+            child: Text(
+              t.discover_filter_age_range,
+              style: TextStyle(
+                fontFamily: font,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                color: isDark ? AppTheme.darkText : AppTheme.lightText,
+              ),
+            ),
+          ),
+          RangeSlider(
+            values: RangeValues(_ageMin.toDouble(), (_ageMax ?? 100).toDouble()),
+            min: 18,
+            max: 100,
+            divisions: 82,
+            activeColor: primaryColor,
+            labels: RangeLabels('$_ageMin', '${_ageMax ?? 100}'),
+            onChanged: (values) {
+              setState(() {
+                _ageMin = values.start.round();
+                _ageMax = values.end.round();
+              });
+            },
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+            child: Text(
+              t.discover_filter_years(_ageMax ?? 100, _ageMin),
+              style: TextStyle(
+                fontFamily: font,
+                fontSize: 14,
+                color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  t.discover_filter_max_distance,
+                  style: TextStyle(
+                    fontFamily: font,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                    color: isDark ? AppTheme.darkText : AppTheme.lightText,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  t.discover_filter_km(_distance.round()),
+                  style: TextStyle(
+                    fontFamily: font,
+                    fontSize: 14,
+                    color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
+                  ),
+                ),
+                Slider(
+                  value: _distance,
+                  min: 1,
+                  max: 500,
+                  divisions: 499,
+                  activeColor: primaryColor,
+                  label: t.discover_filter_km(_distance.round()),
+                  onChanged: (v) => setState(() => _distance = v),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+            child: Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () {
+                      widget.provider.resetFilters();
+                      Navigator.pop(context);
+                    },
+                    child: Text(t.search_reset_filters),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      final apiMax = _ageMax != null && _ageMax! < 100 ? _ageMax : null;
+                      final apiDistance = _distance >= 500 ? null : _distance.round();
+                      widget.provider.setGenderFilter(_gender);
+                      widget.provider.setAgeRange(_ageMin, apiMax);
+                      widget.provider.setDistance(apiDistance);
+                      Navigator.pop(context);
+                    },
+                    child: Text(t.discover_filter_apply),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGenderChoice(
+    String value,
+    String label,
+    bool isDark,
+    Color primaryColor,
+    String font,
+  ) {
+    final selected = _gender == value || (value == 'all' && _gender == null);
+    return ChoiceChip(
+      label: Text(
+        label,
+        style: TextStyle(
+          fontFamily: font,
+          fontWeight: FontWeight.w500,
+          color: selected ? Colors.white : (isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted),
+        ),
+      ),
+      selected: selected,
+      selectedColor: primaryColor,
+      backgroundColor: isDark ? Colors.black.withValues(alpha: 0.35) : Colors.grey.shade100,
+      onSelected: (_) {
+        setState(() {
+          _gender = value == 'all' ? null : value;
+        });
+      },
     );
   }
 }

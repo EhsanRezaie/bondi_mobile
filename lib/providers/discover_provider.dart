@@ -26,7 +26,7 @@ class DiscoverProvider extends ChangeNotifier {
   }
 
   List<DiscoverProfile> _profiles = [];
-  bool _isLoading = false;
+  bool _isLoading = true;
   bool _isLoadingMore = false;
   String? _errorMessage;
   int _total = 0;
@@ -311,5 +311,14 @@ class DiscoverProvider extends ChangeNotifier {
   void clearError() {
     _errorMessage = null;
     _safeNotify();
+  }
+
+  void resetFilters() {
+    _genderFilter = null;
+    _ageMin = 18;
+    _ageMax = null;
+    _distanceKm = null;
+    _saveFilters();
+    loadProfiles();
   }
 }

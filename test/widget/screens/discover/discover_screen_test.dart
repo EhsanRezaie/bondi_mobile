@@ -61,7 +61,7 @@ void main() {
       );
 
       expect(find.byType(Scaffold), findsOneWidget);
-      expect(find.byIcon(Icons.wc), findsOneWidget);
+      expect(find.byIcon(Icons.tune), findsOneWidget);
     });
 
     testWidgets('shows empty state when feed is empty', (tester) async {

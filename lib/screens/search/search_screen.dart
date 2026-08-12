@@ -5,6 +5,7 @@ import 'package:dating_app/generated/app_localizations.dart';
 import 'package:dating_app/models/discover_profile.dart';
 import 'package:dating_app/providers/search_provider.dart';
 import 'package:dating_app/services/onboarding_service.dart';
+import 'package:dating_app/utils/responsive.dart';
 import 'package:dating_app/widgets/search_grid_card.dart';
 import 'package:dating_app/widgets/shimmer_avatar.dart';
 import 'package:dating_app/screens/shared/profile_detail_loader.dart';
@@ -439,7 +440,12 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
     final itemCount = provider.users.length + (provider.hasMore ? 1 : 0);
     return GridView.builder(
       controller: _scrollController,
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+      padding: EdgeInsets.fromLTRB(
+        8,
+        8,
+        8,
+        AppLayout.floatingNavClearance,
+      ),
       gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
         // Auto-switches column count with width (3 on phones -> more on
         // tablets) while keeping cards a usable size.

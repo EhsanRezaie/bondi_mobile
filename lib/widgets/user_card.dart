@@ -449,65 +449,70 @@ class UserCardState extends State<UserCard>
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (profile.isPremium)
-                Container(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: AppLayout.s(context, 10),
-                    vertical: AppLayout.s(context, 4),
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: AppTheme.likeGradient(isDark: isDark),
-                    borderRadius: BorderRadius.circular(
-                      AppLayout.s(context, 12),
+                if (profile.isPremium)
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: AppLayout.s(context, 10),
+                      vertical: AppLayout.s(context, 4),
                     ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.workspace_premium,
-                        size: AppLayout.s(context, 12),
-                        color: Colors.white,
+                    decoration: BoxDecoration(
+                      gradient: AppTheme.likeGradient(isDark: isDark),
+                      borderRadius: BorderRadius.circular(
+                        AppLayout.s(context, 12),
                       ),
-                      SizedBox(width: AppLayout.s(context, 3)),
-                      Text(
-                        'Premium',
-                        style: TextStyle(
-                          fontFamily: font,
-                          fontSize: AppLayout.s(context, 10),
-                          fontWeight: FontWeight.w700,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.workspace_premium,
+                          size: AppLayout.s(context, 12),
                           color: Colors.white,
                         ),
-                      ),
-                    ],
+                        SizedBox(width: AppLayout.s(context, 3)),
+                        Text(
+                          'Premium',
+                          style: TextStyle(
+                            fontFamily: font,
+                            fontSize: AppLayout.s(context, 10),
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              if (profile.isVerified) ...[
-                SizedBox(width: AppLayout.s(context, 6)),
-                Container(
-                  padding: EdgeInsets.all(AppLayout.s(context, 5)),
-                  decoration: BoxDecoration(
-                    gradient: AppTheme.primaryGradient(),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.verified,
-                    size: AppLayout.s(context, 14),
-                    color: Colors.white,
-                  ),
-                ),
-              ],
             ],
           ),
         ),
         Positioned(
           left: 16,
           right: 16,
-          bottom: 96,
+          bottom: 80,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.touch_app,
+                    size: 14,
+                    color: Colors.white54,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    'Tap for more',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white54,
+                      fontFamily: font,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.baseline,
                 textBaseline: TextBaseline.alphabetic,
@@ -565,9 +570,27 @@ class UserCardState extends State<UserCard>
                         color: Colors.white.withValues(alpha: 0.85),
                       ),
                     ),
+                    if (profile.isVerified) ...[
+                      const SizedBox(width: 6),
+                      Icon(
+                        Icons.verified,
+                        size: AppLayout.s(context, 14),
+                        color: Colors.white,
+                      ),
+                    ],
                   ],
                 ),
               const SizedBox(height: 4),
+              if (profile.isVerified && profile.distanceKm == null)
+                Row(
+                  children: [
+                    Icon(
+                      Icons.verified,
+                      size: AppLayout.s(context, 14),
+                      color: Colors.white,
+                    ),
+                  ],
+                ),
               if (profile.locationDisplay.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 4),
@@ -613,36 +636,6 @@ class UserCardState extends State<UserCard>
                     shape: BoxShape.circle,
                   ),
                 ),
-              if (profile.isOnline) SizedBox(width: AppLayout.s(context, 6)),
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: AppLayout.s(context, 8),
-                  vertical: AppLayout.s(context, 4),
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.black.withValues(alpha: 0.4),
-                  borderRadius: BorderRadius.circular(AppLayout.s(context, 10)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.touch_app,
-                      size: AppLayout.s(context, 12),
-                      color: Colors.white70,
-                    ),
-                    SizedBox(width: AppLayout.s(context, 4)),
-                    Text(
-                      'Tap for more',
-                      style: TextStyle(
-                        fontSize: AppLayout.s(context, 10),
-                        color: Colors.white70,
-                        fontFamily: font,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
             ],
           ),
         ),

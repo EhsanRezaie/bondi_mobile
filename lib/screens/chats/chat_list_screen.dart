@@ -90,7 +90,12 @@ class ChatListScreen extends StatelessWidget {
         },
         child: ListView.builder(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          padding: EdgeInsets.fromLTRB(
+            12,
+            12,
+            12,
+            AppLayout.floatingNavClearance,
+          ),
           itemCount: chats.length + (hasMore ? 1 : 0),
           itemBuilder: (context, index) {
             if (index == chats.length) {

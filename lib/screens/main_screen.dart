@@ -168,6 +168,7 @@ class _MainScreenState extends State<MainScreen> {
 
     return Scaffold(
       backgroundColor: bgColor,
+      extendBody: true,
       body: IndexedStack(
         index: _currentIndex,
         children: _screens,

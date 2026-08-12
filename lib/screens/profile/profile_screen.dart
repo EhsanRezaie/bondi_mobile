@@ -114,7 +114,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             onRefresh: _onRefresh,
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              padding: EdgeInsets.fromLTRB(
+                24.0,
+                0,
+                24.0,
+                AppLayout.floatingNavClearance,
+              ),
               child: Column(
                 children: [
                   const SizedBox(height: 20),

@@ -55,6 +55,14 @@ class AppLayout {
     return MediaQuery.sizeOf(context).width >= Breakpoints.largeTablet;
   }
 
+  /// Vertical clearance (in logical px) that content needs at the bottom of the
+  /// main tab screens so the floating pill nav bar never covers it.
+  static const double floatingNavClearance = 100;
+
+  /// Bottom offset (in logical px) for the Discover action row so it hugs the
+  /// top of the floating pill nav bar instead of floating high above it.
+  static const double discoverActionRowBottom = 64;
+
   /// A comfortable max width for single-column forms/lists. Below 600dp the
   /// full device width is used so phones are not affected.
   static double contentWidth(BuildContext context) {

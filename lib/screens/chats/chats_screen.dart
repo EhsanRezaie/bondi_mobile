@@ -6,6 +6,7 @@ import 'package:dating_app/providers/chat_provider.dart';
 import 'package:dating_app/screens/auth/sign_up_screen.dart';
 import 'package:dating_app/screens/chats/chat_list_screen.dart';
 import 'package:dating_app/screens/chats/chat_detail_screen.dart';
+import 'package:dating_app/screens/chats/notifications_screen.dart';
 import 'package:dating_app/models/chat_card.dart';
 import 'package:dating_app/generated/app_localizations.dart';
 
@@ -110,6 +111,20 @@ class _ChatsScreenState extends State<ChatsScreen>
             color: textColor,
           ),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.notifications_none),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const NotificationsScreen(),
+                ),
+              );
+            },
+          ),
+          const SizedBox(width: 8),
+        ],
       ),
       body: Column(
         children: [
