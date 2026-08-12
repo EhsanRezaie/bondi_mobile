@@ -140,6 +140,7 @@ class _EditInterestsScreenState extends State<EditInterestsScreen> {
           _errorMessage = authProvider.errorMessage ?? 'Failed to update interests';
           _isSaving = false;
         });
+        showActionToast(context, t.error_something_wrong, isError: true);
       }
     } catch (e) {
       if (!mounted) return;
@@ -147,6 +148,7 @@ class _EditInterestsScreenState extends State<EditInterestsScreen> {
         _errorMessage = 'An error occurred. Please try again.';
         _isSaving = false;
       });
+      showActionToast(context, t.error_something_wrong, isError: true);
     }
   }
 

@@ -205,6 +205,7 @@ class _EditPromptsScreenState extends State<EditPromptsScreen> {
               authProvider.errorMessage ?? 'Failed to update prompts';
           _isSaving = false;
         });
+        showActionToast(context, t.error_something_wrong, isError: true);
       }
     } catch (e) {
       if (!mounted) return;
@@ -212,6 +213,7 @@ class _EditPromptsScreenState extends State<EditPromptsScreen> {
         _errorMessage = 'An error occurred. Please try again.';
         _isSaving = false;
       });
+      showActionToast(context, t.error_something_wrong, isError: true);
     }
   }
 

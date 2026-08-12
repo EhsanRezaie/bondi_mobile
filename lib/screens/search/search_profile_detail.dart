@@ -83,47 +83,49 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
     final photos = allPhotos;
 
     return Scaffold(
+      extendBody: true,
       backgroundColor: bgColor,
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            Expanded(
-              child: AppLayout.box(
-                context: context,
-                child: CustomScrollView(
-                  slivers: [
-                    SliverToBoxAdapter(
-                      child: _buildHeaderSection(
-                        t,
-                        isDark,
-                        primaryColor,
-                        mutedColor,
-                        textColor,
-                        surfaceColor,
-                        borderColor,
-                        photos,
-                      ),
-                    ),
-                    SliverToBoxAdapter(
-                      child: _buildBodySection(
-                        t,
-                        isDark,
-                        primaryColor,
-                        mutedColor,
-                        textColor,
-                        surfaceColor,
-                        borderColor,
-                      ),
-                    ),
-                    SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: SizedBox(height: 80),
-                    ),
-                  ],
+            CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
+                  child: _buildHeaderSection(
+                    t,
+                    isDark,
+                    primaryColor,
+                    mutedColor,
+                    textColor,
+                    surfaceColor,
+                    borderColor,
+                    photos,
+                  ),
                 ),
-              ),
+                SliverToBoxAdapter(
+                  child: _buildBodySection(
+                    t,
+                    isDark,
+                    primaryColor,
+                    mutedColor,
+                    textColor,
+                    surfaceColor,
+                    borderColor,
+                  ),
+                ),
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: SizedBox(height: 120),
+                ),
+              ],
             ),
-            if (!widget.viewOnly) _buildBottomActionBar(t, isDark),
+            if (!widget.viewOnly)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: _buildBottomActionBar(t, isDark),
+              ),
           ],
         ),
       ),
@@ -916,19 +918,32 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
         profile.currentUserAction == 'like' ||
         profile.currentUserAction == 'matched';
 
+    final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
+    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
+
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? AppTheme.darkSurface : Colors.white,
+        color: surfaceColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 12,
+            offset: const Offset(0, -4),
+          ),
+        ],
         border: Border(
           top: BorderSide(
-            color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder,
+            color: borderColor,
             width: 0.5,
           ),
         ),
       ),
       padding: EdgeInsets.only(
-        top: 10,
-        bottom: MediaQuery.of(context).padding.bottom > 0 ? 10 : 10,
+        top: 12,
+        bottom: MediaQuery.of(context).padding.bottom > 0
+            ? MediaQuery.of(context).padding.bottom + 8
+            : 20,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -938,7 +953,7 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
             backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
             iconColor: isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary,
             borderColor: isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary,
-            size: 58,
+            size: 64,
             badgeCount: widget.isPremium ? null : widget.chatsRemaining,
             onPressed: isChatBlocked ? null : () => _handleChat(),
           ),
@@ -947,7 +962,7 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
             DiscoverActionButton(
               icon: Icons.favorite_rounded,
               gradient: AppTheme.likeGradient(isDark: isDark),
-              size: 58,
+              size: 64,
               badgeCount: widget.isPremium ? null : widget.likesRemaining,
               onPressed: isLikeBlocked ? null : () => _handleLike(),
             ),
@@ -1045,7 +1060,7 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
     if (reported != true || !mounted) return;
     final ok = await provider.reportUser(profile.id, controller.text.trim());
     if (!mounted) return;
-    showActionToast(context, ok ? 'Reported' : t.error_something_wrong);
+    showActionToast(context, ok ? 'Reported' : t.error_something_wrong, isError: !ok);
   }
 
   Future<void> _confirmBlock() async {
@@ -1077,7 +1092,7 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
     if (confirm != true || !mounted) return;
     final ok = await provider.blockUser(profile.id);
     if (!mounted) return;
-    showActionToast(context, ok ? 'Blocked' : t.error_something_wrong);
+    showActionToast(context, ok ? 'Blocked' : t.error_something_wrong, isError: !ok);
   }
 
   Future<void> _handleLike() async {
@@ -1100,7 +1115,7 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
       }
     } else if (mounted) {
       final t = AppLocalizations.of(context)!;
-      showActionToast(context, t.error_something_wrong);
+      showActionToast(context, t.error_something_wrong, isError: true);
     }
   }
 
@@ -1132,11 +1147,11 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
           );
         } else {
           final t = AppLocalizations.of(context)!;
-          showActionToast(context, t.error_something_wrong);
+          showActionToast(context, t.error_something_wrong, isError: true);
         }
       } else if (mounted) {
         final t = AppLocalizations.of(context)!;
-        showActionToast(context, t.error_something_wrong);
+        showActionToast(context, t.error_something_wrong, isError: true);
       }
     }
   }

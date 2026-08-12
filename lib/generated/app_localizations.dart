@@ -1568,6 +1568,12 @@ abstract class AppLocalizations {
   /// **'Edit message'**
   String get chat_edit_message;
 
+  /// No description provided for @chat_message_reported.
+  ///
+  /// In en, this message translates to:
+  /// **'Message reported'**
+  String get chat_message_reported;
+
   /// No description provided for @chat_limit_reached.
   ///
   /// In en, this message translates to:

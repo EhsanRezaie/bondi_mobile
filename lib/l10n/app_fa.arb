@@ -297,6 +297,7 @@
   "chat_delete_for_me": "حذف برای من",
   "chat_delete_for_everyone": "حذف برای همه",
   "chat_edit_message": "ویرایش پیام",
+  "chat_message_reported": "پیام گزارش شد",
   "chat_limit_reached": "محدودیت چت روزانه",
   "chat_limit_explanation": "همه چت\u200cهای امروز تمام شد. فردا برگردید!",
   "chat_unmatched": "شروع مکالمه",

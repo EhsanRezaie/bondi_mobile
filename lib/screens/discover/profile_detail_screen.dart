@@ -191,58 +191,59 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
     final photos = allPhotos;
 
     return Scaffold(
+      extendBody: true,
       backgroundColor: bgColor,
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            Expanded(
-              child: AppLayout.box(
-                context: context,
-                child: CustomScrollView(
-                  slivers: [
-                    SliverToBoxAdapter(
-                      child: AnimatedBuilder(
-                        animation: _dismissController,
-                        builder: (context, child) {
-                          return Transform.translate(
-                            offset:
-                                _dismissAnimation.value *
-                                MediaQuery.of(context).size.width,
-                            child: child,
-                          );
-                        },
-                        child: _buildHeaderSection(
-                          t,
-                          isDark,
-                          primaryColor,
-                          mutedColor,
-                          textColor,
-                          surfaceColor,
-                          borderColor,
-                          photos,
-                        ),
-                      ),
+            CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
+                  child: AnimatedBuilder(
+                    animation: _dismissController,
+                    builder: (context, child) {
+                      return Transform.translate(
+                        offset:
+                            _dismissAnimation.value *
+                            MediaQuery.of(context).size.width,
+                        child: child,
+                      );
+                    },
+                    child: _buildHeaderSection(
+                      t,
+                      isDark,
+                      primaryColor,
+                      mutedColor,
+                      textColor,
+                      surfaceColor,
+                      borderColor,
+                      photos,
                     ),
-                    SliverToBoxAdapter(
-                      child: _buildBodySection(
-                        t,
-                        isDark,
-                        primaryColor,
-                        mutedColor,
-                        textColor,
-                        surfaceColor,
-                        borderColor,
-                      ),
-                    ),
-                    SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: SizedBox(height: 80),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+                SliverToBoxAdapter(
+                  child: _buildBodySection(
+                    t,
+                    isDark,
+                    primaryColor,
+                    mutedColor,
+                    textColor,
+                    surfaceColor,
+                    borderColor,
+                  ),
+                ),
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: SizedBox(height: 120),
+                ),
+              ],
             ),
-            _buildBottomActionBar(t, isDark),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: _buildBottomActionBar(t, isDark),
+            ),
           ],
         ),
       ),
@@ -975,19 +976,31 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
   }
 
   Widget _buildBottomActionBar(AppLocalizations t, bool isDark) {
+    final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
+    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? AppTheme.darkSurface : Colors.white,
+        color: surfaceColor,
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.15),
+            blurRadius: 12,
+            offset: const Offset(0, -4),
+          ),
+        ],
         border: Border(
           top: BorderSide(
-            color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder,
+            color: borderColor,
             width: 0.5,
           ),
         ),
       ),
       padding: EdgeInsets.only(
-        top: 10,
-        bottom: MediaQuery.of(context).padding.bottom > 0 ? 10 : 10,
+        top: 12,
+        bottom: MediaQuery.of(context).padding.bottom > 0
+            ? MediaQuery.of(context).padding.bottom + 8
+            : 20,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -995,24 +1008,24 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
           DiscoverActionButton(
             icon: Icons.close_rounded,
             gradient: AppTheme.rejectGradient(isDark: isDark),
-            size: 52,
+            size: 56,
             onPressed: _isAnimating ? null : _onSwipeLeft,
           ),
-          const SizedBox(width: 20),
+          const SizedBox(width: 24),
           DiscoverActionButton(
             icon: Icons.chat_bubble_rounded,
             backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
             iconColor: isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary,
             borderColor: isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary,
-            size: 58,
+            size: 64,
             badgeCount: widget.isPremium ? null : widget.chatsRemaining,
             onPressed: _isAnimating ? null : _onChat,
           ),
-          const SizedBox(width: 20),
+          const SizedBox(width: 24),
           DiscoverActionButton(
             icon: Icons.favorite_rounded,
             gradient: AppTheme.likeGradient(isDark: isDark),
-            size: 52,
+            size: 56,
             badgeCount: widget.isPremium ? null : widget.likesRemaining,
             onPressed: _isAnimating ? null : _onSwipeRight,
           ),

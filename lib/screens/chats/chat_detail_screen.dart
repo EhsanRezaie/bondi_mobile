@@ -14,6 +14,7 @@ import 'package:dating_app/utils/media_url.dart';
 import 'package:dating_app/screens/shared/profile_detail_loader.dart';
 import 'package:dating_app/screens/search/search_profile_detail.dart';
 import 'package:dating_app/generated/app_localizations.dart';
+import 'package:dating_app/widgets/action_toast.dart';
 import 'package:intl/intl.dart';
 
 class ChatDetailScreen extends StatefulWidget {
@@ -285,9 +286,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           reason: reason,
         );
         if (mounted) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Message reported')));
+          final t = AppLocalizations.of(context)!;
+          showActionToast(context, t.chat_message_reported);
         }
       }
     });

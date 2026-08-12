@@ -15,6 +15,7 @@ class UserCard extends StatefulWidget {
   final VoidCallback? onSwipeLeft;
   final VoidCallback? onSwipeRight;
   final void Function(UserCardState)? onCardReady;
+  final void Function(bool isRight)? onSwipeStarted;
 
   const UserCard({
     super.key,
@@ -26,6 +27,7 @@ class UserCard extends StatefulWidget {
     this.onSwipeLeft,
     this.onSwipeRight,
     this.onCardReady,
+    this.onSwipeStarted,
   });
 
   @override
@@ -42,8 +44,11 @@ class UserCardState extends State<UserCard>
   late final Listenable _transformListenable;
 
   double _dx = 0;
-  double _dy = 0;
   double _rotation = 0;
+
+  /// Max card tilt (radians) reached at a full-screen-width drag.
+  static const double _maxRotation = 20.0 * math.pi / 180;
+
   bool _isDismissed = false;
   String? _swipeLabel;
 
@@ -53,8 +58,8 @@ class UserCardState extends State<UserCard>
 
   // Controller-driven transform animation (no per-frame setState).
   bool _animatingTransform = false;
-  double _startX = 0, _startY = 0, _startR = 0;
-  double _endX = 0, _endY = 0, _endR = 0;
+  double _startX = 0, _startR = 0;
+  double _endX = 0, _endR = 0;
   Curve _animCurve = Curves.easeIn;
 
   @override
@@ -74,6 +79,21 @@ class UserCardState extends State<UserCard>
   }
 
   @override
+  void didUpdateWidget(UserCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // When this card is promoted from the back of the deck to the top, the
+    // parent must point its programmatic controls at it (initState won't run
+    // again because the State survives the widget update).
+    if (widget.isTop && !oldWidget.isTop) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          widget.onCardReady?.call(this);
+        }
+      });
+    }
+  }
+
+  @override
   void dispose() {
     _currentAnimationCompleter?.complete();
     _currentAnimationCompleter = null;
@@ -83,10 +103,16 @@ class UserCardState extends State<UserCard>
   }
 
   void _onPanUpdate(DragUpdateDetails d) {
-    if (!widget.isTop) return;
+    if (!widget.isTop || _isDismissed || _isAnimatingOut) return;
+    
+    // Only horizontal drag affects the card - vertical is ignored for pivot rotation
     _dx += d.delta.dx;
-    _dy += d.delta.dy;
-    _rotation = (_dx / 500).clamp(-0.3, 0.3);
+    
+    // Pivot-based rotation around bottom-center
+    // Max rotation: 20° at full screen width drag
+    final screenWidth = MediaQuery.of(context).size.width;
+    _rotation = (_dx / screenWidth * _maxRotation).clamp(-_maxRotation, _maxRotation);
+    
     final label = _dx > 40 ? 'LIKE' : (_dx < -40 ? 'NOPE' : null);
     if (label != _swipeLabel) {
       setState(() {
@@ -97,12 +123,13 @@ class UserCardState extends State<UserCard>
   }
 
   void _onPanEnd(DragEndDetails d) {
-    if (!widget.isTop) return;
+    if (!widget.isTop || _isDismissed || _isAnimatingOut) return;
     final threshold = MediaQuery.of(context).size.width * 0.35;
     final velocity = d.velocity.pixelsPerSecond.dx;
 
     if (_dx.abs() > threshold || velocity.abs() > 800) {
       final direction = _dx > 0 || velocity > 0 ? 1 : -1;
+      widget.onSwipeStarted?.call(direction > 0);
       _animateDismiss(direction);
     } else {
       _animateSnapBack();
@@ -115,12 +142,10 @@ class UserCardState extends State<UserCard>
     _controller.reset();
 
     _startX = _dx;
-    _startY = _dy;
     _startR = _rotation;
     _endX = direction * 600.0;
-    _endY = _dy + 100.0;
-    _endR = direction * 0.3;
-    _animCurve = Curves.easeIn;
+    _endR = direction * _maxRotation;
+    _animCurve = Curves.easeOut;
     _animatingTransform = true;
 
     void onDone(AnimationStatus status) {
@@ -128,6 +153,8 @@ class UserCardState extends State<UserCard>
         _controller.removeStatusListener(onDone);
         _animatingTransform = false;
         _isAnimatingOut = false;
+        _dx = _endX;
+        _rotation = _endR;
         if (fireCallbacks) {
           if (direction > 0) {
             widget.onSwipeRight?.call();
@@ -149,10 +176,8 @@ class UserCardState extends State<UserCard>
     });
 
     _startX = _dx;
-    _startY = _dy;
     _startR = _rotation;
     _endX = 0;
-    _endY = 0;
     _endR = 0;
     _animCurve = Curves.elasticOut;
     _animatingTransform = true;
@@ -163,7 +188,6 @@ class UserCardState extends State<UserCard>
         _animatingTransform = false;
         _isDismissed = false;
         _dx = 0;
-        _dy = 0;
         _rotation = 0;
         _dragNotifier.value++;
       }
@@ -174,7 +198,7 @@ class UserCardState extends State<UserCard>
   }
 
   Future<void> swipeOut(int direction) {
-    // If already animating out, return existing future
+    if (!mounted) return Future.value();
     if (_isAnimatingOut && _currentAnimationCompleter != null) {
       return _currentAnimationCompleter!.future;
     }
@@ -189,12 +213,10 @@ class UserCardState extends State<UserCard>
     _controller.reset();
 
     _startX = _dx;
-    _startY = _dy;
     _startR = _rotation;
     _endX = direction * 600.0;
-    _endY = _dy + 100.0;
-    _endR = direction * 0.3;
-    _animCurve = Curves.easeIn;
+    _endR = direction * _maxRotation;
+    _animCurve = Curves.easeOut;
     _animatingTransform = true;
 
     void onDone(AnimationStatus status) {
@@ -202,6 +224,8 @@ class UserCardState extends State<UserCard>
         _controller.removeStatusListener(onDone);
         _animatingTransform = false;
         _isAnimatingOut = false;
+        _dx = _endX;
+        _rotation = _endR;
         _currentAnimationCompleter?.complete();
         _currentAnimationCompleter = null;
       }
@@ -213,11 +237,11 @@ class UserCardState extends State<UserCard>
   }
 
   Future<void> snapBack() {
-    // If currently animating out, stop it and snap back
+    if (!mounted) return Future.value();
     _controller.stop();
     _controller.reset();
     _isAnimatingOut = false;
-    _currentAnimationCompleter?.complete(); // Complete any pending swipeOut
+    _currentAnimationCompleter?.complete();
     _currentAnimationCompleter = null;
 
     final completer = Completer<void>();
@@ -226,10 +250,8 @@ class UserCardState extends State<UserCard>
     });
 
     _startX = _dx;
-    _startY = _dy;
     _startR = _rotation;
     _endX = 0;
-    _endY = 0;
     _endR = 0;
     _animCurve = Curves.elasticOut;
     _animatingTransform = true;
@@ -240,7 +262,6 @@ class UserCardState extends State<UserCard>
         _animatingTransform = false;
         _isDismissed = false;
         _dx = 0;
-        _dy = 0;
         _rotation = 0;
         _dragNotifier.value++;
         completer.complete();
@@ -253,7 +274,7 @@ class UserCardState extends State<UserCard>
   }
 
   void _onTapCard() {
-    if (_isDismissed) return;
+    if (_isDismissed || _isAnimatingOut) return;
     widget.onTap?.call();
   }
 
@@ -275,22 +296,20 @@ class UserCardState extends State<UserCard>
       child: _buildCardContent(context, isDark, primaryColor),
       builder: (context, child) {
         var dx = _dx;
-        var dy = _dy;
         var rot = _rotation;
         if (_animatingTransform) {
           final t = _animCurve.transform(_controller.value);
           dx = _startX + (_endX - _startX) * t;
-          dy = _startY + (_endY - _startY) * t;
           rot = _startR + (_endR - _startR) * t;
         }
-        return Transform.translate(
-          offset: Offset(dx, dy),
-          child: Transform.rotate(
-            angle: rot * math.pi / 180,
-            child: Opacity(
-              opacity: _getOpacity(dx),
-              child: child,
-            ),
+        return Transform(
+          alignment: Alignment.bottomCenter,
+          transform: Matrix4.identity()
+            ..translateByDouble(dx, 0.0, 0.0, 1.0)
+            ..rotateZ(rot),
+          child: Opacity(
+            opacity: _getOpacity(dx),
+            child: child,
           ),
         );
       },

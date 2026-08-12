@@ -236,10 +236,12 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
         if (item.isNew && item.localFile != null) {
           final result = await PhotoService.uploadPhoto(item.localFile!);
           if (result == null) {
+            if (!mounted) return;
             setState(() {
               _errorMessage = 'Failed to upload a photo';
               _isSaving = false;
             });
+            showActionToast(context, t.error_something_wrong, isError: true);
             return;
           }
           uploadedItems.add(
@@ -284,10 +286,12 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
             mainItem.serverPhoto!.id,
           );
           if (result == null) {
+            if (!mounted) return;
             setState(() {
               _errorMessage = 'Failed to set main photo';
               _isSaving = false;
             });
+            showActionToast(context, t.error_something_wrong, isError: true);
             return;
           }
         }
@@ -310,10 +314,12 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
         }
         final ok = await PhotoService.reorderPhotos(orders);
         if (!ok) {
+          if (!mounted) return;
           setState(() {
             _errorMessage = 'Failed to reorder photos';
             _isSaving = false;
           });
+          showActionToast(context, t.error_something_wrong, isError: true);
           return;
         }
       }
@@ -330,6 +336,7 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
           _errorMessage = 'An error occurred. Please try again.';
           _isSaving = false;
         });
+        showActionToast(context, t.error_something_wrong, isError: true);
       }
     }
   }

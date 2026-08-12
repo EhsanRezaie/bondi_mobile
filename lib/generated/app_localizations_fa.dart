@@ -796,6 +796,9 @@ class AppLocalizationsFa extends AppLocalizations {
   String get chat_edit_message => 'ویرایش پیام';
 
   @override
+  String get chat_message_reported => 'پیام گزارش شد';
+
+  @override
   String get chat_limit_reached => 'محدودیت چت روزانه';
 
   @override

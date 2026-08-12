@@ -558,6 +558,7 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
           _errorMessage = authProvider.errorMessage ?? 'Failed to update profile';
           _isSaving = false;
         });
+        showActionToast(context, t.error_something_wrong, isError: true);
         return;
       }
 
@@ -575,6 +576,7 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
           _errorMessage = 'Failed to update location text';
           _isSaving = false;
         });
+        showActionToast(context, t.error_something_wrong, isError: true);
         return;
       }
 
@@ -591,6 +593,7 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
           _errorMessage = 'Failed to update GPS location';
           _isSaving = false;
         });
+        showActionToast(context, t.error_something_wrong, isError: true);
         return;
       }
 
@@ -609,6 +612,7 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
         _errorMessage = 'An error occurred. Please try again.';
         _isSaving = false;
       });
+      showActionToast(context, t.error_something_wrong, isError: true);
     }
   }
 

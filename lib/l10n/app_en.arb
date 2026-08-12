@@ -297,6 +297,7 @@
   "chat_delete_for_me": "Delete for me",
   "chat_delete_for_everyone": "Delete for everyone",
   "chat_edit_message": "Edit message",
+  "chat_message_reported": "Message reported",
   "chat_limit_reached": "Daily chat limit reached",
   "chat_limit_explanation": "You've used all your chats today. Come back tomorrow!",
   "chat_unmatched": "Start a conversation",

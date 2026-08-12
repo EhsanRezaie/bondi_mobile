@@ -794,6 +794,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chat_edit_message => 'Edit message';
 
   @override
+  String get chat_message_reported => 'Message reported';
+
+  @override
   String get chat_limit_reached => 'Daily chat limit reached';
 
   @override

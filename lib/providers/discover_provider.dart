@@ -79,7 +79,9 @@ class DiscoverProvider extends ChangeNotifier {
   bool get isLikeBlocked => !_isPremium && _likesRemaining <= 0;
   bool get isChatBlocked => !_isPremium && _chatsRemaining <= 0;
 
-  List<DiscoverProfile> get visibleProfiles => _profiles.take(1).toList();
+  /// Top of the deck plus the stacked cards behind it, so the next profile is
+  /// already visible while the current card is being swiped (no black screen).
+  List<DiscoverProfile> get visibleProfiles => _profiles.take(3).toList();
 
   bool get hasProfiles => _profiles.isNotEmpty;
 
@@ -228,7 +230,9 @@ class DiscoverProvider extends ChangeNotifier {
     return null;
   }
 
-  Future<void> swipeLeft(DiscoverProfile profile) async {
+  /// Returns `true` when the pass was recorded and the card advanced the deck,
+  /// `false` when the API call failed (caller should snap the card back).
+  Future<bool> swipeLeft(DiscoverProfile profile) async {
     try {
       final response = await DiscoverService.swipeUser(profile.id, 'pass');
       // 200 = fresh pass; 400 = the card was already passed (e.g. reverted and
@@ -244,8 +248,10 @@ class DiscoverProvider extends ChangeNotifier {
         }
         _refillIfLow();
         _safeNotify();
+        return true;
       }
     } catch (_) {}
+    return false;
   }
 
   /// Pops the most recently passed card back onto the top of the deck.

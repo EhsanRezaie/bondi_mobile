@@ -387,6 +387,7 @@ class _EditProfileDetailsScreenState extends State<EditProfileDetailsScreen> {
           _errorMessage = authProvider.errorMessage ?? 'Failed to update profile';
           _isSaving = false;
         });
+        showActionToast(context, t.error_something_wrong, isError: true);
       }
     } catch (e) {
       debugPrint('❌ Save error: $e');
@@ -395,6 +396,7 @@ class _EditProfileDetailsScreenState extends State<EditProfileDetailsScreen> {
           _errorMessage = 'An error occurred. Please try again.';
           _isSaving = false;
         });
+        showActionToast(context, t.error_something_wrong, isError: true);
       }
     }
   }

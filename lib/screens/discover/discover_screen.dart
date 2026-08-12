@@ -64,20 +64,54 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       _showLimitReached('likes');
       return;
     }
-    final result = await provider.swipeRight(profile);
-    if (!mounted) return;
-    if (result != null && result['matched'] == true) {
-      _showMatchDialog(result, profile);
-    } else if (result != null) {
-      final t = AppLocalizations.of(context)!;
-      showActionToast(context, t.toast_like_sent);
+
+    _isSwiping = true;
+    if (mounted) setState(() {});
+    try {
+      final result = await provider.swipeRight(profile);
+      if (!mounted) return;
+      if (result == null) {
+        await _waitForAnimation(_currentCardState?.snapBack());
+        if (!mounted) return;
+        final t = AppLocalizations.of(context)!;
+        showActionToast(context, t.error_something_wrong, isError: true);
+        return;
+      }
+      if (result['matched'] == true) {
+        _showMatchDialog(result, profile);
+      } else {
+        final t = AppLocalizations.of(context)!;
+        showActionToast(context, t.toast_like_sent);
+      }
+    } finally {
+      if (mounted) {
+        _isSwiping = false;
+        setState(() {});
+      }
     }
   }
 
   Future<void> _handleSwipeLeft(DiscoverProfile profile) async {
     if (!mounted) return;
     final provider = Provider.of<DiscoverProvider>(context, listen: false);
-    await provider.swipeLeft(profile);
+
+    _isSwiping = true;
+    if (mounted) setState(() {});
+    try {
+      final ok = await provider.swipeLeft(profile);
+      if (!mounted) return;
+      if (!ok) {
+        await _waitForAnimation(_currentCardState?.snapBack());
+        if (!mounted) return;
+        final t = AppLocalizations.of(context)!;
+        showActionToast(context, t.error_something_wrong, isError: true);
+      }
+    } finally {
+      if (mounted) {
+        _isSwiping = false;
+        setState(() {});
+      }
+    }
   }
 
   Future<void> _handleChat(DiscoverProfile profile) async {
@@ -99,7 +133,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       _openChat(chatId, profile);
     } else {
       final t = AppLocalizations.of(context)!;
-      showActionToast(context, t.error_something_wrong);
+      showActionToast(context, t.error_something_wrong, isError: true);
     }
   }
 
@@ -160,14 +194,14 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
         await _waitForAnimation(_currentCardState?.snapBack());
         if (!mounted) return;
         final t = AppLocalizations.of(context)!;
-        showActionToast(context, t.error_something_wrong);
+        showActionToast(context, t.error_something_wrong, isError: true);
       }
     } catch (e) {
       // API threw - snap back
       await _waitForAnimation(_currentCardState?.snapBack());
       if (!mounted) return;
       final t = AppLocalizations.of(context)!;
-      showActionToast(context, t.error_something_wrong);
+      showActionToast(context, t.error_something_wrong, isError: true);
     } finally {
       if (mounted) {
         _isSwiping = false;
@@ -186,20 +220,28 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     final animationFuture = _currentCardState?.swipeOut(-1);
 
     try {
-      await Provider.of<DiscoverProvider>(
+      final ok = await Provider.of<DiscoverProvider>(
         context,
         listen: false,
       ).swipeLeft(profile);
       if (!mounted) return;
 
-      // API succeeded - wait for animation to complete
-      await _waitForAnimation(animationFuture);
+      if (ok) {
+        // API succeeded - wait for animation to complete
+        await _waitForAnimation(animationFuture);
+      } else {
+        // API failed - snap back
+        await _waitForAnimation(_currentCardState?.snapBack());
+        if (!mounted) return;
+        final t = AppLocalizations.of(context)!;
+        showActionToast(context, t.error_something_wrong, isError: true);
+      }
     } catch (e) {
-      // API failed - snap back
+      // API threw - snap back
       await _waitForAnimation(_currentCardState?.snapBack());
       if (!mounted) return;
       final t = AppLocalizations.of(context)!;
-      showActionToast(context, t.error_something_wrong);
+      showActionToast(context, t.error_something_wrong, isError: true);
     } finally {
       if (mounted) {
         _isSwiping = false;
@@ -227,7 +269,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       _openChat(chatId, profile);
     } else {
       final t = AppLocalizations.of(context)!;
-      showActionToast(context, t.error_something_wrong);
+      showActionToast(context, t.error_something_wrong, isError: true);
     }
   }
 
@@ -882,10 +924,8 @@ void _openDiscoverFilters(DiscoverProvider provider) {
   }
 
   Widget _buildCardStack(DiscoverProvider provider, bool isDark) {
-    final profile = provider.visibleProfiles.isNotEmpty
-        ? provider.visibleProfiles.first
-        : null;
-    if (profile == null) return const SizedBox.shrink();
+    final cards = provider.visibleProfiles;
+    if (cards.isEmpty) return const SizedBox.shrink();
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -902,19 +942,46 @@ void _openDiscoverFilters(DiscoverProvider provider) {
         return Container(
           height: constraints.maxHeight,
           margin: horizontalMargin,
-          child: UserCard(
-            key: ValueKey(profile.id),
-            profile: profile,
-            interestIcons: _interestIcons,
-            isTop: true,
-            onTap: () => _openProfileDetail(profile),
-            onSwipeLeft: () => _handleSwipeLeft(profile),
-            onSwipeRight: () => _handleSwipeRight(profile),
-            onCardReady: _onCardReady,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              // Build back cards first so they sit behind the top card. They
+              // are full-size so the next profile is already covering the whole
+              // screen the moment the current card starts moving — no black gap.
+              for (var i = cards.length - 1; i >= 0; i--)
+                _buildStackedCard(provider, cards[i], i),
+            ],
           ),
         );
       },
     );
+  }
+
+  Widget _buildStackedCard(
+    DiscoverProvider provider,
+    DiscoverProfile profile,
+    int index,
+  ) {
+    final isTop = index == 0;
+    return UserCard(
+      key: ValueKey(profile.id),
+      profile: profile,
+      interestIcons: _interestIcons,
+      isTop: isTop,
+      onTap: isTop ? () => _openProfileDetail(profile) : null,
+      onSwipeLeft: isTop ? () => _handleSwipeLeft(profile) : null,
+      onSwipeRight: isTop ? () => _handleSwipeRight(profile) : null,
+      onSwipeStarted: isTop ? _onSwipeStarted : null,
+      onCardReady: isTop ? _onCardReady : null,
+    );
+  }
+
+  void _onSwipeStarted(bool isRight) {
+    // A finger swipe committed — lock all actions (like/pass/chat) until the
+    // API responds, so a second action can't race the in-flight one.
+    if (_isSwiping || !mounted) return;
+    _isSwiping = true;
+    setState(() {});
   }
 
   Widget _buildActionButtons(
