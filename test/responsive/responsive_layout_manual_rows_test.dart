@@ -19,7 +19,6 @@ import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 
 import 'package:dating_app/models/chat_card.dart';
-import 'package:dating_app/models/message.dart';
 import 'package:dating_app/models/swipe_user.dart';
 import 'package:dating_app/models/user.dart';
 import 'package:dating_app/providers/auth_provider.dart';
@@ -295,6 +294,7 @@ class _FakeHttpRequest implements HttpClientRequest {
   final List<int> body;
   _FakeHttpRequest(this.body);
 
+  @override
   final HttpHeaders headers = _FakeHttpHeaders();
 
   @override
@@ -321,7 +321,6 @@ class _FakeHttpHeaders implements HttpHeaders {
     _values[name] = ['$value'];
   }
 
-  @override
   void addAll(Map<String, String> headers) {
     headers.forEach((name, value) => add(name, value));
   }
@@ -331,7 +330,6 @@ class _FakeHttpHeaders implements HttpHeaders {
     _values[name] = ['$value'];
   }
 
-  @override
   void setAll(String name, List<String> values) {
     _values[name] = List.of(values);
   }
@@ -353,7 +351,6 @@ class _FakeHttpHeaders implements HttpHeaders {
     _values.forEach(action);
   }
 
-  @override
   Map<String, List<String>> get map => _values;
 
   @override
