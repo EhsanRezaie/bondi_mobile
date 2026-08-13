@@ -10,6 +10,7 @@ import 'package:dating_app/widgets/search_grid_card.dart';
 import 'package:dating_app/widgets/shimmer_avatar.dart';
 import 'package:dating_app/screens/shared/profile_detail_loader.dart';
 import 'package:dating_app/screens/chats/notifications_screen.dart';
+import 'package:dating_app/widgets/notification_bell.dart';
 import 'search_filter_sheet.dart';
 import 'search_profile_detail.dart';
 
@@ -140,8 +141,7 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
           },
         ),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_none),
+          NotificationBell(
             onPressed: () {
               Navigator.push(
                 context,
