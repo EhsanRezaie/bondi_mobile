@@ -367,5 +367,32 @@
     "placeholders": {
       "reason": { "type": "String", "format": "text" }
     }
-  }
+  },
+
+  "support": "Support",
+  "my_tickets": "My Tickets",
+  "new_ticket": "New Ticket",
+  "ticket_subject": "Subject",
+  "ticket_message": "Message",
+  "ticket_message_hint": "Describe your issue in detail (at least 10 characters)",
+  "ticket_reply_hint": "Write a reply…",
+  "ticket_send": "Send",
+  "ticket_status_open": "Open",
+  "ticket_status_in_progress": "In progress",
+  "ticket_status_closed": "Closed",
+  "ticket_subject_account": "Account / Login issue",
+  "ticket_subject_photo": "Photo verification",
+  "ticket_subject_payment": "Payment / Premium",
+  "ticket_subject_bug": "Report a problem (bug)",
+  "ticket_subject_other": "Other",
+  "ticket_other_hint": "Selecting \u201cOther\u201d? Explain your issue in the message below.",
+  "ticket_empty_title": "No tickets yet",
+  "ticket_empty_body": "Have an issue? Create a support ticket and our team will help you.",
+  "ticket_create_first": "Create your first ticket",
+  "ticket_created": "Ticket created",
+  "ticket_reply_sent": "Reply sent",
+  "ticket_closed_note": "This ticket is closed. Sending a message will reopen it.",
+  "ticket_support_team": "Support Team",
+  "ticket_you": "You",
+  "ticket_load_error": "Couldn't load tickets. Pull to refresh."
 }

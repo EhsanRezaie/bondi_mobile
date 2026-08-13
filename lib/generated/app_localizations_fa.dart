@@ -920,4 +920,87 @@ class AppLocalizationsFa extends AppLocalizations {
   String photo_rejected_reason(String reason) {
     return 'دلیل: $reason';
   }
+
+  @override
+  String get support => 'پشتیبانی';
+
+  @override
+  String get my_tickets => 'تیکت‌های من';
+
+  @override
+  String get new_ticket => 'تیکت جدید';
+
+  @override
+  String get ticket_subject => 'موضوع';
+
+  @override
+  String get ticket_message => 'پیام';
+
+  @override
+  String get ticket_message_hint =>
+      'مشکل خود را به طور کامل توضیح دهید (حداقل ۱۰ کاراکتر)';
+
+  @override
+  String get ticket_reply_hint => 'پاسخ خود را بنویسید…';
+
+  @override
+  String get ticket_send => 'ارسال';
+
+  @override
+  String get ticket_status_open => 'باز';
+
+  @override
+  String get ticket_status_in_progress => 'در حال بررسی';
+
+  @override
+  String get ticket_status_closed => 'بسته';
+
+  @override
+  String get ticket_subject_account => 'مشکل حساب / ورود';
+
+  @override
+  String get ticket_subject_photo => 'تأیید عکس';
+
+  @override
+  String get ticket_subject_payment => 'پرداخت / پریمیوم';
+
+  @override
+  String get ticket_subject_bug => 'گزارش مشکل (باگ)';
+
+  @override
+  String get ticket_subject_other => 'سایر';
+
+  @override
+  String get ticket_other_hint =>
+      'گزینه «سایر» را انتخاب کردید؟ لطفاً مشکل خود را در پیام زیر توضیح دهید.';
+
+  @override
+  String get ticket_empty_title => 'هنوز تیکتی ندارید';
+
+  @override
+  String get ticket_empty_body =>
+      'مشکلی دارید؟ یک تیکت پشتیبانی ایجاد کنید تا تیم ما کمکتان کند.';
+
+  @override
+  String get ticket_create_first => 'ایجاد اولین تیکت';
+
+  @override
+  String get ticket_created => 'تیکت ایجاد شد';
+
+  @override
+  String get ticket_reply_sent => 'پاسخ ارسال شد';
+
+  @override
+  String get ticket_closed_note =>
+      'این تیکت بسته است. ارسال پیام، آن را دوباره باز می‌کند.';
+
+  @override
+  String get ticket_support_team => 'تیم پشتیبانی';
+
+  @override
+  String get ticket_you => 'شما';
+
+  @override
+  String get ticket_load_error =>
+      'امکان بارگذاری تیکت‌ها وجود ندارد. برای تازه‌سازی بکشید.';
 }

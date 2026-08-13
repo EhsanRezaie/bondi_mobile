@@ -14,6 +14,7 @@ import 'providers/language_provider.dart';
 import 'providers/settings_provider.dart';
 import 'providers/chat_provider.dart';
 import 'providers/notifications_provider.dart';
+import 'providers/ticket_provider.dart';
 import 'screens/splash_screen.dart';
 import 'widgets/action_toast.dart';
 
@@ -87,6 +88,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
         ChangeNotifierProvider(create: (_) => ChatProvider()),
         ChangeNotifierProvider(create: (_) => NotificationsProvider()),
+        ChangeNotifierProvider(create: (_) => TicketProvider()),
       ],
       child: const AppView(),
     );

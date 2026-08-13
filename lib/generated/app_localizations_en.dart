@@ -916,4 +916,86 @@ class AppLocalizationsEn extends AppLocalizations {
   String photo_rejected_reason(String reason) {
     return 'Reason: $reason';
   }
+
+  @override
+  String get support => 'Support';
+
+  @override
+  String get my_tickets => 'My Tickets';
+
+  @override
+  String get new_ticket => 'New Ticket';
+
+  @override
+  String get ticket_subject => 'Subject';
+
+  @override
+  String get ticket_message => 'Message';
+
+  @override
+  String get ticket_message_hint =>
+      'Describe your issue in detail (at least 10 characters)';
+
+  @override
+  String get ticket_reply_hint => 'Write a reply…';
+
+  @override
+  String get ticket_send => 'Send';
+
+  @override
+  String get ticket_status_open => 'Open';
+
+  @override
+  String get ticket_status_in_progress => 'In progress';
+
+  @override
+  String get ticket_status_closed => 'Closed';
+
+  @override
+  String get ticket_subject_account => 'Account / Login issue';
+
+  @override
+  String get ticket_subject_photo => 'Photo verification';
+
+  @override
+  String get ticket_subject_payment => 'Payment / Premium';
+
+  @override
+  String get ticket_subject_bug => 'Report a problem (bug)';
+
+  @override
+  String get ticket_subject_other => 'Other';
+
+  @override
+  String get ticket_other_hint =>
+      'Selecting “Other”? Explain your issue in the message below.';
+
+  @override
+  String get ticket_empty_title => 'No tickets yet';
+
+  @override
+  String get ticket_empty_body =>
+      'Have an issue? Create a support ticket and our team will help you.';
+
+  @override
+  String get ticket_create_first => 'Create your first ticket';
+
+  @override
+  String get ticket_created => 'Ticket created';
+
+  @override
+  String get ticket_reply_sent => 'Reply sent';
+
+  @override
+  String get ticket_closed_note =>
+      'This ticket is closed. Sending a message will reopen it.';
+
+  @override
+  String get ticket_support_team => 'Support Team';
+
+  @override
+  String get ticket_you => 'You';
+
+  @override
+  String get ticket_load_error => 'Couldn\'t load tickets. Pull to refresh.';
 }

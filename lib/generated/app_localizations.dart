@@ -1783,6 +1783,162 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Reason: {reason}'**
   String photo_rejected_reason(String reason);
+
+  /// No description provided for @support.
+  ///
+  /// In en, this message translates to:
+  /// **'Support'**
+  String get support;
+
+  /// No description provided for @my_tickets.
+  ///
+  /// In en, this message translates to:
+  /// **'My Tickets'**
+  String get my_tickets;
+
+  /// No description provided for @new_ticket.
+  ///
+  /// In en, this message translates to:
+  /// **'New Ticket'**
+  String get new_ticket;
+
+  /// No description provided for @ticket_subject.
+  ///
+  /// In en, this message translates to:
+  /// **'Subject'**
+  String get ticket_subject;
+
+  /// No description provided for @ticket_message.
+  ///
+  /// In en, this message translates to:
+  /// **'Message'**
+  String get ticket_message;
+
+  /// No description provided for @ticket_message_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Describe your issue in detail (at least 10 characters)'**
+  String get ticket_message_hint;
+
+  /// No description provided for @ticket_reply_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Write a reply…'**
+  String get ticket_reply_hint;
+
+  /// No description provided for @ticket_send.
+  ///
+  /// In en, this message translates to:
+  /// **'Send'**
+  String get ticket_send;
+
+  /// No description provided for @ticket_status_open.
+  ///
+  /// In en, this message translates to:
+  /// **'Open'**
+  String get ticket_status_open;
+
+  /// No description provided for @ticket_status_in_progress.
+  ///
+  /// In en, this message translates to:
+  /// **'In progress'**
+  String get ticket_status_in_progress;
+
+  /// No description provided for @ticket_status_closed.
+  ///
+  /// In en, this message translates to:
+  /// **'Closed'**
+  String get ticket_status_closed;
+
+  /// No description provided for @ticket_subject_account.
+  ///
+  /// In en, this message translates to:
+  /// **'Account / Login issue'**
+  String get ticket_subject_account;
+
+  /// No description provided for @ticket_subject_photo.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo verification'**
+  String get ticket_subject_photo;
+
+  /// No description provided for @ticket_subject_payment.
+  ///
+  /// In en, this message translates to:
+  /// **'Payment / Premium'**
+  String get ticket_subject_payment;
+
+  /// No description provided for @ticket_subject_bug.
+  ///
+  /// In en, this message translates to:
+  /// **'Report a problem (bug)'**
+  String get ticket_subject_bug;
+
+  /// No description provided for @ticket_subject_other.
+  ///
+  /// In en, this message translates to:
+  /// **'Other'**
+  String get ticket_subject_other;
+
+  /// No description provided for @ticket_other_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Selecting “Other”? Explain your issue in the message below.'**
+  String get ticket_other_hint;
+
+  /// No description provided for @ticket_empty_title.
+  ///
+  /// In en, this message translates to:
+  /// **'No tickets yet'**
+  String get ticket_empty_title;
+
+  /// No description provided for @ticket_empty_body.
+  ///
+  /// In en, this message translates to:
+  /// **'Have an issue? Create a support ticket and our team will help you.'**
+  String get ticket_empty_body;
+
+  /// No description provided for @ticket_create_first.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your first ticket'**
+  String get ticket_create_first;
+
+  /// No description provided for @ticket_created.
+  ///
+  /// In en, this message translates to:
+  /// **'Ticket created'**
+  String get ticket_created;
+
+  /// No description provided for @ticket_reply_sent.
+  ///
+  /// In en, this message translates to:
+  /// **'Reply sent'**
+  String get ticket_reply_sent;
+
+  /// No description provided for @ticket_closed_note.
+  ///
+  /// In en, this message translates to:
+  /// **'This ticket is closed. Sending a message will reopen it.'**
+  String get ticket_closed_note;
+
+  /// No description provided for @ticket_support_team.
+  ///
+  /// In en, this message translates to:
+  /// **'Support Team'**
+  String get ticket_support_team;
+
+  /// No description provided for @ticket_you.
+  ///
+  /// In en, this message translates to:
+  /// **'You'**
+  String get ticket_you;
+
+  /// No description provided for @ticket_load_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Couldn\'t load tickets. Pull to refresh.'**
+  String get ticket_load_error;
 }
 
 class _AppLocalizationsDelegate

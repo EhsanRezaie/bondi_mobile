@@ -367,5 +367,32 @@
     "placeholders": {
       "reason": { "type": "String", "format": "text" }
     }
-  }
+  },
+
+  "support": "پشتیبانی",
+  "my_tickets": "تیکت‌های من",
+  "new_ticket": "تیکت جدید",
+  "ticket_subject": "موضوع",
+  "ticket_message": "پیام",
+  "ticket_message_hint": "مشکل خود را به طور کامل توضیح دهید (حداقل ۱۰ کاراکتر)",
+  "ticket_reply_hint": "پاسخ خود را بنویسید…",
+  "ticket_send": "ارسال",
+  "ticket_status_open": "باز",
+  "ticket_status_in_progress": "در حال بررسی",
+  "ticket_status_closed": "بسته",
+  "ticket_subject_account": "مشکل حساب / ورود",
+  "ticket_subject_photo": "تأیید عکس",
+  "ticket_subject_payment": "پرداخت / پریمیوم",
+  "ticket_subject_bug": "گزارش مشکل (باگ)",
+  "ticket_subject_other": "سایر",
+  "ticket_other_hint": "گزینه «سایر» را انتخاب کردید؟ لطفاً مشکل خود را در پیام زیر توضیح دهید.",
+  "ticket_empty_title": "هنوز تیکتی ندارید",
+  "ticket_empty_body": "مشکلی دارید؟ یک تیکت پشتیبانی ایجاد کنید تا تیم ما کمکتان کند.",
+  "ticket_create_first": "ایجاد اولین تیکت",
+  "ticket_created": "تیکت ایجاد شد",
+  "ticket_reply_sent": "پاسخ ارسال شد",
+  "ticket_closed_note": "این تیکت بسته است. ارسال پیام، آن را دوباره باز می‌کند.",
+  "ticket_support_team": "تیم پشتیبانی",
+  "ticket_you": "شما",
+  "ticket_load_error": "امکان بارگذاری تیکت‌ها وجود ندارد. برای تازه‌سازی بکشید."
 }

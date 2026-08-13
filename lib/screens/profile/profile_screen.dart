@@ -16,6 +16,7 @@ import 'package:dating_app/screens/profile/edit_interests_screen.dart';
 import 'package:dating_app/screens/profile/edit_prompts_screen.dart';
 import 'package:dating_app/screens/profile/edit_photos_screen.dart';
 import 'package:dating_app/screens/profile/settings_screen.dart';
+import 'package:dating_app/screens/profile/tickets_screen.dart';
 import 'package:dating_app/generated/app_localizations.dart';
 import 'package:dating_app/widgets/action_toast.dart';
 
@@ -98,6 +99,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
             backgroundColor: Colors.transparent,
             elevation: 0,
             centerTitle: true,
+            leading: IconButton(
+              icon: Icon(Icons.headset_mic_outlined, color: onSurfaceColor),
+              tooltip: AppLocalizations.of(context)!.support,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const TicketsScreen(),
+                  ),
+                );
+              },
+            ),
             actions: [
               IconButton(
                 icon: Icon(Icons.settings_outlined, color: onSurfaceColor),
