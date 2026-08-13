@@ -5,7 +5,7 @@ import 'package:dating_app/models/notification.dart';
 import 'package:dating_app/providers/notifications_provider.dart';
 import 'package:dating_app/utils/responsive.dart';
 import 'package:dating_app/generated/app_localizations.dart';
-import 'package:intl/intl.dart';
+import 'package:dating_app/screens/chats/user_notification_profile_screen.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -99,6 +99,27 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             );
           }
 
+          final sections = [
+            _NotificationSection(
+              title: t.notifications_section_liked,
+              items: provider.notifications.where((n) => n.type == 'like').toList(),
+            ),
+            _NotificationSection(
+              title: t.notifications_section_likes,
+              items: provider.notifications.where((n) => n.type == 'liked').toList(),
+            ),
+            _NotificationSection(
+              title: t.notifications_section_matches,
+              items: provider.notifications.where((n) => n.type == 'match').toList(),
+            ),
+            _NotificationSection(
+              title: t.notifications_section_announcements,
+              items: provider.notifications
+                  .where((n) => n.type == 'system')
+                  .toList(),
+            ),
+          ];
+
           return RefreshIndicator(
             onRefresh: () =>
                 context.read<NotificationsProvider>().loadNotifications(),
@@ -113,10 +134,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               child: ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.symmetric(vertical: 12),
-                itemCount:
-                    provider.notifications.length + (provider.hasMore ? 1 : 0),
+                itemCount: sections.length + (provider.hasMore ? 1 : 0),
                 itemBuilder: (context, index) {
-                  if (index == provider.notifications.length) {
+                  if (index == sections.length) {
                     return Center(
                       child: Padding(
                         padding: const EdgeInsets.all(16),
@@ -127,8 +147,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       ),
                     );
                   }
-                  final item = provider.notifications[index];
-                  return _buildItem(context, item);
+                  final section = sections[index];
+                  return _buildSection(context, section);
                 },
               ),
             ),
@@ -138,7 +158,50 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 
-  Widget _buildItem(BuildContext context, AppNotification item) {
+  Widget _buildSection(BuildContext context, _NotificationSection section) {
+    final isDark = context.isDarkMode;
+    final mutedColor = isDark
+        ? AppTheme.darkTextMuted
+        : AppTheme.lightTextMuted;
+    final isPersian = !Localizations.localeOf(
+      context,
+    ).languageCode.contains('en');
+    final t = AppLocalizations.of(context)!;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            16,
+            12,
+            16,
+            4,
+          ),
+          child: Text(
+            section.title.toUpperCase(),
+            style: (isPersian ? AppTheme.overlineFa : AppTheme.overline)
+                .copyWith(color: mutedColor),
+          ),
+        ),
+        if (section.items.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            child: Text(
+              t.notifications_empty_section,
+              style: (isPersian ? AppTheme.bodyFa : AppTheme.body).copyWith(
+                fontSize: 13,
+                color: mutedColor,
+              ),
+            ),
+          )
+        else
+          for (final item in section.items) _buildItem(item),
+      ],
+    );
+  }
+
+  Widget _buildItem(AppNotification item) {
     final isDark = context.isDarkMode;
     final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
     final mutedColor = isDark
@@ -148,8 +211,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     final isPersian = !Localizations.localeOf(
       context,
     ).languageCode.contains('en');
-
-    final time = DateFormat('HH:mm').format(item.createdAt.toLocal());
 
     return Dismissible(
       key: ValueKey(item.id),
@@ -228,19 +289,111 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                     overflow: TextOverflow.ellipsis,
                   )
                 : null,
-            trailing: Text(
-              time,
-              style:
-                  (isPersian ? AppTheme.captionFa : AppTheme.caption).copyWith(
-                fontSize: 11,
-                color: mutedColor,
-              ),
-            ),
-            onTap: () =>
-                context.read<NotificationsProvider>().markRead([item.id]),
+            trailing: Icon(Icons.chevron_right, color: mutedColor),
+            onTap: () => _handleTap(item),
           ),
         ),
       ),
+    );
+  }
+
+  void _handleTap(AppNotification item) {
+    context.read<NotificationsProvider>().markRead([item.id]);
+
+    if (item.type == 'system') {
+      _showAnnouncement(item);
+      return;
+    }
+
+    final userId = item.data?['user_id'];
+    if (userId is! String || userId.isEmpty) return;
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => UserNotificationProfileScreen(
+          userId: userId,
+          fallback: SwipeStubProfile(
+            id: userId,
+            name: _fallbackName(item),
+            age: 0,
+            mainPhotoUrl: null,
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _fallbackName(AppNotification item) {
+    final body = item.body ?? '';
+    var m = RegExp(r'^(.+?)\s*\(age \d+\)').firstMatch(body);
+    if (m != null && m.group(1)!.trim().isNotEmpty) {
+      return m.group(1)!.trim();
+    }
+    m = RegExp(r"You liked (.+?)'s profile").firstMatch(body);
+    if (m != null) return m.group(1)!.trim();
+    m = RegExp(r'You matched with (.+?)[!.]').firstMatch(body);
+    if (m != null) return m.group(1)!.trim();
+    m = RegExp(r'liked public profile of (.+)').firstMatch(body);
+    if (m != null) return m.group(1)!.trim();
+    return item.title;
+  }
+
+  void _showAnnouncement(AppNotification item) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
+    final mutedColor = isDark
+        ? AppTheme.darkTextMuted
+        : AppTheme.lightTextMuted;
+    final t = AppLocalizations.of(context)!;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppTheme.radiusModule),
+          ),
+          insetPadding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  item.title,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: textColor,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Text(
+                      item.body ?? '',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        height: 1.5,
+                        color: mutedColor,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: Text(t.notifications_close),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -248,19 +401,25 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     switch (type) {
       case 'like':
         return Icons.favorite;
-      case 'message':
-        return Icons.chat_bubble_outline;
-      case 'match':
+      case 'liked':
         return Icons.favorite_border;
+      case 'match':
+        return Icons.favorite;
       case 'system':
-        return Icons.notifications_outlined;
+        return Icons.campaign_outlined;
       default:
         return Icons.notifications_outlined;
     }
   }
 
   Color _iconColorFor(String type, bool isDark) {
-    final primary = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
-    return primary;
+    return isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
   }
+}
+
+class _NotificationSection {
+  final String title;
+  final List<AppNotification> items;
+
+  const _NotificationSection({required this.title, required this.items});
 }

@@ -297,6 +297,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notifications_empty => 'No notifications yet';
 
   @override
+  String get notifications_section_liked => 'Liked';
+
+  @override
+  String get notifications_section_likes => 'Likes';
+
+  @override
+  String get notifications_section_matches => 'Matches';
+
+  @override
+  String get notifications_section_announcements => 'Announcements';
+
+  @override
+  String get notifications_empty_section => 'Nothing here yet';
+
+  @override
+  String get notifications_close => 'Close';
+
+  @override
   String get error_email_exists => 'This email is already registered';
 
   @override

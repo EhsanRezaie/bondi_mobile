@@ -16,6 +16,8 @@ class ChatProvider extends ChangeNotifier {
   StreamSubscription<bool>? _connectionStateSubscription;
   StreamSubscription<Map<String, dynamic>>? _eventsSubscription;
   SessionSocketService? _socketService;
+
+  Stream<Map<String, dynamic>> get socketEvents => _socketService?.events ?? const Stream.empty();
   DateTime? _lastListRefetch;
   static const _listRefetchMinInterval = Duration(seconds: 2);
 
@@ -1180,6 +1182,10 @@ class ChatProvider extends ChangeNotifier {
         handleNewMatch(data);
         break;
 
+      case 'new_notification':
+        _handleNewNotification(data);
+        break;
+
       case 'blocked':
         _handleBlockedEvent(event, data);
         break;
@@ -1362,6 +1368,12 @@ class ChatProvider extends ChangeNotifier {
   @visibleForTesting
   void applyMessageEdited(Map<String, dynamic> data) =>
       _handleMessageEdited(data);
+
+  void _handleNewNotification(Map<String, dynamic> data) {
+    debugPrint('WS new_notification: $data');
+    // NotificationProvider will listen to socketEvents and handle this
+    // This method is a no-op in ChatProvider; NotificationsProvider subscribes directly to socketEvents
+  }
 
   void handleNewMatch(Map<String, dynamic> data) {
     try {

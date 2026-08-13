@@ -3,6 +3,7 @@ import 'package:dating_app/config/app_theme.dart';
 import 'package:dating_app/models/discover_profile.dart';
 import 'package:dating_app/utils/cached_image.dart';
 import 'package:dating_app/utils/responsive.dart';
+import 'package:dating_app/widgets/online_ring.dart';
 import 'package:dating_app/widgets/shimmer_avatar.dart';
 
 class SearchGridCard extends StatelessWidget {
@@ -120,20 +121,13 @@ class SearchGridCard extends StatelessWidget {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    if (profile.isOnline)
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? AppTheme.darkSuccess
-                              : AppTheme.lightSuccess,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    if (profile.isOnline && profile.isPremium)
+                    OnlineRing(
+                      isOnline: profile.isOnline,
+                      size: 9,
+                      borderWidth: 1.5,
+                    ),
+                    if (profile.isPremium) ...[
                       const SizedBox(width: 3),
-                    if (profile.isPremium)
                       Container(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 4,
@@ -149,6 +143,7 @@ class SearchGridCard extends StatelessWidget {
                           color: Colors.white,
                         ),
                       ),
+                    ],
                   ],
                 ),
               ),

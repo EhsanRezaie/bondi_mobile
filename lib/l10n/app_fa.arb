@@ -99,6 +99,12 @@
 
   "notifications_title": "اعلان‌ها",
   "notifications_empty": "هنوز اعلانی ندارید",
+  "notifications_section_liked": "لایک‌شده",
+  "notifications_section_likes": "لایک‌ها",
+  "notifications_section_matches": "تطابق‌ها",
+  "notifications_section_announcements": "اعلامیه‌ها",
+  "notifications_empty_section": "موردی وجود ندارد",
+  "notifications_close": "بستن",
 
   "error_email_exists": "این ایمیل قبلاً ثبت نام کرده است",
   "error_email_invalid_format": "فرمت ایمیل نامعتبر است",

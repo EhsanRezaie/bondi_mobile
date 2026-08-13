@@ -650,6 +650,42 @@ abstract class AppLocalizations {
   /// **'No notifications yet'**
   String get notifications_empty;
 
+  /// No description provided for @notifications_section_liked.
+  ///
+  /// In en, this message translates to:
+  /// **'Liked'**
+  String get notifications_section_liked;
+
+  /// No description provided for @notifications_section_likes.
+  ///
+  /// In en, this message translates to:
+  /// **'Likes'**
+  String get notifications_section_likes;
+
+  /// No description provided for @notifications_section_matches.
+  ///
+  /// In en, this message translates to:
+  /// **'Matches'**
+  String get notifications_section_matches;
+
+  /// No description provided for @notifications_section_announcements.
+  ///
+  /// In en, this message translates to:
+  /// **'Announcements'**
+  String get notifications_section_announcements;
+
+  /// No description provided for @notifications_empty_section.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing here yet'**
+  String get notifications_empty_section;
+
+  /// No description provided for @notifications_close.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get notifications_close;
+
   /// No description provided for @error_email_exists.
   ///
   /// In en, this message translates to:

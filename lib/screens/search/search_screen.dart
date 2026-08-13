@@ -159,7 +159,7 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
           Expanded(
             child: Consumer<SearchProvider>(
               builder: (context, provider, _) {
-                if (provider.isLoading) {
+                if (provider.isLoading && provider.users.isEmpty) {
                   return _buildLoadingGrid(isDark);
                 }
                 if (provider.errorMessage != null) {
@@ -206,33 +206,42 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
     final isPersian = !Localizations.localeOf(
       context,
     ).languageCode.contains('en');
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.cloud_off,
-              size: 64,
-              color: isDark ? AppTheme.darkTextMuted : Colors.grey,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              provider.errorMessage ?? 'Error',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: AppTheme.fontFor(isPersian),
-                fontSize: 16,
-                color: isDark ? AppTheme.darkTextMuted : Colors.grey,
+    return RefreshIndicator(
+      onRefresh: () => provider.loadProfiles(),
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height * 0.6,
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.cloud_off,
+                    size: 64,
+                    color: isDark ? AppTheme.darkTextMuted : Colors.grey,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    provider.errorMessage ?? 'Error',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontFamily: AppTheme.fontFor(isPersian),
+                      fontSize: 16,
+                      color: isDark ? AppTheme.darkTextMuted : Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  AppTheme.gradientButton(
+                    onPressed: () => provider.refresh(),
+                    child: const Text('Retry'),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 16),
-            AppTheme.gradientButton(
-              onPressed: () => provider.refresh(),
-              child: const Text('Retry'),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -243,39 +252,48 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
     final isPersian = !Localizations.localeOf(
       context,
     ).languageCode.contains('en');
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              Icons.search_off,
-              size: 64,
-              color: isDark ? AppTheme.darkTextMuted : Colors.grey,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              t.search_no_results,
-              style: (isPersian ? AppTheme.h2Fa : AppTheme.h2).copyWith(
-                color: isDark ? AppTheme.darkText : AppTheme.lightText,
+    return RefreshIndicator(
+      onRefresh: () => provider.loadProfiles(),
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height * 0.6,
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(32),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.search_off,
+                    size: 64,
+                    color: isDark ? AppTheme.darkTextMuted : Colors.grey,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    t.search_no_results,
+                    style: (isPersian ? AppTheme.h2Fa : AppTheme.h2).copyWith(
+                      color: isDark ? AppTheme.darkText : AppTheme.lightText,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    t.search_no_results_hint,
+                    style: TextStyle(
+                      fontFamily: AppTheme.fontFor(isPersian),
+                      fontSize: 14,
+                      color: isDark ? AppTheme.darkTextMuted : Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  AppTheme.gradientButton(
+                    onPressed: () => provider.refresh(),
+                    child: Text(t.discover_refresh),
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              t.search_no_results_hint,
-              style: TextStyle(
-                fontFamily: AppTheme.fontFor(isPersian),
-                fontSize: 14,
-                color: isDark ? AppTheme.darkTextMuted : Colors.grey,
-              ),
-            ),
-            const SizedBox(height: 16),
-            AppTheme.gradientButton(
-              onPressed: () => provider.refresh(),
-              child: Text(t.discover_refresh),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -288,37 +306,41 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
     Color textColor,
   ) {
     final itemCount = provider.users.length + (provider.hasMore ? 1 : 0);
-    return GridView.builder(
-      controller: _scrollController,
-      padding: EdgeInsets.fromLTRB(
-        8,
-        8,
-        8,
-        AppLayout.floatingNavClearance,
-      ),
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        // Auto-switches column count with width (3 on phones -> more on
-        // tablets) while keeping cards a usable size.
-        maxCrossAxisExtent: 160,
-        mainAxisSpacing: 6,
-        crossAxisSpacing: 6,
-        childAspectRatio: 0.58,
-      ),
-      itemCount: itemCount,
-      itemBuilder: (context, index) {
-        if (index == provider.users.length) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.all(12),
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
+    return RefreshIndicator(
+      onRefresh: () => provider.loadProfiles(),
+      child: GridView.builder(
+        controller: _scrollController,
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.fromLTRB(
+          8,
+          8,
+          8,
+          AppLayout.floatingNavClearance,
+        ),
+        gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+          // Auto-switches column count with width (3 on phones -> more on
+          // tablets) while keeping cards a usable size.
+          maxCrossAxisExtent: 160,
+          mainAxisSpacing: 6,
+          crossAxisSpacing: 6,
+          childAspectRatio: 0.58,
+        ),
+        itemCount: itemCount,
+        itemBuilder: (context, index) {
+          if (index == provider.users.length) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(12),
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            );
+          }
+          return SearchGridCard(
+            profile: provider.users[index],
+            onTap: () => _openProfileDetail(provider.users[index]),
           );
-        }
-        return SearchGridCard(
-          profile: provider.users[index],
-          onTap: () => _openProfileDetail(provider.users[index]),
-        );
-      },
+        },
+      ),
     );
   }
 

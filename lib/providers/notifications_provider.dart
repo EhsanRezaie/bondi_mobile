@@ -1,6 +1,9 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:dating_app/models/notification.dart';
 import 'package:dating_app/services/chat_service.dart';
+import 'package:dating_app/providers/chat_provider.dart';
+import 'package:dating_app/services/push_service.dart';
 
 class NotificationsProvider extends ChangeNotifier {
   List<AppNotification> _notifications = [];
@@ -11,13 +14,28 @@ class NotificationsProvider extends ChangeNotifier {
   String? _errorMessage;
   static const _pageSize = 20;
 
+  // Unread counts
+  int _unreadTotal = 0;
+  Map<String, int> _unreadByType = {
+    'like': 0,
+    'liked': 0,
+    'match': 0,
+    'system': 0,
+  };
+
+  StreamSubscription? _socketSubscription;
+  bool _socketAttached = false;
+
   List<AppNotification> get notifications => _notifications;
   bool get hasMore => _hasMore;
   bool get isLoading => _isLoading;
   bool get isLoadingMore => _isLoadingMore;
   String? get errorMessage => _errorMessage;
-  int get unreadCount =>
-      _notifications.where((n) => !n.isRead).length;
+  int get unreadCount => _unreadTotal;
+
+  int unreadFor(String type) => _unreadByType[type] ?? 0;
+
+  Map<String, int> get unreadByType => Map.unmodifiable(_unreadByType);
 
   Future<void> loadNotifications() async {
     _isLoading = true;
@@ -39,6 +57,7 @@ class NotificationsProvider extends ChangeNotifier {
             items.map((j) => AppNotification.fromJson(j)).toList();
         _offset = _notifications.length;
         _hasMore = data['next_offset'] != null;
+        _recomputeUnreadCounts();
       } else {
         _errorMessage = 'Failed to load notifications';
       }
@@ -88,6 +107,7 @@ class NotificationsProvider extends ChangeNotifier {
           _notifications[i] = _notifications[i].copyWith(isRead: true);
         }
       }
+      _recomputeUnreadCounts();
       notifyListeners();
     } catch (e) {
       // silent
@@ -99,6 +119,7 @@ class NotificationsProvider extends ChangeNotifier {
       final response = await ChatService.deleteNotification(id);
       if (response.statusCode == 200 || response.statusCode == 204) {
         _notifications.removeWhere((n) => n.id == id);
+        _recomputeUnreadCounts();
         notifyListeners();
         return true;
       }
@@ -108,5 +129,119 @@ class NotificationsProvider extends ChangeNotifier {
       notifyListeners();
       return false;
     }
+  }
+
+  void _recomputeUnreadCounts() {
+    final counts = <String, int>{'like': 0, 'liked': 0, 'match': 0, 'system': 0};
+    for (final n in _notifications) {
+      if (!n.isRead) {
+        counts[n.type] = (counts[n.type] ?? 0) + 1;
+      }
+    }
+    _unreadByType = counts;
+    _unreadTotal = counts.values.fold(0, (a, b) => a + b);
+  }
+
+  Future<void> refreshUnreadCounts() async {
+    try {
+      final response = await ChatService.getNotificationCounts();
+      if (response.statusCode == 200) {
+        final data = response.data;
+        _unreadTotal = data['total'] ?? 0;
+        final byType = data['by_type'] as Map<String, dynamic>? ?? {};
+        _unreadByType = {
+          'like': byType['like'] ?? 0,
+          'liked': byType['liked'] ?? 0,
+          'match': byType['match'] ?? 0,
+          'system': byType['system'] ?? 0,
+        };
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('Failed to refresh unread counts: $e');
+    }
+  }
+
+  void attachSocket(ChatProvider chatProvider) {
+    if (_socketAttached) return;
+    _socketAttached = true;
+
+    _socketSubscription = chatProvider.socketEvents.listen((event) {
+      final type = event['type'] as String?;
+      final data = event['data'] as Map<String, dynamic>? ?? {};
+
+      if (type == 'new_notification') {
+        _handleNewNotification(data);
+      }
+    });
+  }
+
+  void _handleNewNotification(Map<String, dynamic> data) {
+    final notificationId = data['id'] as String?;
+    final notifType = data['type'] as String?;
+    final title = data['title'] as String?;
+    final body = data['body'] as String?;
+    final isRead = data['is_read'] as bool? ?? false;
+    final createdAtStr = data['created_at'] as String?;
+    final userId = data['user_id'] as String?;
+    final matchId = data['match_id'] as String?;
+    final chatId = data['chat_id'] as String?;
+
+    if (notificationId == null || notifType == null) return;
+
+    // Check if already exists
+    final exists = _notifications.any((n) => n.id == notificationId);
+    if (!exists) {
+      final notification = AppNotification(
+        id: notificationId,
+        type: notifType,
+        title: title ?? '',
+        body: body,
+        isRead: isRead,
+        createdAt: createdAtStr != null
+            ? DateTime.tryParse(createdAtStr) ?? DateTime.now()
+            : DateTime.now(),
+        data: {
+          if (userId != null) 'user_id': userId,
+          if (matchId != null) 'match_id': matchId,
+          if (chatId != null) 'chat_id': chatId,
+        },
+      );
+      _notifications.insert(0, notification);
+      _offset++;
+      _recomputeUnreadCounts();
+      notifyListeners();
+
+      // Also trigger toast via NotificationToastService
+      // The PushService already handles toast for foreground FCM messages.
+      // WS events need to trigger toast here.
+      NotificationToastService.show(
+        id: notificationId,
+        type: notifType,
+        title: title ?? '',
+        body: body ?? '',
+        data: {'user_id': userId, 'match_id': matchId, 'chat_id': chatId},
+      );
+    } else {
+      // Update existing if needed
+      final index = _notifications.indexWhere((n) => n.id == notificationId);
+      if (index != -1 && !_notifications[index].isRead && isRead) {
+        _notifications[index] = _notifications[index].copyWith(isRead: true);
+        _recomputeUnreadCounts();
+        notifyListeners();
+      }
+    }
+  }
+
+  void detachSocket() {
+    _socketSubscription?.cancel();
+    _socketSubscription = null;
+    _socketAttached = false;
+  }
+
+  @override
+  void dispose() {
+    detachSocket();
+    super.dispose();
   }
 }

@@ -99,6 +99,12 @@
 
   "notifications_title": "Notifications",
   "notifications_empty": "No notifications yet",
+  "notifications_section_liked": "Liked",
+  "notifications_section_likes": "Likes",
+  "notifications_section_matches": "Matches",
+  "notifications_section_announcements": "Announcements",
+  "notifications_empty_section": "Nothing here yet",
+  "notifications_close": "Close",
 
   "error_email_exists": "This email is already registered",
   "error_email_invalid_format": "Invalid email format",

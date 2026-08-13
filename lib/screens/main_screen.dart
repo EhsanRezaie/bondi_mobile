@@ -5,9 +5,11 @@ import '../config/app_theme.dart';
 import '../providers/auth_provider.dart';
 import '../providers/chat_provider.dart';
 import '../providers/discover_provider.dart';
+import '../providers/notifications_provider.dart';
 import '../providers/onboarding_provider.dart';
 import '../providers/profile_provider.dart';
 import '../services/photo_service.dart';
+import '../services/push_service.dart';
 
 import 'login_screen.dart';
 import 'onboarding/basic_info_screen.dart';
@@ -95,6 +97,16 @@ class _MainScreenState extends State<MainScreen> {
       if (mounted) {
         Provider.of<ChatProvider>(context, listen: false)
             .connectSessionSocket();
+        
+        // Initialize FCM push service
+        Provider.of<NotificationsProvider>(context, listen: false)
+            .attachSocket(Provider.of<ChatProvider>(context, listen: false));
+        PushService().initPush(
+          onNotificationTap: (route, data) {
+            // Navigation will be handled by NotificationsProvider
+          },
+          onTokenRefreshed: () {},
+        );
       }
     }
 

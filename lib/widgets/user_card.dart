@@ -5,6 +5,7 @@ import 'package:dating_app/config/app_theme.dart';
 import 'package:dating_app/models/discover_profile.dart';
 import 'package:dating_app/utils/responsive.dart';
 import 'package:dating_app/utils/cached_image.dart';
+import 'package:dating_app/widgets/online_ring.dart';
 
 class UserCard extends StatefulWidget {
   final DiscoverProfile profile;
@@ -629,23 +630,18 @@ class UserCardState extends State<UserCard>
           ),
         ),
         Positioned(
-          top: AppLayout.s(context, 12),
-          left: AppLayout.s(context, 12),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (profile.isOnline)
-                Container(
-                  width: AppLayout.s(context, 12),
-                  height: AppLayout.s(context, 12),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? AppTheme.darkSuccess
-                        : AppTheme.lightSuccess,
-                    shape: BoxShape.circle,
-                  ),
-                ),
-            ],
+          top: 0,
+          left: AppLayout.s(context, 16),
+          child: SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: EdgeInsets.only(top: AppLayout.s(context, 64)),
+              child: OnlineRing(
+                isOnline: profile.isOnline,
+                size: AppLayout.s(context, 14),
+                borderWidth: AppLayout.s(context, 2),
+              ),
+            ),
           ),
         ),
       ],

@@ -296,6 +296,24 @@ class AppLocalizationsFa extends AppLocalizations {
   String get notifications_empty => 'هنوز اعلانی ندارید';
 
   @override
+  String get notifications_section_liked => 'لایک‌شده';
+
+  @override
+  String get notifications_section_likes => 'لایک‌ها';
+
+  @override
+  String get notifications_section_matches => 'تطابق‌ها';
+
+  @override
+  String get notifications_section_announcements => 'اعلامیه‌ها';
+
+  @override
+  String get notifications_empty_section => 'موردی وجود ندارد';
+
+  @override
+  String get notifications_close => 'بستن';
+
+  @override
   String get error_email_exists => 'این ایمیل قبلاً ثبت نام کرده است';
 
   @override

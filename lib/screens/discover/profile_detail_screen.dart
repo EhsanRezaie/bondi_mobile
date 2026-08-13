@@ -372,43 +372,6 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
                   ),
                 ),
               ),
-            if (photos.length > 1)
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 64,
-                child: Center(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.45),
-                      borderRadius: BorderRadius.circular(100),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.fullscreen,
-                          size: 14,
-                          color: Colors.white,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          t.photo_fullscreen_hint,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
             Positioned(
               left: 16,
               right: 16,
@@ -416,6 +379,28 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (photos.length > 1) ...[
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.touch_app,
+                          size: 14,
+                          color: Colors.white54,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          t.photo_fullscreen_hint,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.white54,
+                            fontFamily: font,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                  ],
                   Row(
                     children: [
                       Text(
