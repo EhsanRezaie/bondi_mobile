@@ -1021,4 +1021,7 @@ class AppLocalizationsFa extends AppLocalizations {
   @override
   String get ticket_load_error =>
       'امکان بارگذاری تیکت‌ها وجود ندارد. برای تازه‌سازی بکشید.';
+
+  @override
+  String get notifications_see_details => 'مشاهده جزئیات';
 }

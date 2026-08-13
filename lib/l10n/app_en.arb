@@ -400,5 +400,6 @@
   "ticket_closed_note": "This ticket is closed. Sending a message will reopen it.",
   "ticket_support_team": "Support Team",
   "ticket_you": "You",
-  "ticket_load_error": "Couldn't load tickets. Pull to refresh."
+  "ticket_load_error": "Couldn't load tickets. Pull to refresh.",
+  "notifications_see_details": "See details"
 }

@@ -1975,6 +1975,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Couldn\'t load tickets. Pull to refresh.'**
   String get ticket_load_error;
+
+  /// No description provided for @notifications_see_details.
+  ///
+  /// In en, this message translates to:
+  /// **'See details'**
+  String get notifications_see_details;
 }
 
 class _AppLocalizationsDelegate

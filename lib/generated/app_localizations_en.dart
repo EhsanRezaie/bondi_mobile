@@ -1016,4 +1016,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get ticket_load_error => 'Couldn\'t load tickets. Pull to refresh.';
+
+  @override
+  String get notifications_see_details => 'See details';
 }
