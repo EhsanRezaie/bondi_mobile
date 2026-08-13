@@ -1053,7 +1053,7 @@ class _DiscoverFilterSheetState extends State<_DiscoverFilterSheet> {
     super.initState();
     _gender = widget.provider.genderFilter;
     _ageMin = widget.provider.ageMin;
-    _ageMax = widget.provider.ageMax;
+    _ageMax = (widget.provider.ageMax ?? 80) > 80 ? null : widget.provider.ageMax;
     _distance = (widget.provider.distanceKm ?? 500).toDouble().clamp(1.0, 500.0);
   }
 
@@ -1119,23 +1119,23 @@ class _DiscoverFilterSheetState extends State<_DiscoverFilterSheet> {
             ),
           ),
           RangeSlider(
-            values: RangeValues(_ageMin.toDouble(), (_ageMax ?? 100).toDouble()),
+            values: RangeValues(_ageMin.toDouble(), (_ageMax ?? 80).toDouble()),
             min: 18,
-            max: 100,
-            divisions: 82,
+            max: 80,
+            divisions: 62,
             activeColor: primaryColor,
-            labels: RangeLabels('$_ageMin', '${_ageMax ?? 100}'),
+            labels: RangeLabels('$_ageMin', '${_ageMax ?? 80}'),
             onChanged: (values) {
               setState(() {
                 _ageMin = values.start.round();
-                _ageMax = values.end.round();
+                _ageMax = values.end.round() == 80 ? null : values.end.round();
               });
             },
           ),
           Padding(
             padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
             child: Text(
-              t.discover_filter_years(_ageMax ?? 100, _ageMin),
+              t.discover_filter_years(_ageMax ?? 80, _ageMin),
               style: TextStyle(
                 fontFamily: font,
                 fontSize: 14,
@@ -1195,7 +1195,7 @@ class _DiscoverFilterSheetState extends State<_DiscoverFilterSheet> {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () {
-                      final apiMax = _ageMax != null && _ageMax! < 100 ? _ageMax : null;
+                      final apiMax = _ageMax != null && _ageMax! < 80 ? _ageMax : null;
                       final apiDistance = _distance >= 500 ? null : _distance.round();
                       widget.provider.setGenderFilter(_gender);
                       widget.provider.setAgeRange(_ageMin, apiMax);

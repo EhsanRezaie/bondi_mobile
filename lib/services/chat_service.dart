@@ -31,9 +31,11 @@ class ChatService {
     int limit = 20,
     int offset = 0,
     String? status,
+    String? cursor,
   }) async {
     try {
       final params = <String, dynamic>{'limit': limit, 'offset': offset};
+      if (cursor != null && cursor.isNotEmpty) params['cursor'] = cursor;
       if (status != null) params['status'] = status;
       return await ApiService.get(
         '/chats',

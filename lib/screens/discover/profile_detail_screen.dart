@@ -194,6 +194,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
       extendBody: true,
       backgroundColor: bgColor,
       body: SafeArea(
+        bottom: false,
         child: Stack(
           children: [
             CustomScrollView(
@@ -976,31 +977,10 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
   }
 
   Widget _buildBottomActionBar(AppLocalizations t, bool isDark) {
-    final surfaceColor = isDark ? AppTheme.darkSurface : Colors.white;
-    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
-    return Container(
-      decoration: BoxDecoration(
-        color: surfaceColor,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.15),
-            blurRadius: 12,
-            offset: const Offset(0, -4),
-          ),
-        ],
-        border: Border(
-          top: BorderSide(
-            color: borderColor,
-            width: 0.5,
-          ),
-        ),
-      ),
+    return Padding(
       padding: EdgeInsets.only(
         top: 12,
-        bottom: MediaQuery.of(context).padding.bottom > 0
-            ? MediaQuery.of(context).padding.bottom + 8
-            : 20,
+        bottom: MediaQuery.of(context).padding.bottom + 16,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,

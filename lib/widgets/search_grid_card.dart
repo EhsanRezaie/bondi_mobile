@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:dating_app/config/app_theme.dart';
 import 'package:dating_app/models/discover_profile.dart';
 import 'package:dating_app/utils/cached_image.dart';
+import 'package:dating_app/utils/responsive.dart';
 import 'package:dating_app/widgets/shimmer_avatar.dart';
 
 class SearchGridCard extends StatelessWidget {
@@ -86,45 +87,28 @@ class SearchGridCard extends StatelessWidget {
                 ),
               ),
 
-              // Verified + Liked badges
-              if (profile.isVerified || profile.currentUserAction == 'like')
+              // Liked badge
+              if (profile.currentUserAction == 'like')
                 Positioned(
                   top: 4,
                   right: 4,
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      if (profile.isVerified)
-                        Container(
-                          padding: const EdgeInsets.all(2),
-                          decoration: BoxDecoration(
-                            gradient: AppTheme.primaryGradient(),
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.verified,
-                            size: 10,
-                            color: Colors.white,
-                          ),
+                      Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? AppTheme.darkError
+                              : AppTheme.lightError,
+                          shape: BoxShape.circle,
                         ),
-                      if (profile.isVerified &&
-                          profile.currentUserAction == 'like')
-                        const SizedBox(width: 2),
-                      if (profile.currentUserAction == 'like')
-                        Container(
-                          padding: const EdgeInsets.all(2),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? AppTheme.darkError
-                                : AppTheme.lightError,
-                            shape: BoxShape.circle,
-                          ),
-                          child: const Icon(
-                            Icons.favorite,
-                            size: 10,
-                            color: Colors.white,
-                          ),
+                        child: const Icon(
+                          Icons.favorite,
+                          size: 10,
+                          color: Colors.white,
                         ),
+                      ),
                     ],
                   ),
                 ),
@@ -208,14 +192,36 @@ class SearchGridCard extends StatelessWidget {
                       ],
                     ),
                     if (profile.distanceKm != null)
-                      Text(
-                        '${profile.distanceKm!.round()} km',
-                        style: TextStyle(
-                          fontFamily: font,
-                          fontSize: 9,
-                          color: Colors.white.withValues(alpha: 0.8),
-                        ),
-                       ),
+                      Row(
+                        children: [
+                          Text(
+                            '${profile.distanceKm!.round()} km',
+                            style: TextStyle(
+                              fontFamily: font,
+                              fontSize: 9,
+                              color: Colors.white.withValues(alpha: 0.8),
+                            ),
+                          ),
+                          if (profile.isVerified) ...[
+                            const SizedBox(width: 4),
+                            Icon(
+                              Icons.verified,
+                              size: AppLayout.s(context, 12),
+                              color: Colors.white,
+                            ),
+                          ],
+                        ],
+                      ),
+                    if (profile.isVerified && profile.distanceKm == null)
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.verified,
+                            size: AppLayout.s(context, 12),
+                            color: Colors.white,
+                          ),
+                        ],
+                      ),
                     if (profile.locationDisplay.isNotEmpty)
                       Text(
                         profile.locationDisplay,

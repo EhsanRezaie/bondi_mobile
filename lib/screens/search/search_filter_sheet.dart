@@ -67,14 +67,14 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
     final provider = Provider.of<SearchProvider>(context, listen: false);
     _gender = provider.genderFilter;
     _ageMin = provider.ageMin;
-    _ageMax = provider.ageMax;
+    _ageMax = (provider.ageMax ?? 80) > 80 ? null : provider.ageMax;
     _distanceKm = provider.distanceKm;
     _sortBy = provider.sortBy;
     _sortOrder = provider.sortOrder;
-    _heightMin = provider.heightMin;
-    _heightMax = provider.heightMax;
-    _weightMin = provider.weightMin;
-    _weightMax = provider.weightMax;
+    _heightMin = (provider.heightMin ?? 130) < 130 ? null : provider.heightMin;
+    _heightMax = (provider.heightMax ?? 210) > 210 ? null : provider.heightMax;
+    _weightMin = (provider.weightMin ?? 30) < 30 ? null : provider.weightMin;
+    _weightMax = (provider.weightMax ?? 120) > 120 ? null : provider.weightMax;
     _bodyType = provider.bodyType;
     _relationshipStatus = provider.relationshipStatus;
     _education = provider.education;
@@ -544,12 +544,12 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
           labelBuilder: (v) => v == 'all' ? t.discover_filter_all : v == 'male' ? t.discover_filter_male : t.discover_filter_female,
         ),
         _buildSectionHeader('🎂', t.search_filter_age_range, isDark, primaryColor),
-        Text('${_ageMin.round()} - ${_ageMax != null ? _ageMax!.round() : '100+'}', style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), fontSize: 14, color: textColor)),
+        Text('${_ageMin.round()} - ${_ageMax != null ? _ageMax!.round() : '80+'}', style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), fontSize: 14, color: textColor)),
         RangeSlider(
-          values: RangeValues(_ageMin.toDouble(), (_ageMax ?? 100).toDouble()),
-          min: 18, max: 100, divisions: 82,
+          values: RangeValues(_ageMin.toDouble(), (_ageMax ?? 80).toDouble()),
+          min: 18, max: 80, divisions: 62,
           activeColor: primaryColor, inactiveColor: primaryColor.withValues(alpha: 0.2),
-          onChanged: (v) => setState(() { _ageMin = v.start.round(); _ageMax = v.end.round() == 100 ? null : v.end.round(); }),
+          onChanged: (v) => setState(() { _ageMin = v.start.round(); _ageMax = v.end.round() == 80 ? null : v.end.round(); }),
         ),
         _buildSectionHeader('📏', t.search_filter_distance_km, isDark, primaryColor),
         Text(_distanceKm != null ? '$_distanceKm km' : '500+ km', style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), fontSize: 14, color: textColor)),
@@ -570,26 +570,26 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
         _buildSectionHeader('💪', 'Physical', isDark, primaryColor),
         Text(t.search_filter_height, style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), fontSize: 13, color: mutedColor)),
         const SizedBox(height: 8),
-        Text('${_heightMin ?? 50} - ${_heightMax != null ? _heightMax! : '250+'} cm', style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), fontSize: 14, color: textColor)),
+        Text('${_heightMin ?? 130} - ${_heightMax != null ? _heightMax! : '210+'} cm', style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), fontSize: 14, color: textColor)),
         RangeSlider(
-          values: RangeValues((_heightMin ?? 50).toDouble(), (_heightMax ?? 250).toDouble()),
-          min: 50, max: 250, divisions: 200,
+          values: RangeValues((_heightMin ?? 130).toDouble(), (_heightMax ?? 210).toDouble()),
+          min: 130, max: 210, divisions: 80,
           activeColor: primaryColor, inactiveColor: primaryColor.withValues(alpha: 0.2),
           onChanged: (v) => setState(() {
-            _heightMin = v.start.round() <= 50 ? null : v.start.round();
-            _heightMax = v.end.round() >= 250 ? null : v.end.round();
+            _heightMin = v.start.round() <= 130 ? null : v.start.round();
+            _heightMax = v.end.round() >= 210 ? null : v.end.round();
           }),
         ),
         Text(t.search_filter_weight, style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), fontSize: 13, color: mutedColor)),
         const SizedBox(height: 8),
-        Text('${_weightMin ?? 30} - ${_weightMax != null ? _weightMax! : '300+'} kg', style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), fontSize: 14, color: textColor)),
+        Text('${_weightMin ?? 30} - ${_weightMax != null ? _weightMax! : '120+'} kg', style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), fontSize: 14, color: textColor)),
         RangeSlider(
-          values: RangeValues((_weightMin ?? 30).toDouble(), (_weightMax ?? 300).toDouble()),
-          min: 30, max: 300, divisions: 270,
+          values: RangeValues((_weightMin ?? 30).toDouble(), (_weightMax ?? 120).toDouble()),
+          min: 30, max: 120, divisions: 90,
           activeColor: primaryColor, inactiveColor: primaryColor.withValues(alpha: 0.2),
           onChanged: (v) => setState(() {
             _weightMin = v.start.round() <= 30 ? null : v.start.round();
-            _weightMax = v.end.round() >= 300 ? null : v.end.round();
+            _weightMax = v.end.round() >= 120 ? null : v.end.round();
           }),
         ),
         _buildChipRow(

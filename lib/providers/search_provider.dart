@@ -27,11 +27,12 @@ class SearchProvider extends ChangeNotifier {
 
   // ── Results state ──────────────────────────────────────────────
   List<DiscoverProfile> _users = [];
+  Set<String> _seenUserIds = {};
   bool _isLoading = false;
   bool _isLoadingMore = false;
   String? _errorMessage;
   int _total = 0;
-  int _offset = 0;
+  String? _nextCursor;
   int _currentPage = 0;
   bool _hasMore = true;
   static const int _pageSize = 9;
@@ -324,7 +325,7 @@ class SearchProvider extends ChangeNotifier {
 
     _isLoading = true;
     _errorMessage = null;
-    _offset = 0;
+    _nextCursor = null;
     _currentPage = 0;
     _hasMore = true;
     _safeNotify();
@@ -359,21 +360,18 @@ class SearchProvider extends ChangeNotifier {
         sortBy: _sortBy,
         sortOrder: _sortOrder,
         limit: _pageSize,
-        offset: 0,
       );
 
       if (response.statusCode == 200) {
         final data = response.data;
         final usersList = data['users'] as List;
-        if (usersList.isNotEmpty) {
-          debugPrint('SearchProvider: first user keys: ${(usersList[0] as Map).keys.toList()}');
-        }
         _users = usersList
             .map((j) => DiscoverProfile.fromJson(j as Map<String, dynamic>))
             .toList();
+        _seenUserIds = {for (final u in _users) u.id};
         _total = data['total'] ?? 0;
-        _hasMore = _users.length < _total && _users.isNotEmpty;
-        _offset = _users.length;
+        _nextCursor = data['next_cursor'];
+        _hasMore = _nextCursor != null && _nextCursor!.isNotEmpty;
       } else {
         _errorMessage = 'Failed to load profiles';
       }
@@ -397,47 +395,59 @@ class SearchProvider extends ChangeNotifier {
     _safeNotify();
 
     try {
-      final response = await SearchService.search(
-        gender: _genderFilter,
-        ageMin: _ageMin,
-        ageMax: _ageMax,
-        distanceKm: _distanceKm,
-        heightMin: _heightMin,
-        heightMax: _heightMax,
-        weightMin: _weightMin,
-        weightMax: _weightMax,
-        bodyType: _bodyType,
-        relationshipStatus: _relationshipStatus,
-        education: _education,
-        smoking: _smoking,
-        drinking: _drinking,
-        politicalOrientation: _politicalOrientation,
-        childrenStatus: _childrenStatus,
-        livingSituation: _livingSituation,
-        country: _country,
-        province: _province,
-        city: _city,
-        religion: _religion,
-        ethnicity: _ethnicity,
-        languages: _languages.isNotEmpty ? _languages : null,
-        interests: _interests.isNotEmpty ? _interests : null,
-        hasPhotos: _hasPhotos,
-        isVerified: _isVerified,
-        sortBy: _sortBy,
-        sortOrder: _sortOrder,
-        limit: _pageSize,
-        offset: _offset,
-      );
+      // Keyset (cursor) pagination from the backend prevents duplicates even
+      // when the sort order shifts between pages. The dedup set + backfill loop
+      // remain as a safety net for any overlapping cursor responses.
+      var added = 0;
+      var pagesFetched = 0;
+      while (added < _pageSize && _hasMore && pagesFetched < 4) {
+        pagesFetched++;
+        final response = await SearchService.search(
+          gender: _genderFilter,
+          ageMin: _ageMin,
+          ageMax: _ageMax,
+          distanceKm: _distanceKm,
+          heightMin: _heightMin,
+          heightMax: _heightMax,
+          weightMin: _weightMin,
+          weightMax: _weightMax,
+          bodyType: _bodyType,
+          relationshipStatus: _relationshipStatus,
+          education: _education,
+          smoking: _smoking,
+          drinking: _drinking,
+          politicalOrientation: _politicalOrientation,
+          childrenStatus: _childrenStatus,
+          livingSituation: _livingSituation,
+          country: _country,
+          province: _province,
+          city: _city,
+          religion: _religion,
+          ethnicity: _ethnicity,
+          languages: _languages.isNotEmpty ? _languages : null,
+          interests: _interests.isNotEmpty ? _interests : null,
+          hasPhotos: _hasPhotos,
+          isVerified: _isVerified,
+          sortBy: _sortBy,
+          sortOrder: _sortOrder,
+          limit: _pageSize,
+          cursor: _nextCursor,
+        );
 
-      if (response.statusCode == 200) {
+        if (response.statusCode != 200) break;
+
         final data = response.data;
-        final more = (data['users'] as List)
+        final page = (data['users'] as List)
             .map((j) => DiscoverProfile.fromJson(j as Map<String, dynamic>))
             .toList();
-        _users.addAll(more);
         _total = data['total'] ?? _total;
-        _offset = _users.length;
-        _hasMore = _offset < _total;
+        _nextCursor = data['next_cursor'];
+        _hasMore = _nextCursor != null && _nextCursor!.isNotEmpty;
+
+        final fresh = page.where((u) => _seenUserIds.add(u.id)).toList();
+        _users.addAll(fresh);
+        added += fresh.length;
+        if (page.isEmpty) break;
       }
     } catch (e) {
       debugPrint('SearchProvider.loadMore Error: $e');
@@ -456,6 +466,15 @@ Future<Map<String, dynamic>?> likeUser(DiscoverProfile profile) async {
       final response = await SearchService.swipeUser(profile.id, 'like');
       if (response.statusCode == 200) {
         final data = response.data as Map<String, dynamic>;
+        // Apply locally so the grid card shows the liked badge without
+        // needing a full reload (no loading flash, no scroll reset).
+        final index = _users.indexWhere((u) => u.id == profile.id);
+        if (index != -1) {
+          _users[index] = _users[index].copyWith(
+            currentUserAction: data['matched'] == true ? 'matched' : 'like',
+          );
+          _safeNotify();
+        }
         await _refreshLimits();
         return data;
       }

@@ -30,8 +30,9 @@ class DiscoverProvider extends ChangeNotifier {
   bool _isLoadingMore = false;
   String? _errorMessage;
   int _total = 0;
-  int _offset = 0;
+  String? _nextCursor;
   bool _hasMore = true;
+  final Set<String> _seenUserIds = {};
 
   bool _isPremium = false;
   int _likesRemaining = 0;
@@ -130,7 +131,8 @@ class DiscoverProvider extends ChangeNotifier {
 
     _isLoading = true;
     _errorMessage = null;
-    _offset = 0;
+    _nextCursor = null;
+    _seenUserIds.clear();
     _hasMore = true;
     _safeNotify();
 
@@ -149,9 +151,12 @@ class DiscoverProvider extends ChangeNotifier {
         _profiles = (data['users'] as List)
             .map((j) => DiscoverProfile.fromJson(j as Map<String, dynamic>))
             .toList();
+        _seenUserIds.addAll(_profiles.map((p) => p.id));
         _total = data['total'] ?? 0;
-        _hasMore = _profiles.length < _total && _profiles.isNotEmpty;
-        _offset = _profiles.length;
+        final next = data['next_cursor'] as String?;
+        _nextCursor = (next != null && next.isNotEmpty) ? next : null;
+        _hasMore = _nextCursor != null ||
+            (_profiles.isNotEmpty && _profiles.length < _total);
       } else {
         _errorMessage = 'Failed to load profiles';
       }
@@ -181,17 +186,21 @@ class DiscoverProvider extends ChangeNotifier {
         ageMax: _ageMax,
         distanceKm: _distanceKm,
         limit: pageSize,
-        offset: _offset,
+        cursor: _nextCursor,
       );
 
       if (response.statusCode == 200) {
         final data = response.data;
         final more = (data['users'] as List)
             .map((j) => DiscoverProfile.fromJson(j as Map<String, dynamic>))
+            .where((p) => _seenUserIds.add(p.id))
             .toList();
         _profiles.addAll(more);
-        _offset = _profiles.length;
-        _hasMore = _profiles.length < (data['total'] ?? _total);
+        _total = data['total'] ?? _total;
+        final next = data['next_cursor'] as String?;
+        _nextCursor = (next != null && next.isNotEmpty) ? next : null;
+        _hasMore = _nextCursor != null ||
+            (_profiles.isNotEmpty && _profiles.length < _total);
       }
     } catch (_) {}
 
@@ -338,9 +347,9 @@ class DiscoverProvider extends ChangeNotifier {
   }
 
   void widenAge() {
-    final current = _ageMax ?? 100;
-    final next = (current + 2).clamp(18, 100);
-    _ageMax = next >= 100 ? null : next;
+    final current = _ageMax ?? 80;
+    final next = (current + 2).clamp(18, 80);
+    _ageMax = next >= 80 ? null : next;
     _saveFilters();
     loadProfiles();
   }

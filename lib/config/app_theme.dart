@@ -365,7 +365,7 @@ class AppTheme {
     bool enabled = true,
     double height = 52,
     EdgeInsetsGeometry padding =
-        const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+        const EdgeInsets.symmetric(horizontal: 24),
   }) {
     return Opacity(
       opacity: enabled ? 1 : 0.5,
