@@ -97,6 +97,9 @@ lib/screens/profile/ticket_detail_screen.dart
 - [x] Mobile: model/service/provider + 3 screens + profile headset icon + provider registration + ARB localization
 - [x] Mobile: `flutter analyze` clean; full suite `flutter test` → 397 passed
 - [x] Mobile: committed & pushed (see commit below)
+- [x] Follow-up 1: admin list Message column shows last conversation message (`last_message`) — backend `af6e94c`, admin `1061290`
+- [x] Follow-up 2: admin ticket drawer shows user UID instead of name/email (`user_uid`) — backend `af6e94c`, admin `1061290`
+- [x] Follow-up 3: app ticket list pull-to-refresh via `AlwaysScrollableScrollPhysics` (matches chat list) — mobile `ed011be`
 
 ### Checkboxes
 - [x] `lib/models/ticket.dart`
