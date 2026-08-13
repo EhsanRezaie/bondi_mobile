@@ -812,76 +812,133 @@ void _openDiscoverFilters(DiscoverProvider provider) {
     Color primaryColor,
   ) {
     final canWiden = provider.canWidenDistance || provider.canWidenAge;
+    final activeFilters = (provider.genderFilter != null ? 1 : 0) +
+        (provider.ageMax != null ? 1 : 0) +
+        (provider.distanceKm != null ? 1 : 0);
 
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              canWiden ? Icons.explore_off : Icons.person_search,
-              size: 64,
-              color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
+    return Stack(
+      children: [
+        Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  canWiden ? Icons.explore_off : Icons.person_search,
+                  size: 64,
+                  color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  canWiden ? t.discover_widen_title : t.discover_no_profiles,
+                  style: TextStyle(
+                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? AppTheme.darkText : AppTheme.lightText,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  canWiden
+                      ? t.discover_widen_subtitle
+                      : t.discover_no_profiles_hint,
+                  style: TextStyle(
+                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                    fontSize: 14,
+                    color: isDark
+                        ? AppTheme.darkTextMuted
+                        : AppTheme.lightTextMuted,
+                  ),
+                ),
+                if (canWiden) ...[
+                  const SizedBox(height: 20),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    alignment: WrapAlignment.center,
+                    children: [
+                      if (provider.canWidenDistance)
+                        _buildWidenButton(
+                          label: t.discover_widen_distance(10),
+                          icon: Icons.near_me,
+                          isDark: isDark,
+                          primaryColor: primaryColor,
+                          onTap: () => provider.widenDistance(),
+                        ),
+                      if (provider.canWidenAge)
+                        _buildWidenButton(
+                          label: t.discover_widen_age(2),
+                          icon: Icons.cake_outlined,
+                          isDark: isDark,
+                          primaryColor: primaryColor,
+                          onTap: () => provider.widenAge(),
+                        ),
+                    ],
+                  ),
+                ],
+              ],
             ),
-            const SizedBox(height: 16),
-            Text(
-              canWiden ? t.discover_widen_title : t.discover_no_profiles,
-              style: TextStyle(
-                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: isDark ? AppTheme.darkText : AppTheme.lightText,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              canWiden
-                  ? t.discover_widen_subtitle
-                  : t.discover_no_profiles_hint,
-              style: TextStyle(
-                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
-                fontSize: 14,
-                color: isDark
-                    ? AppTheme.darkTextMuted
-                    : AppTheme.lightTextMuted,
-              ),
-            ),
-            if (canWiden) ...[
-              const SizedBox(height: 20),
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                alignment: WrapAlignment.center,
+          ),
+        ),
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 8, left: 8, right: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (provider.canWidenDistance)
-                    _buildWidenButton(
-                      label: t.discover_widen_distance(50),
-                      icon: Icons.near_me,
-                      isDark: isDark,
-                      primaryColor: primaryColor,
-                      onTap: () => provider.widenDistance(),
-                    ),
-                  if (provider.canWidenAge)
-                    _buildWidenButton(
-                      label: t.discover_widen_age(2),
-                      icon: Icons.cake_outlined,
-                      isDark: isDark,
-                      primaryColor: primaryColor,
-                      onTap: () => provider.widenAge(),
-                    ),
+                  Stack(
+                    children: [
+                      IconButton(
+                        icon: Icon(
+                          Icons.tune,
+                          color: isDark ? AppTheme.darkText : AppTheme.lightText,
+                          size: 28,
+                        ),
+                        onPressed: () => _openDiscoverFilters(provider),
+                      ),
+                      if (activeFilters > 0)
+                        Positioned(
+                          right: 4,
+                          top: 4,
+                          child: Container(
+                            padding: const EdgeInsets.all(2),
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            constraints: const BoxConstraints(
+                              minWidth: 16,
+                              minHeight: 16,
+                            ),
+                            child: Center(
+                              child: Text(
+                                '$activeFilters',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(width: 48),
                 ],
               ),
-            ],
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: () => provider.refresh(),
-              icon: const Icon(Icons.refresh),
-              label: Text(t.discover_refresh),
             ),
-          ],
+          ),
         ),
-      ),
+      ],
     );
   }
 
@@ -1061,151 +1118,165 @@ class _DiscoverFilterSheetState extends State<_DiscoverFilterSheet> {
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
     final isDark = context.isDarkMode;
+    final bgColor = isDark ? AppTheme.darkSurface : Colors.white;
+    final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
+    final mutedColor = isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted;
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
     final isPersian = !Localizations.localeOf(context).languageCode.contains('en');
     final font = AppTheme.fontFor(isPersian);
 
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? AppTheme.darkSurface : Colors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+    return DraggableScrollableSheet(
+      initialChildSize: 0.55,
+      minChildSize: 0.4,
+      maxChildSize: 0.85,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+          ),
+          child: Stack(
+            children: [
+              Column(
+                children: [
+                  // Drag handle
+                  Container(
+                    margin: const EdgeInsets.only(top: 12),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: isDark ? AppTheme.darkBorder : Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  // Header
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          t.discover_filter_show,
+                          style: TextStyle(
+                            fontFamily: font,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: textColor,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            widget.provider.resetFilters();
+                            Navigator.pop(context);
+                          },
+                          child: Text(
+                            t.search_reset_filters,
+                            style: TextStyle(fontFamily: font, color: mutedColor),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 1),
+                  // Content
+                  Expanded(
+                    child: ListView(
+                      controller: scrollController,
+                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
+                      children: [
+                        _buildSectionHeader('👤', t.search_filter_gender, primaryColor),
+                        _buildChipRow(
+                          options: ['all', 'male', 'female'],
+                          selected: _gender,
+                          onTap: (v) => setState(() => _gender = v),
+                          isDark: isDark,
+                          primaryColor: primaryColor,
+                          textColor: textColor,
+                          labelBuilder: (v) => v == 'all'
+                              ? t.discover_filter_all
+                              : v == 'male'
+                                  ? t.discover_filter_male
+                                  : t.discover_filter_female,
+                        ),
+                        _buildSectionHeader('🎂', t.search_filter_age_range, primaryColor),
+                        Text(
+                          '$_ageMin - ${_ageMax ?? 80}+',
+                          style: TextStyle(fontFamily: font, fontSize: 14, color: textColor),
+                        ),
+                        RangeSlider(
+                          values: RangeValues(_ageMin.toDouble(), (_ageMax ?? 80).toDouble()),
+                          min: 18,
+                          max: 80,
+                          divisions: 62,
+                          activeColor: primaryColor,
+                          inactiveColor: primaryColor.withValues(alpha: 0.2),
+                          onChanged: (v) => setState(() {
+                            _ageMin = v.start.round();
+                            _ageMax = v.end.round() == 80 ? null : v.end.round();
+                          }),
+                        ),
+                        _buildSectionHeader('📏', t.search_filter_distance_km, primaryColor),
+                        Text(
+                          _distance >= 500 ? '500+ km' : '${_distance.round()} km',
+                          style: TextStyle(fontFamily: font, fontSize: 14, color: textColor),
+                        ),
+                        Slider(
+                          value: _distance,
+                          min: 1,
+                          max: 500,
+                          divisions: 499,
+                          activeColor: primaryColor,
+                          inactiveColor: primaryColor.withValues(alpha: 0.2),
+                          onChanged: (v) => setState(() => _distance = v),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              // Floating apply button (content scrolls behind it)
+              Positioned(
+                left: 20,
+                right: 20,
+                bottom: MediaQuery.of(context).padding.bottom > 0 ? 16 : 20,
+                child: AppTheme.gradientButton(
+                  onPressed: _applyFilters,
+                  child: Text(
+                    t.discover_filter_apply,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _applyFilters() {
+    final apiMax = _ageMax != null && _ageMax! < 80 ? _ageMax : null;
+    final apiDistance = _distance >= 500 ? null : _distance.round();
+    widget.provider.setGenderFilter(_gender);
+    widget.provider.setAgeRange(_ageMin, apiMax);
+    widget.provider.setDistance(apiDistance);
+    Navigator.pop(context);
+  }
+
+  Widget _buildSectionHeader(String emoji, String title, Color primaryColor) {
+    final isPersian = !Localizations.localeOf(context).languageCode.contains('en');
+    return Padding(
+      padding: const EdgeInsets.only(top: 24, bottom: 12),
+      child: Row(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  t.discover_filter_show,
-                  style: TextStyle(
-                    fontFamily: font,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? AppTheme.darkText : AppTheme.lightText,
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () => Navigator.pop(context),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                _buildGenderChoice('all', t.discover_filter_all, isDark, primaryColor, font),
-                _buildGenderChoice('male', t.discover_filter_male, isDark, primaryColor, font),
-                _buildGenderChoice('female', t.discover_filter_female, isDark, primaryColor, font),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 16, 24, 8),
-            child: Text(
-              t.discover_filter_age_range,
-              style: TextStyle(
-                fontFamily: font,
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: isDark ? AppTheme.darkText : AppTheme.lightText,
-              ),
-            ),
-          ),
-          RangeSlider(
-            values: RangeValues(_ageMin.toDouble(), (_ageMax ?? 80).toDouble()),
-            min: 18,
-            max: 80,
-            divisions: 62,
-            activeColor: primaryColor,
-            labels: RangeLabels('$_ageMin', '${_ageMax ?? 80}'),
-            onChanged: (values) {
-              setState(() {
-                _ageMin = values.start.round();
-                _ageMax = values.end.round() == 80 ? null : values.end.round();
-              });
-            },
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
-            child: Text(
-              t.discover_filter_years(_ageMax ?? 80, _ageMin),
-              style: TextStyle(
-                fontFamily: font,
-                fontSize: 14,
-                color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  t.discover_filter_max_distance,
-                  style: TextStyle(
-                    fontFamily: font,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w500,
-                    color: isDark ? AppTheme.darkText : AppTheme.lightText,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  t.discover_filter_km(_distance.round()),
-                  style: TextStyle(
-                    fontFamily: font,
-                    fontSize: 14,
-                    color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
-                  ),
-                ),
-                Slider(
-                  value: _distance,
-                  min: 1,
-                  max: 500,
-                  divisions: 499,
-                  activeColor: primaryColor,
-                  label: t.discover_filter_km(_distance.round()),
-                  onChanged: (v) => setState(() => _distance = v),
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-            child: Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () {
-                      widget.provider.resetFilters();
-                      Navigator.pop(context);
-                    },
-                    child: Text(t.search_reset_filters),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () {
-                      final apiMax = _ageMax != null && _ageMax! < 80 ? _ageMax : null;
-                      final apiDistance = _distance >= 500 ? null : _distance.round();
-                      widget.provider.setGenderFilter(_gender);
-                      widget.provider.setAgeRange(_ageMin, apiMax);
-                      widget.provider.setDistance(apiDistance);
-                      Navigator.pop(context);
-                    },
-                    child: Text(t.discover_filter_apply),
-                  ),
-                ),
-              ],
+          Text(emoji, style: const TextStyle(fontSize: 18)),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: (isPersian ? AppTheme.bodyBoldFa : AppTheme.bodyBold).copyWith(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: primaryColor,
             ),
           ),
         ],
@@ -1213,31 +1284,59 @@ class _DiscoverFilterSheetState extends State<_DiscoverFilterSheet> {
     );
   }
 
-  Widget _buildGenderChoice(
-    String value,
-    String label,
-    bool isDark,
-    Color primaryColor,
-    String font,
-  ) {
-    final selected = _gender == value || (value == 'all' && _gender == null);
-    return ChoiceChip(
-      label: Text(
-        label,
-        style: TextStyle(
-          fontFamily: font,
-          fontWeight: FontWeight.w500,
-          color: selected ? Colors.white : (isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted),
-        ),
-      ),
-      selected: selected,
-      selectedColor: primaryColor,
-      backgroundColor: isDark ? Colors.black.withValues(alpha: 0.35) : Colors.grey.shade100,
-      onSelected: (_) {
-        setState(() {
-          _gender = value == 'all' ? null : value;
-        });
-      },
+  Widget _buildChipRow({
+    required List<String> options,
+    required String? selected,
+    required ValueChanged<String?> onTap,
+    required bool isDark,
+    required Color primaryColor,
+    required Color textColor,
+    String Function(String)? labelBuilder,
+  }) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: options.map((option) {
+        final isSelected =
+            selected == option || (option == 'all' && selected == null);
+        final label = labelBuilder != null
+            ? labelBuilder(option)
+            : option.replaceAll('_', ' ');
+        return GestureDetector(
+          onTap: () => onTap(isSelected ? null : (option == 'all' ? null : option)),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? primaryColor
+                  : isDark
+                      ? AppTheme.darkSecondary.withValues(alpha: 0.4)
+                      : Colors.white,
+              borderRadius: BorderRadius.circular(AppTheme.radiusChip),
+              border: Border.all(
+                color: isSelected
+                    ? primaryColor
+                    : (isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
+              ),
+            ),
+            child: Text(
+              label[0].toUpperCase() + label.substring(1),
+              style: TextStyle(
+                fontFamily: AppTheme.fontFor(
+                  !Localizations.localeOf(context).languageCode.contains('en'),
+                ),
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: isSelected
+                    ? Colors.white
+                    : isDark
+                        ? AppTheme.darkText
+                        : AppTheme.lightText,
+              ),
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 }

@@ -260,6 +260,18 @@ abstract class AppLocalizations {
   /// **'Connection failed'**
   String get splash_connection_failed;
 
+  /// No description provided for @screenshot_disabled_notice.
+  ///
+  /// In en, this message translates to:
+  /// **'Screenshots are disabled to protect your privacy'**
+  String get screenshot_disabled_notice;
+
+  /// No description provided for @photo_fullscreen_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap photo for full screen'**
+  String get photo_fullscreen_hint;
+
   /// No description provided for @signup_title.
   ///
   /// In en, this message translates to:
@@ -1085,7 +1097,7 @@ abstract class AppLocalizations {
   /// No description provided for @search_apply_filters.
   ///
   /// In en, this message translates to:
-  /// **'Apply Filters'**
+  /// **'Apply'**
   String get search_apply_filters;
 
   /// No description provided for @search_reset_filters.

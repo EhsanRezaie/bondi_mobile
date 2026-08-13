@@ -1,4 +1,5 @@
 // lib/main.dart
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -14,6 +15,9 @@ import 'providers/settings_provider.dart';
 import 'providers/chat_provider.dart';
 import 'providers/notifications_provider.dart';
 import 'screens/splash_screen.dart';
+import 'widgets/action_toast.dart';
+
+final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,12 +42,29 @@ void main() async {
 
   final prefs = await SharedPreferences.getInstance();
   final savedLanguage = prefs.getString('selected_language') ?? 'en';
-  
+
   runApp(
     MyApp(
       initialLanguage: savedLanguage,
     ),
   );
+
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      final alreadyShown =
+          prefs.getBool('screenshot_notice_shown') ?? false;
+      if (!alreadyShown) {
+        await prefs.setBool('screenshot_notice_shown', true);
+        final context = appNavigatorKey.currentContext;
+        if (context != null && context.mounted) {
+          showActionToast(
+            context,
+            AppLocalizations.of(context)!.screenshot_disabled_notice,
+          );
+        }
+      }
+    }
+  });
 }
 
 class MyApp extends StatelessWidget {
@@ -81,6 +102,7 @@ class AppView extends StatelessWidget {
     final settingsProv = context.watch<SettingsProvider>();
 
     return MaterialApp(
+      navigatorKey: appNavigatorKey,
       title: 'AURA',
       theme: AppTheme.themeFor(
         brightness: Brightness.light,

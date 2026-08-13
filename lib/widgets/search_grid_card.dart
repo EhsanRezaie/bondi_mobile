@@ -177,18 +177,6 @@ class SearchGridCard extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                        const SizedBox(width: 2),
-                        Icon(
-                          profile.gender == 'male' ? Icons.male : Icons.female,
-                          size: 10,
-                          color: profile.gender == 'male'
-                              ? (isDark
-                                    ? AppTheme.darkPrimary
-                                    : AppTheme.lightPrimary)
-                              : (isDark
-                                    ? AppTheme.darkError
-                                    : AppTheme.lightError),
-                        ),
                       ],
                     ),
                     if (profile.distanceKm != null)

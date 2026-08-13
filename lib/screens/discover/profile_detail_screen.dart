@@ -5,6 +5,7 @@ import 'package:dating_app/models/discover_profile.dart';
 import 'package:dating_app/utils/responsive.dart';
 import 'package:dating_app/utils/cached_image.dart';
 import 'package:dating_app/widgets/discover_action_button.dart';
+import 'package:dating_app/widgets/photo_gallery_page.dart';
 
 class ProfileDetailScreen extends StatefulWidget {
   final DiscoverProfile profile;
@@ -175,6 +176,20 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
     return photos;
   }
 
+  void _openGallery() {
+    final photos = allPhotos;
+    if (photos.isEmpty) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PhotoGalleryPage(
+          photos: photos,
+          initialIndex: _currentPhotoIndex,
+        ),
+      ),
+    );
+  }
+
   @override
    Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
@@ -282,20 +297,23 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
       children: [
         Stack(
           children: [
-            SizedBox(
-              // Bounded hero height: ~42% on phones, capped on tall tablets so
-              // the photo never dominates the screen.
-               height: heroH,
-               width: double.infinity,
-               child: photos.isNotEmpty
-                   ? CachedImage.widget(
-                       _getDisplayUrl(photos[_currentPhotoIndex]),
-                       width: screenSize.width,
-                       height: heroH,
-                       fit: BoxFit.cover,
-                       errorWidget: photoError,
-                     )
-                   : photoError,
+            GestureDetector(
+              onTap: photos.isNotEmpty ? _openGallery : null,
+              child: SizedBox(
+                // Bounded hero height: ~42% on phones, capped on tall tablets so
+                // the photo never dominates the screen.
+                height: heroH,
+                width: double.infinity,
+                child: photos.isNotEmpty
+                    ? CachedImage.widget(
+                        _getDisplayUrl(photos[_currentPhotoIndex]),
+                        width: screenSize.width,
+                        height: heroH,
+                        fit: BoxFit.cover,
+                        errorWidget: photoError,
+                      )
+                    : photoError,
+              ),
             ),
             Container(
               decoration: BoxDecoration(
@@ -330,7 +348,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
             ),
             if (photos.length > 1)
               Positioned(
-                bottom: 60,
+                top: 56,
                 left: 0,
                 right: 0,
                 child: Center(
@@ -351,6 +369,43 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
                         ),
                       );
                     }),
+                  ),
+                ),
+              ),
+            if (photos.length > 1)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 64,
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.45),
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.fullscreen,
+                          size: 14,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          t.photo_fullscreen_hint,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -381,18 +436,6 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
                           fontWeight: FontWeight.w400,
                           color: Colors.white,
                         ),
-                      ),
-                      const SizedBox(width: 6),
-                      Icon(
-                        profile.gender == 'male' ? Icons.male : Icons.female,
-                        size: 20,
-                        color: profile.gender == 'male'
-                            ? (isDark
-                                  ? AppTheme.darkPrimary
-                                  : AppTheme.lightPrimary)
-                            : (isDark
-                                  ? AppTheme.darkError
-                                  : AppTheme.lightError),
                       ),
                       if (profile.isPremium) ...[
                         const SizedBox(width: 8),
@@ -571,6 +614,13 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
             emoji: '💪',
             title: t.profile_section_physical,
             chips: [
+              _buildValueChip(
+                profile.gender == 'male' ? '♂️' : '♀️',
+                _capitalize(profile.gender),
+                isDark,
+                textColor,
+                borderColor,
+              ),
               if (profile.height != null)
                 _buildValueChip(
                   '📏',

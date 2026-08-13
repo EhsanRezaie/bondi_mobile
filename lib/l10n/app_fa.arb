@@ -28,6 +28,8 @@
   "splash_check_internet": "لطفاً اتصال اینترنت خود را بررسی کنید",
   "splash_retry": "تلاش مجدد",
   "splash_connection_failed": "ارتباط با سرور برقرار نشد",
+  "screenshot_disabled_notice": "برای حفظ حریم خصوصی شما، امکان اسکرین‌شات غیرفعال است",
+  "photo_fullscreen_hint": "برای نمایش تمام‌صفحه روی عکس بزنید",
 
   "signup_title": "ایجاد حساب کاربری",
   "signup_subtitle": "به ما ملحق شو و همتای خودت رو پیدا کن",
@@ -175,7 +177,7 @@
   "search_no_results_hint": "فیلترهای خود را تغییر دهید",
   "search_filters": "فیلترها",
   "search_advanced_filters": "فیلترهای پیشرفته",
-  "search_apply_filters": "اعمال فیلترها",
+  "search_apply_filters": "اعمال",
   "search_reset_filters": "بازنشانی همه",
   "search_sort_by": "مرتب سازی",
   "search_sort_recent": "جدیدترین",

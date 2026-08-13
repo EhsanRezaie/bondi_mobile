@@ -193,102 +193,99 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
             color: bgColor,
             borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
           ),
-          child: Column(
+          child: Stack(
             children: [
-              // Drag handle
-              Container(
-                margin: const EdgeInsets.only(top: 12),
-                width: 40,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? AppTheme.darkBorder
-                      : Colors.grey.shade300,
-                  borderRadius: BorderRadius.circular(2),
-                ),
-              ),
-              // Header
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text(
-                      t.search_advanced_filters,
-                      style: TextStyle(
-                        fontFamily: AppTheme.fontFor(
-                          !Localizations.localeOf(
-                            context,
-                          ).languageCode.contains('en'),
-                        ),
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: textColor,
-                      ),
+              Column(
+                children: [
+                  // Drag handle
+                  Container(
+                    margin: const EdgeInsets.only(top: 12),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? AppTheme.darkBorder
+                          : Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
                     ),
-                    TextButton(
-                      onPressed: () {
-                        Provider.of<SearchProvider>(context, listen: false).resetFilters();
-                        Navigator.pop(context);
-                      },
-                      child: Text(
-                        t.search_reset_filters,
-                        style: TextStyle(
-                          fontFamily: AppTheme.fontFor(
-                            !Localizations.localeOf(
-                              context,
-                            ).languageCode.contains('en'),
+                  ),
+                  // Header
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          t.search_advanced_filters,
+                          style: TextStyle(
+                            fontFamily: AppTheme.fontFor(
+                              !Localizations.localeOf(
+                                context,
+                              ).languageCode.contains('en'),
+                            ),
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: textColor,
                           ),
-                          color: mutedColor,
                         ),
-                      ),
+                        TextButton(
+                          onPressed: () {
+                            Provider.of<SearchProvider>(context, listen: false).resetFilters();
+                            Navigator.pop(context);
+                          },
+                          child: Text(
+                            t.search_reset_filters,
+                            style: TextStyle(
+                              fontFamily: AppTheme.fontFor(
+                                !Localizations.localeOf(
+                                  context,
+                                ).languageCode.contains('en'),
+                              ),
+                              color: mutedColor,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                  const Divider(height: 1),
+                  // Content
+                  Expanded(
+                    child: ListView.builder(
+                      controller: scrollController,
+                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
+                      itemCount: 9,
+                      itemBuilder: (context, index) {
+                        switch (index) {
+                          case 0:
+                            return _buildLocationSection(t, isDark, primaryColor, textColor, mutedColor, borderColor);
+                          case 1:
+                            return _buildBasicSection(t, isDark, primaryColor, textColor, mutedColor, borderColor);
+                          case 2:
+                            return _buildPhysicalSection(t, isDark, primaryColor, textColor, mutedColor, borderColor);
+                          case 3:
+                            return _buildLifestyleSection(t, isDark, primaryColor, textColor, mutedColor, borderColor);
+                          case 4:
+                            return _buildBackgroundSection(t, isDark, primaryColor, textColor, mutedColor, borderColor);
+                          case 5:
+                            return _buildInterestsSection(t, isDark, primaryColor, textColor, mutedColor, borderColor);
+                          case 6:
+                            return _buildLanguagesSection(t, isDark, primaryColor, textColor, mutedColor, borderColor);
+                          case 7:
+                            return _buildVerificationSection(t, isDark, primaryColor, textColor, mutedColor, borderColor);
+                          default:
+                            return const SizedBox(height: 16);
+                        }
+                      },
+                    ),
+                  ),
+                ],
               ),
-              const Divider(height: 1),
-              // Content
-              Expanded(
-                child: ListView.builder(
-                  controller: scrollController,
-                  padding: const EdgeInsets.all(20),
-                  itemCount: 9,
-                  itemBuilder: (context, index) {
-                    switch (index) {
-                      case 0:
-                        return _buildLocationSection(t, isDark, primaryColor, textColor, mutedColor, borderColor);
-                      case 1:
-                        return _buildBasicSection(t, isDark, primaryColor, textColor, mutedColor, borderColor);
-                      case 2:
-                        return _buildPhysicalSection(t, isDark, primaryColor, textColor, mutedColor, borderColor);
-                      case 3:
-                        return _buildLifestyleSection(t, isDark, primaryColor, textColor, mutedColor, borderColor);
-                      case 4:
-                        return _buildBackgroundSection(t, isDark, primaryColor, textColor, mutedColor, borderColor);
-                      case 5:
-                        return _buildInterestsSection(t, isDark, primaryColor, textColor, mutedColor, borderColor);
-                      case 6:
-                        return _buildLanguagesSection(t, isDark, primaryColor, textColor, mutedColor, borderColor);
-                      case 7:
-                        return _buildVerificationSection(t, isDark, primaryColor, textColor, mutedColor, borderColor);
-                      default:
-                        return const SizedBox(height: 16);
-                    }
-                  },
-                ),
-              ),
-              // Apply button
-              Container(
-                padding: EdgeInsets.only(
-                  left: 20,
-                  right: 20,
-                  top: 12,
-                  bottom: MediaQuery.of(context).padding.bottom > 0 ? 12 : 20,
-                ),
-                decoration: BoxDecoration(
-                  color: bgColor,
-                  border: Border(top: BorderSide(color: borderColor, width: 0.5)),
-                ),
+              // Floating apply button (content scrolls behind it)
+              Positioned(
+                left: 20,
+                right: 20,
+                bottom: MediaQuery.of(context).padding.bottom > 0 ? 16 : 20,
                 child: AppTheme.gradientButton(
                   onPressed: _applyFilters,
                   child: Text(

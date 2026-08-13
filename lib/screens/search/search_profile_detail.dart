@@ -9,6 +9,7 @@ import 'package:dating_app/utils/responsive.dart';
 import 'package:dating_app/utils/cached_image.dart';
 import 'package:dating_app/widgets/discover_action_button.dart';
 import 'package:dating_app/widgets/action_toast.dart';
+import 'package:dating_app/widgets/photo_gallery_page.dart';
 
 class SearchProfileDetail extends StatefulWidget {
   final DiscoverProfile profile;
@@ -65,6 +66,20 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
     }
     photos.addAll(profile.photos.where((p) => p != profile.mainPhotoUrl));
     return photos;
+  }
+
+  void _openGallery() {
+    final photos = allPhotos;
+    if (photos.isEmpty) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PhotoGalleryPage(
+          photos: photos,
+          initialIndex: _currentPhotoIndex,
+        ),
+      ),
+    );
   }
 
   @override
@@ -166,18 +181,21 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
       children: [
         Stack(
           children: [
-            SizedBox(
-              height: photoH,
-              width: double.infinity,
-              child: photos.isNotEmpty
-                  ? CachedImage.widget(
-                      photos[_currentPhotoIndex],
-                      width: photoW,
-                      height: photoH,
-                      fit: BoxFit.cover,
-                      errorWidget: photoError,
-                    )
-                  : photoError,
+            GestureDetector(
+              onTap: photos.isNotEmpty ? _openGallery : null,
+              child: SizedBox(
+                height: photoH,
+                width: double.infinity,
+                child: photos.isNotEmpty
+                    ? CachedImage.widget(
+                        photos[_currentPhotoIndex],
+                        width: photoW,
+                        height: photoH,
+                        fit: BoxFit.cover,
+                        errorWidget: photoError,
+                      )
+                    : photoError,
+              ),
             ),
             Container(
               decoration: BoxDecoration(
@@ -232,7 +250,7 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
             ),
             if (photos.length > 1)
               Positioned(
-                bottom: AppLayout.s(context, 60),
+                top: AppLayout.s(context, 56),
                 left: 0,
                 right: 0,
                 child: Center(
@@ -258,6 +276,43 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                         ),
                       );
                     }),
+                  ),
+                ),
+              ),
+            if (photos.length > 1)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: AppLayout.s(context, 64),
+                child: Center(
+                  child: Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: AppLayout.s(context, 12),
+                      vertical: AppLayout.s(context, 6),
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withValues(alpha: 0.45),
+                      borderRadius: BorderRadius.circular(100),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.fullscreen,
+                          size: AppLayout.s(context, 14),
+                          color: Colors.white,
+                        ),
+                        SizedBox(width: AppLayout.s(context, 6)),
+                        Text(
+                          t.photo_fullscreen_hint,
+                          style: TextStyle(
+                            fontSize: AppLayout.s(context, 12),
+                            fontWeight: FontWeight.w500,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -294,18 +349,6 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                           fontWeight: FontWeight.w400,
                           color: Colors.white,
                         ),
-                      ),
-                      const SizedBox(width: 6),
-                      Icon(
-                        profile.gender == 'male' ? Icons.male : Icons.female,
-                        size: 20,
-                        color: profile.gender == 'male'
-                            ? (isDark
-                                  ? AppTheme.darkPrimary
-                                  : AppTheme.lightPrimary)
-                            : (isDark
-                                  ? AppTheme.darkError
-                                  : AppTheme.lightError),
                       ),
                       if (profile.isPremium) ...[
                         const SizedBox(width: 8),
@@ -505,6 +548,13 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
             emoji: '💪',
             title: t.profile_section_physical,
             chips: [
+              _buildValueChip(
+                profile.gender == 'male' ? '♂️' : '♀️',
+                _capitalize(profile.gender),
+                isDark,
+                textColor,
+                borderColor,
+              ),
               if (profile.height != null)
                 _buildValueChip(
                   '📏',

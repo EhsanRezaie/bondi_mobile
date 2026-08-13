@@ -340,7 +340,7 @@ class DiscoverProvider extends ChangeNotifier {
 
   void widenDistance() {
     final current = _distanceKm ?? 50;
-    final next = (current + 50).clamp(1, 500);
+    final next = (current + 10).clamp(1, 500);
     _distanceKm = next >= 500 ? null : next;
     _saveFilters();
     loadProfiles();

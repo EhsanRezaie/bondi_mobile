@@ -559,16 +559,6 @@ class UserCardState extends State<UserCard>
                       color: Colors.white,
                     ),
                   ),
-                  const SizedBox(width: 6),
-                  Icon(
-                    profile.gender == 'male' ? Icons.male : Icons.female,
-                    size: 18,
-                    color: profile.gender == 'male'
-                        ? (isDark
-                              ? AppTheme.darkPrimary
-                              : AppTheme.lightPrimary)
-                        : (isDark ? AppTheme.darkError : AppTheme.lightError),
-                  ),
                 ],
               ),
               const SizedBox(height: 4),

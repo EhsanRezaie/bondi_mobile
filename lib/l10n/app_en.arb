@@ -28,6 +28,8 @@
   "splash_check_internet": "Please check your internet connection",
   "splash_retry": "Retry",
   "splash_connection_failed": "Connection failed",
+  "screenshot_disabled_notice": "Screenshots are disabled to protect your privacy",
+  "photo_fullscreen_hint": "Tap photo for full screen",
 
   "signup_title": "Create Account",
   "signup_subtitle": "Join us and find your match",
@@ -175,7 +177,7 @@
   "search_no_results_hint": "Try adjusting your filters",
   "search_filters": "Filters",
   "search_advanced_filters": "Advanced Filters",
-  "search_apply_filters": "Apply Filters",
+  "search_apply_filters": "Apply",
   "search_reset_filters": "Reset All",
   "search_sort_by": "Sort By",
   "search_sort_recent": "Recent",

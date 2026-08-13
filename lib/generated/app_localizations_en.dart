@@ -92,6 +92,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get splash_connection_failed => 'Connection failed';
 
   @override
+  String get screenshot_disabled_notice =>
+      'Screenshots are disabled to protect your privacy';
+
+  @override
+  String get photo_fullscreen_hint => 'Tap photo for full screen';
+
+  @override
   String get signup_title => 'Create Account';
 
   @override
@@ -527,7 +534,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get search_advanced_filters => 'Advanced Filters';
 
   @override
-  String get search_apply_filters => 'Apply Filters';
+  String get search_apply_filters => 'Apply';
 
   @override
   String get search_reset_filters => 'Reset All';

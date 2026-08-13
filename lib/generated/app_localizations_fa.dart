@@ -92,6 +92,13 @@ class AppLocalizationsFa extends AppLocalizations {
   String get splash_connection_failed => 'ارتباط با سرور برقرار نشد';
 
   @override
+  String get screenshot_disabled_notice =>
+      'برای حفظ حریم خصوصی شما، امکان اسکرین‌شات غیرفعال است';
+
+  @override
+  String get photo_fullscreen_hint => 'برای نمایش تمام‌صفحه روی عکس بزنید';
+
+  @override
   String get signup_title => 'ایجاد حساب کاربری';
 
   @override
@@ -529,7 +536,7 @@ class AppLocalizationsFa extends AppLocalizations {
   String get search_advanced_filters => 'فیلترهای پیشرفته';
 
   @override
-  String get search_apply_filters => 'اعمال فیلترها';
+  String get search_apply_filters => 'اعمال';
 
   @override
   String get search_reset_filters => 'بازنشانی همه';

@@ -5,11 +5,13 @@ import 'package:dating_app/utils/formatters.dart';
 class OnlineIndicator extends StatelessWidget {
   final bool isOnline;
   final String? lastSeenAt;
+  final DateTime? now;
 
   const OnlineIndicator({
     super.key,
     required this.isOnline,
     this.lastSeenAt,
+    this.now,
   });
 
   @override
@@ -49,7 +51,7 @@ class OnlineIndicator extends StatelessWidget {
     if (lastSeenAt != null) {
       final lastSeen = DateTime.tryParse(lastSeenAt!);
       if (lastSeen != null) {
-        final text = formatLastSeen(lastSeen);
+        final text = formatLastSeen(lastSeen, now: now);
         return Text(
           'Last seen $text',
           style: TextStyle(
