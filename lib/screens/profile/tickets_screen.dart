@@ -171,7 +171,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
     }
 
     return ListView.builder(
-      physics: const BouncingScrollPhysics(),
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
       itemCount: provider.tickets.length + (provider.hasMore ? 1 : 0),
       itemBuilder: (context, index) {
@@ -351,7 +351,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
     final textMutedColor =
         isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted;
     return ListView(
-      physics: const BouncingScrollPhysics(),
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.fromLTRB(32, 40, 32, 16),
       children: [
         const SizedBox(height: 40),
@@ -398,7 +398,7 @@ class _TicketsScreenState extends State<TicketsScreen> {
     final textMutedColor =
         isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted;
     return ListView(
-      physics: const BouncingScrollPhysics(),
+      physics: const AlwaysScrollableScrollPhysics(),
       padding: const EdgeInsets.all(32),
       children: [
         const SizedBox(height: 40),
