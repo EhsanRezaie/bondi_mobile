@@ -16,6 +16,7 @@ import 'package:dating_app/providers/language_provider.dart';
 import 'package:dating_app/providers/settings_provider.dart';
 import 'package:dating_app/providers/discover_provider.dart';
 import 'package:dating_app/providers/search_provider.dart';
+import 'package:dating_app/providers/notifications_provider.dart';
 import 'package:dating_app/providers/profile_provider.dart';
 import 'package:dating_app/models/discover_profile.dart';
 import 'package:dating_app/models/user.dart';
@@ -158,6 +159,7 @@ void main() {
           [
             ChangeNotifierProvider(create: (_) => SearchProvider()),
             ChangeNotifierProvider(create: (_) => SettingsProvider()),
+            ChangeNotifierProvider(create: (_) => NotificationsProvider()),
           ],
         );
       });

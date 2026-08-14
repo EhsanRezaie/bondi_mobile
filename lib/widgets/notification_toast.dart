@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:dating_app/config/app_theme.dart';
 import 'package:dating_app/generated/app_localizations.dart';
 import 'package:dating_app/screens/chats/user_notification_profile_screen.dart';
+import 'package:dating_app/utils/global_navigator.dart';
 
 class NotificationToastService {
   static OverlayEntry? _currentNoticeEntry;
@@ -12,7 +13,7 @@ class NotificationToastService {
   static const _dedupeWindow = Duration(seconds: 5);
 
   static void show({
-    required BuildContext context,
+    BuildContext? context,
     required String id,
     required String type,
     required String title,
@@ -31,8 +32,14 @@ class NotificationToastService {
 
     _cleanupOldToasts();
 
+    final ctx = context ?? appNavigatorKey.currentContext;
+    if (ctx == null) {
+      debugPrint('Toast: no navigator context available');
+      return;
+    }
+
     _showToastOverlay(
-      context: context,
+      context: ctx,
       id: id,
       type: type,
       title: title,

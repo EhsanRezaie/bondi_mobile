@@ -263,6 +263,7 @@ List<SingleChildWidget> _commonProviders() => [
       ChangeNotifierProvider(create: (_) => LanguageProvider()),
       ChangeNotifierProvider<AuthProvider>(create: (_) => _FakeAuthProvider()),
       ChangeNotifierProvider(create: (_) => OnboardingProvider()),
+      ChangeNotifierProvider(create: (_) => NotificationsProvider()),
     ];
 
 void main() {

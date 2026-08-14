@@ -3,9 +3,16 @@ import 'package:flutter/foundation.dart';
 import 'package:dating_app/models/notification.dart';
 import 'package:dating_app/services/chat_service.dart';
 import 'package:dating_app/providers/chat_provider.dart';
-import 'package:dating_app/services/push_service.dart';
+import 'package:dating_app/widgets/notification_toast.dart';
 
 class NotificationsProvider extends ChangeNotifier {
+  bool _disposed = false;
+
+  void _safeNotify() {
+    if (_disposed) return;
+    notifyListeners();
+  }
+
   List<AppNotification> _notifications = [];
   int _offset = 0;
   bool _hasMore = true;
@@ -42,7 +49,7 @@ class NotificationsProvider extends ChangeNotifier {
     _errorMessage = null;
     _offset = 0;
     _hasMore = true;
-    notifyListeners();
+    _safeNotify();
 
     try {
       final response = await ChatService.getNotifications(
@@ -66,13 +73,13 @@ class NotificationsProvider extends ChangeNotifier {
     }
 
     _isLoading = false;
-    notifyListeners();
+    _safeNotify();
   }
 
   Future<void> loadMoreNotifications() async {
     if (_isLoadingMore || !_hasMore) return;
     _isLoadingMore = true;
-    notifyListeners();
+    _safeNotify();
 
     try {
       final response = await ChatService.getNotifications(
@@ -94,7 +101,7 @@ class NotificationsProvider extends ChangeNotifier {
     }
 
     _isLoadingMore = false;
-    notifyListeners();
+    _safeNotify();
   }
 
   Future<void> markRead(List<String> ids) async {
@@ -108,7 +115,8 @@ class NotificationsProvider extends ChangeNotifier {
         }
       }
       _recomputeUnreadCounts();
-      notifyListeners();
+      _safeNotify();
+      refreshUnreadCounts();
     } catch (e) {
       // silent
     }
@@ -120,13 +128,14 @@ class NotificationsProvider extends ChangeNotifier {
       if (response.statusCode == 200 || response.statusCode == 204) {
         _notifications.removeWhere((n) => n.id == id);
         _recomputeUnreadCounts();
-        notifyListeners();
+        _safeNotify();
+        refreshUnreadCounts();
         return true;
       }
       return false;
     } catch (e) {
       _errorMessage = e.toString();
-      notifyListeners();
+      _safeNotify();
       return false;
     }
   }
@@ -155,7 +164,7 @@ class NotificationsProvider extends ChangeNotifier {
           'match': byType['match'] ?? 0,
           'system': byType['system'] ?? 0,
         };
-        notifyListeners();
+        _safeNotify();
       }
     } catch (e) {
       debugPrint('Failed to refresh unread counts: $e');
@@ -202,15 +211,17 @@ class NotificationsProvider extends ChangeNotifier {
             ? DateTime.tryParse(createdAtStr) ?? DateTime.now()
             : DateTime.now(),
         data: {
-          if (userId != null) 'user_id': userId,
-          if (matchId != null) 'match_id': matchId,
-          if (chatId != null) 'chat_id': chatId,
+          'user_id': ?userId,
+          'match_id': ?matchId,
+          'chat_id': ?chatId,
+          'type': notifType,
         },
       );
       _notifications.insert(0, notification);
       _offset++;
       _recomputeUnreadCounts();
-      notifyListeners();
+      _safeNotify();
+      refreshUnreadCounts();
 
       // Also trigger toast via NotificationToastService
       // The PushService already handles toast for foreground FCM messages.
@@ -228,7 +239,7 @@ class NotificationsProvider extends ChangeNotifier {
       if (index != -1 && !_notifications[index].isRead && isRead) {
         _notifications[index] = _notifications[index].copyWith(isRead: true);
         _recomputeUnreadCounts();
-        notifyListeners();
+        _safeNotify();
       }
     }
   }
@@ -241,6 +252,7 @@ class NotificationsProvider extends ChangeNotifier {
 
   @override
   void dispose() {
+    _disposed = true;
     detachSocket();
     super.dispose();
   }

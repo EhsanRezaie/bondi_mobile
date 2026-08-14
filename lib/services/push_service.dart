@@ -7,19 +7,19 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'chat_service.dart';
 import 'storage_service.dart';
+import '../widgets/notification_toast.dart';
 
 class PushService {
   static final PushService _instance = PushService._internal();
   factory PushService() => _instance;
   PushService._internal();
 
-  final FirebaseMessaging _messaging = FirebaseMessaging.instance;
+  late final FirebaseMessaging _messaging = FirebaseMessaging.instance;
   StreamSubscription<RemoteMessage>? _foregroundSubscription;
   StreamSubscription<RemoteMessage>? _backgroundSubscription;
   String? _currentToken;
 
   bool _initialized = false;
-  bool _permissionGranted = false;
 
   static const _tokenKey = 'fcm_token';
   static const _tokenSentKey = 'fcm_token_sent';
@@ -54,11 +54,9 @@ class PushService {
         sound: true,
         provisional: false,
       );
-      _permissionGranted = settings.authorizationStatus == AuthorizationStatus.authorized;
       debugPrint('FCM permission: ${settings.authorizationStatus}');
     } catch (e) {
       debugPrint('FCM permission error: $e');
-      _permissionGranted = false;
     }
   }
 
@@ -73,11 +71,15 @@ class PushService {
       debugPrint('FCM getToken error: $e');
     }
 
-    _messaging.onTokenRefresh.listen((newToken) {
-      _currentToken = newToken;
-      debugPrint('FCM token refreshed: $newToken');
-      _sendTokenToBackend(newToken);
-    });
+    try {
+      _messaging.onTokenRefresh.listen((newToken) {
+        _currentToken = newToken;
+        debugPrint('FCM token refreshed: $newToken');
+        _sendTokenToBackend(newToken);
+      });
+    } catch (e) {
+      debugPrint('FCM onTokenRefresh setup error: $e');
+    }
   }
 
   Future<void> _sendTokenToBackend(String token) async {
@@ -106,22 +108,26 @@ class PushService {
   }
 
   void _setupMessageHandlers(Function(String, Map<String, dynamic>) onNotificationTap) {
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      debugPrint('FCM foreground message: ${message.messageId}');
-      _handleForegroundMessage(message);
-    });
+    try {
+      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+        debugPrint('FCM foreground message: ${message.messageId}');
+        _handleForegroundMessage(message);
+      });
 
-    FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
-      debugPrint('FCM opened app from background: ${message.messageId}');
-      _navigateFromMessage(message, onNotificationTap);
-    });
-
-    _messaging.getInitialMessage().then((RemoteMessage? message) {
-      if (message != null) {
-        debugPrint('FCM opened app from terminated: ${message.messageId}');
+      FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+        debugPrint('FCM opened app from background: ${message.messageId}');
         _navigateFromMessage(message, onNotificationTap);
-      }
-    });
+      });
+
+      _messaging.getInitialMessage().then((RemoteMessage? message) {
+        if (message != null) {
+          debugPrint('FCM opened app from terminated: ${message.messageId}');
+          _navigateFromMessage(message, onNotificationTap);
+        }
+      });
+    } catch (e) {
+      debugPrint('FCM message handler setup error: $e');
+    }
   }
 
   void _handleForegroundMessage(RemoteMessage message) {
@@ -194,41 +200,7 @@ class PushService {
   Future<void> logout() async {
     await deleteToken();
     _initialized = false;
-    _permissionGranted = false;
     _foregroundSubscription?.cancel();
     _backgroundSubscription?.cancel();
-  }
-}
-
-class NotificationToastService {
-  static final Map<String, DateTime> _shownToasts = {};
-  static const _dedupeWindow = Duration(seconds: 5);
-
-  static void show({
-    required String id,
-    required String type,
-    required String title,
-    required String body,
-    required Map<String, dynamic> data,
-  }) {
-    final now = DateTime.now();
-    if (_shownToasts.containsKey(id)) {
-      final lastShown = _shownToasts[id]!;
-      if (now.difference(lastShown) < _dedupeWindow) {
-        debugPrint('Deduped toast: $id');
-        return;
-      }
-    }
-    _shownToasts[id] = now;
-
-    _cleanupOldToasts();
-
-    // TODO: Show actual overlay toast widget (P6)
-    debugPrint('TOAST [$type]: $title - $body (data: $data)');
-  }
-
-  static void _cleanupOldToasts() {
-    final now = DateTime.now();
-    _shownToasts.removeWhere((_, time) => now.difference(time) > _dedupeWindow);
   }
 }

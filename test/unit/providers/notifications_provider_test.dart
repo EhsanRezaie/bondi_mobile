@@ -37,6 +37,11 @@ void main() {
     };
   }
 
+  Map<String, dynamic> countsBody() => {'total': 0, 'by_type': {}};
+
+  void mockCounts() =>
+      api.onGet('/notifications/counts', body: countsBody());
+
   group('loadNotifications', () {
     test('populates notifications and resets pagination', () async {
       api.onGet('/notifications', body: {
@@ -130,6 +135,7 @@ api.onPost(
         body: {'ok': true},
         data: {'notification_ids': ['n-1']},
       );
+      mockCounts();
       await provider.markRead(['n-1']);
 
       expect(provider.notifications.first.isRead, isTrue);
@@ -156,6 +162,7 @@ api.onPost(
       await provider.loadNotifications();
 
       api.onDelete('/notifications/n-1');
+      mockCounts();
       final ok = await provider.deleteNotification('n-1');
 
       expect(ok, isTrue);

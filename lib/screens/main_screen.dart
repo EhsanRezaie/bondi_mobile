@@ -8,6 +8,7 @@ import '../providers/discover_provider.dart';
 import '../providers/notifications_provider.dart';
 import '../providers/onboarding_provider.dart';
 import '../providers/profile_provider.dart';
+import '../providers/search_provider.dart';
 import '../services/photo_service.dart';
 import '../services/push_service.dart';
 
@@ -17,8 +18,11 @@ import 'onboarding/photo_upload_screen.dart';
 import 'profile/profile_screen.dart';
 import 'discover/discover_screen.dart';
 import 'search/search_screen.dart';
-import '../providers/search_provider.dart';
 import 'chats/chats_screen.dart';
+import 'chats/chat_detail_screen.dart';
+import 'chats/user_notification_profile_screen.dart';
+import '../generated/app_localizations.dart';
+import '../utils/global_navigator.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -101,10 +105,10 @@ class _MainScreenState extends State<MainScreen> {
         // Initialize FCM push service
         Provider.of<NotificationsProvider>(context, listen: false)
             .attachSocket(Provider.of<ChatProvider>(context, listen: false));
+        Provider.of<NotificationsProvider>(context, listen: false)
+            .refreshUnreadCounts();
         PushService().initPush(
-          onNotificationTap: (route, data) {
-            // Navigation will be handled by NotificationsProvider
-          },
+          onNotificationTap: _handleNotificationTap,
           onTokenRefreshed: () {},
         );
       }
@@ -113,6 +117,110 @@ class _MainScreenState extends State<MainScreen> {
     if (mounted) {
       setState(() => _isChecking = false);
     }
+  }
+
+  /// Routes a tapped background/terminated push notification to its screen.
+  void _handleNotificationTap(String route, Map<String, dynamic> data) {
+    final navContext = appNavigatorKey.currentContext;
+    if (navContext == null || !navContext.mounted) return;
+
+    switch (route) {
+      case 'user_profile':
+        final userId = data['user_id'] as String?;
+        if (userId != null && userId.isNotEmpty) {
+          Navigator.of(navContext).push(
+            MaterialPageRoute(
+              builder: (_) => UserNotificationProfileScreen(
+                userId: userId,
+                fallback: SwipeStubProfile(
+                  id: userId,
+                  name: data['title'] as String? ?? '',
+                  age: 0,
+                ),
+              ),
+            ),
+          );
+        }
+        break;
+      case 'chat':
+        final chatId = data['chat_id'] as String?;
+        if (chatId != null && chatId.isNotEmpty) {
+          Navigator.of(navContext).push(
+            MaterialPageRoute(
+              builder: (_) => ChatDetailScreen(
+                identifier: chatId,
+                userName: data['title'] as String? ?? '',
+                avatarUrl: null,
+              ),
+            ),
+          );
+        }
+        break;
+      case 'announcement':
+        _showAnnouncementDialog(
+          navContext,
+          title: data['title'] as String? ?? '',
+          body: data['body'] as String? ?? '',
+        );
+        break;
+    }
+  }
+
+  void _showAnnouncementDialog(BuildContext context, {required String title, required String body}) {
+    final t = AppLocalizations.of(context);
+    final isDark = context.isDarkMode;
+    final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
+    final mutedColor = isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted;
+
+    showDialog(
+      context: context,
+      builder: (dialogContext) {
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AppTheme.radiusModule),
+          ),
+          insetPadding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontFamily: AppTheme.fontFor(isDark),
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                    color: textColor,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Flexible(
+                  child: SingleChildScrollView(
+                    child: Text(
+                      body,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 14,
+                        height: 1.5,
+                        color: mutedColor,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: Text(t?.notifications_close ?? 'Close'),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   Future<void> _checkUserPhotos() async {

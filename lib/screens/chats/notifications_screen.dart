@@ -6,6 +6,7 @@ import 'package:dating_app/providers/notifications_provider.dart';
 import 'package:dating_app/utils/responsive.dart';
 import 'package:dating_app/generated/app_localizations.dart';
 import 'package:dating_app/screens/chats/user_notification_profile_screen.dart';
+import 'package:dating_app/widgets/notification_bell.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -102,21 +103,29 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           final sections = [
             _NotificationSection(
               title: t.notifications_section_liked,
+              type: 'like',
               items: provider.notifications.where((n) => n.type == 'like').toList(),
+              unreadCount: provider.unreadFor('like'),
             ),
             _NotificationSection(
               title: t.notifications_section_likes,
+              type: 'liked',
               items: provider.notifications.where((n) => n.type == 'liked').toList(),
+              unreadCount: provider.unreadFor('liked'),
             ),
             _NotificationSection(
               title: t.notifications_section_matches,
+              type: 'match',
               items: provider.notifications.where((n) => n.type == 'match').toList(),
+              unreadCount: provider.unreadFor('match'),
             ),
             _NotificationSection(
               title: t.notifications_section_announcements,
+              type: 'system',
               items: provider.notifications
                   .where((n) => n.type == 'system')
                   .toList(),
+              unreadCount: provider.unreadFor('system'),
             ),
           ];
 
@@ -178,10 +187,21 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             16,
             4,
           ),
-          child: Text(
-            section.title.toUpperCase(),
-            style: (isPersian ? AppTheme.overlineFa : AppTheme.overline)
-                .copyWith(color: mutedColor),
+          child: Row(
+            children: [
+              Text(
+                section.title.toUpperCase(),
+                style: (isPersian ? AppTheme.overlineFa : AppTheme.overline)
+                    .copyWith(color: mutedColor),
+              ),
+              if (section.unreadCount > 0) ...[
+                const SizedBox(width: 8),
+                NotificationSectionPill(
+                  type: section.type,
+                  count: section.unreadCount,
+                ),
+              ],
+            ],
           ),
         ),
         if (section.items.isEmpty)
@@ -419,7 +439,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
 
 class _NotificationSection {
   final String title;
+  final String type;
   final List<AppNotification> items;
+  final int unreadCount;
 
-  const _NotificationSection({required this.title, required this.items});
+  const _NotificationSection({
+    required this.title,
+    required this.type,
+    required this.items,
+    required this.unreadCount,
+  });
 }

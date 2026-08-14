@@ -16,9 +16,8 @@ import 'providers/chat_provider.dart';
 import 'providers/notifications_provider.dart';
 import 'providers/ticket_provider.dart';
 import 'screens/splash_screen.dart';
+import 'utils/global_navigator.dart';
 import 'widgets/action_toast.dart';
-
-final GlobalKey<NavigatorState> appNavigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

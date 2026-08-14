@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:dating_app/config/app_theme.dart';
 import 'package:dating_app/providers/auth_provider.dart';
 import 'package:dating_app/providers/chat_provider.dart';
-import 'package:dating_app/providers/notifications_provider.dart';
 import 'package:dating_app/screens/auth/sign_up_screen.dart';
 import 'package:dating_app/screens/chats/chat_list_screen.dart';
 import 'package:dating_app/screens/chats/chat_detail_screen.dart';
