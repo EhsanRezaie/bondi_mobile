@@ -92,6 +92,13 @@ class AppLocalizationsFa extends AppLocalizations {
   String get splash_connection_failed => 'ارتباط با سرور برقرار نشد';
 
   @override
+  String get screenshot_disabled_notice =>
+      'برای حفظ حریم خصوصی شما، امکان اسکرین‌شات غیرفعال است';
+
+  @override
+  String get photo_fullscreen_hint => 'برای نمایش تمام‌صفحه روی عکس بزنید';
+
+  @override
   String get signup_title => 'ایجاد حساب کاربری';
 
   @override
@@ -264,6 +271,49 @@ class AppLocalizationsFa extends AppLocalizations {
       'آیا مطمئن هستید که می‌خواهید خارج شوید؟';
 
   @override
+  String get settings_premium_title => 'پرمیوم بخرید';
+
+  @override
+  String get settings_premium_subtitle =>
+      'لایک، چت و افزایش بازدید نامحدود را فعال کنید';
+
+  @override
+  String get settings_premium_perk_likes => 'لایک نامحدود';
+
+  @override
+  String get settings_premium_perk_chats => 'چت نامحدود';
+
+  @override
+  String get settings_premium_perk_boost => 'افزایش بازدید پروفایل';
+
+  @override
+  String get settings_premium_cta => 'همین حالا ارتقا دهید';
+
+  @override
+  String get notifications_title => 'اعلان‌ها';
+
+  @override
+  String get notifications_empty => 'هنوز اعلانی ندارید';
+
+  @override
+  String get notifications_section_liked => 'لایک‌شده';
+
+  @override
+  String get notifications_section_likes => 'لایک‌ها';
+
+  @override
+  String get notifications_section_matches => 'تطابق‌ها';
+
+  @override
+  String get notifications_section_announcements => 'اعلامیه‌ها';
+
+  @override
+  String get notifications_empty_section => 'موردی وجود ندارد';
+
+  @override
+  String get notifications_close => 'بستن';
+
+  @override
   String get error_email_exists => 'این ایمیل قبلاً ثبت نام کرده است';
 
   @override
@@ -423,6 +473,9 @@ class AppLocalizationsFa extends AppLocalizations {
   String get discover_premium => 'پریمیوم';
 
   @override
+  String get discover_revert_pass => 'بازگشت آخرین رد کردن';
+
+  @override
   String get profile_section_about => 'درباره';
 
   @override
@@ -501,7 +554,7 @@ class AppLocalizationsFa extends AppLocalizations {
   String get search_advanced_filters => 'فیلترهای پیشرفته';
 
   @override
-  String get search_apply_filters => 'اعمال فیلترها';
+  String get search_apply_filters => 'اعمال';
 
   @override
   String get search_reset_filters => 'بازنشانی همه';
@@ -768,6 +821,9 @@ class AppLocalizationsFa extends AppLocalizations {
   String get chat_edit_message => 'ویرایش پیام';
 
   @override
+  String get chat_message_reported => 'پیام گزارش شد';
+
+  @override
   String get chat_limit_reached => 'محدودیت چت روزانه';
 
   @override
@@ -882,4 +938,90 @@ class AppLocalizationsFa extends AppLocalizations {
   String photo_rejected_reason(String reason) {
     return 'دلیل: $reason';
   }
+
+  @override
+  String get support => 'پشتیبانی';
+
+  @override
+  String get my_tickets => 'تیکت‌های من';
+
+  @override
+  String get new_ticket => 'تیکت جدید';
+
+  @override
+  String get ticket_subject => 'موضوع';
+
+  @override
+  String get ticket_message => 'پیام';
+
+  @override
+  String get ticket_message_hint =>
+      'مشکل خود را به طور کامل توضیح دهید (حداقل ۱۰ کاراکتر)';
+
+  @override
+  String get ticket_reply_hint => 'پاسخ خود را بنویسید…';
+
+  @override
+  String get ticket_send => 'ارسال';
+
+  @override
+  String get ticket_status_open => 'باز';
+
+  @override
+  String get ticket_status_in_progress => 'در حال بررسی';
+
+  @override
+  String get ticket_status_closed => 'بسته';
+
+  @override
+  String get ticket_subject_account => 'مشکل حساب / ورود';
+
+  @override
+  String get ticket_subject_photo => 'تأیید عکس';
+
+  @override
+  String get ticket_subject_payment => 'پرداخت / پریمیوم';
+
+  @override
+  String get ticket_subject_bug => 'گزارش مشکل (باگ)';
+
+  @override
+  String get ticket_subject_other => 'سایر';
+
+  @override
+  String get ticket_other_hint =>
+      'گزینه «سایر» را انتخاب کردید؟ لطفاً مشکل خود را در پیام زیر توضیح دهید.';
+
+  @override
+  String get ticket_empty_title => 'هنوز تیکتی ندارید';
+
+  @override
+  String get ticket_empty_body =>
+      'مشکلی دارید؟ یک تیکت پشتیبانی ایجاد کنید تا تیم ما کمکتان کند.';
+
+  @override
+  String get ticket_create_first => 'ایجاد اولین تیکت';
+
+  @override
+  String get ticket_created => 'تیکت ایجاد شد';
+
+  @override
+  String get ticket_reply_sent => 'پاسخ ارسال شد';
+
+  @override
+  String get ticket_closed_note =>
+      'این تیکت بسته است. ارسال پیام، آن را دوباره باز می‌کند.';
+
+  @override
+  String get ticket_support_team => 'تیم پشتیبانی';
+
+  @override
+  String get ticket_you => 'شما';
+
+  @override
+  String get ticket_load_error =>
+      'امکان بارگذاری تیکت‌ها وجود ندارد. برای تازه‌سازی بکشید.';
+
+  @override
+  String get notifications_see_details => 'مشاهده جزئیات';
 }

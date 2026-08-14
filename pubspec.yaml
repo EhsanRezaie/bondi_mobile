@@ -58,6 +58,8 @@ dependencies:
   uuid: ^4.5.0
   audio_session: ^0.2.4
   stream_channel: ^2.1.4
+  firebase_core: ^3.6.0
+  firebase_messaging: ^15.1.0
 
 dev_dependencies:
   flutter_test:
@@ -93,6 +95,32 @@ flutter:
   # the material Icons class.
   uses-material-design: true
   generate: true
+
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter/Inter-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Inter/Inter-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Inter/Inter-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Inter/Inter-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Inter/Inter-ExtraBold.ttf
+          weight: 800
+    - family: Vazirmatn
+      fonts:
+        - asset: assets/fonts/Vazirmatn/Vazirmatn-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Vazirmatn/Vazirmatn-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Vazirmatn/Vazirmatn-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Vazirmatn/Vazirmatn-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Vazirmatn/Vazirmatn-ExtraBold.ttf
+          weight: 800
   
   # To add assets to your application, add an assets section, like this:
   # assets:

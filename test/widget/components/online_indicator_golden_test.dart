@@ -28,11 +28,13 @@ void main() {
     });
 
     testGoldens('renders last seen indicator', (tester) async {
+      final fixedNow = DateTime.utc(2026, 8, 12, 10, 0, 0);
       await tester.pumpWidget(
         buildTestable(
-          const OnlineIndicator(
+          OnlineIndicator(
             isOnline: false,
             lastSeenAt: '2026-08-05T10:00:00Z',
+            now: fixedNow,
           ),
           providers: [
             ChangeNotifierProvider(create: (_) => SettingsProvider()),

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dating_app/config/app_theme.dart';
 import 'package:dating_app/models/chat_card.dart';
 import 'package:dating_app/utils/responsive.dart';
+import 'package:dating_app/utils/cached_image.dart';
 import 'package:intl/intl.dart';
 
 class ChatListScreen extends StatelessWidget {
@@ -41,37 +41,39 @@ class ChatListScreen extends StatelessWidget {
     }
 
     if (chats.isEmpty) {
+      final isPersian = !Localizations.localeOf(
+        context,
+      ).languageCode.contains('en');
       return RefreshIndicator(
         onRefresh: onRefresh,
-        child: ListView(
+        child: ListView.builder(
           physics: const AlwaysScrollableScrollPhysics(),
-          children: [
-            SizedBox(
-              height: MediaQuery.of(context).size.height * 0.6,
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.chat_bubble_outline,
-                      size: 64,
-                      color: borderColor,
+          itemCount: 1,
+          itemBuilder: (context, index) => SizedBox(
+            height: MediaQuery.of(context).size.height * 0.6,
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.chat_bubble_outline,
+                    size: 64,
+                    color: borderColor,
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    emptyText,
+                    textAlign: TextAlign.center,
+                    style:
+                        (isPersian ? AppTheme.bodyFa : AppTheme.body).copyWith(
+                      fontSize: 16,
+                      color: mutedColor,
                     ),
-                    const SizedBox(height: 16),
-                    Text(
-                      emptyText,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 16,
-                        color: mutedColor,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-          ],
+          ),
         ),
       );
     }
@@ -88,7 +90,12 @@ class ChatListScreen extends StatelessWidget {
         },
         child: ListView.builder(
           physics: const AlwaysScrollableScrollPhysics(),
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: EdgeInsets.fromLTRB(
+            12,
+            12,
+            12,
+            AppLayout.floatingNavClearance,
+          ),
           itemCount: chats.length + (hasMore ? 1 : 0),
           itemBuilder: (context, index) {
             if (index == chats.length) {
@@ -111,12 +118,16 @@ class ChatListScreen extends StatelessWidget {
 
   Widget _buildChatItem(BuildContext context, ChatCard chat) {
     final isDark = context.isDarkMode;
+    final isPersian = !Localizations.localeOf(
+      context,
+    ).languageCode.contains('en');
     final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
     final mutedColor = isDark
         ? AppTheme.darkTextMuted
         : AppTheme.lightTextMuted;
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
+    final hasUnread = chat.unreadCount > 0;
 
     final lastMsg = chat.lastMessage;
     String subtitle = '';
@@ -127,100 +138,125 @@ class ChatListScreen extends StatelessWidget {
       subtitle = '$prefix$content · $time';
     }
 
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      leading: Stack(
-        children: [
-          CircleAvatar(
-            radius: AppLayout.s(context, 28),
-            backgroundColor: borderColor,
-            backgroundImage:
-                chat.user.mainPhotoUrl != null &&
-                    chat.user.mainPhotoUrl!.isNotEmpty
-                ? CachedNetworkImageProvider(chat.user.mainPhotoUrl!)
-                : null,
-            child:
-                chat.user.mainPhotoUrl == null ||
-                    chat.user.mainPhotoUrl!.isEmpty
-                ? Icon(
-                    Icons.person,
-                    size: AppLayout.s(context, 28),
-                    color: borderColor,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: Material(
+        color: hasUnread
+            ? AppTheme.moduleFillTinted(isDark: isDark, accent: primaryColor)
+            : (isDark ? AppTheme.darkSurface : AppTheme.lightSurface),
+        borderRadius: BorderRadius.circular(AppTheme.radiusModule),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(AppTheme.radiusModule),
+          onTap: () => onChatTap(chat),
+          onLongPress: onChatLongPress == null
+              ? null
+              : () => onChatLongPress!(chat),
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 6,
+            ),
+            leading: Stack(
+              children: [
+                CircleAvatar(
+                  radius: AppLayout.s(context, 28),
+                  backgroundColor: borderColor,
+                   backgroundImage:
+                       chat.user.mainPhotoUrl != null &&
+                           chat.user.mainPhotoUrl!.isNotEmpty
+                       ? CachedImage.provider(
+                           chat.user.mainPhotoUrl!,
+                           diameter: AppLayout.s(context, 56),
+                         )
+                       : null,
+                  child:
+                      chat.user.mainPhotoUrl == null ||
+                          chat.user.mainPhotoUrl!.isEmpty
+                      ? Icon(
+                          Icons.person,
+                          size: AppLayout.s(context, 28),
+                          color: borderColor,
+                        )
+                      : null,
+                ),
+                if (chat.user.isOnline)
+                  Positioned(
+                    right: 0,
+                    bottom: 0,
+                    child: Container(
+                      width: AppLayout.s(context, 14),
+                      height: AppLayout.s(context, 14),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? AppTheme.darkSuccess
+                            : AppTheme.lightSuccess,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isDark
+                              ? AppTheme.darkSurface
+                              : AppTheme.lightSurface,
+                          width: 2,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            title: Text(
+              chat.user.name,
+              style: (isPersian ? AppTheme.bodyBoldFa : AppTheme.bodyBold)
+                  .copyWith(
+                fontSize: 16,
+                fontWeight: hasUnread ? FontWeight.w700 : FontWeight.w600,
+                color: textColor,
+              ),
+            ),
+            subtitle: subtitle.isNotEmpty
+                ? Text(
+                    subtitle,
+                    style:
+                        (isPersian ? AppTheme.captionFa : AppTheme.caption)
+                            .copyWith(
+                      fontSize: 13,
+                      fontWeight: hasUnread ? FontWeight.w600 : FontWeight.w400,
+                      color: hasUnread ? textColor : mutedColor,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   )
                 : null,
-          ),
-          if (chat.user.isOnline)
-            Positioned(
-              right: 0,
-              bottom: 0,
-              child: Container(
-                width: AppLayout.s(context, 14),
-                height: AppLayout.s(context, 14),
-                decoration: BoxDecoration(
-                  color: AppTheme.lightSuccess,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: isDark
-                        ? AppTheme.darkSurface
-                        : AppTheme.lightSurface,
-                    width: 2,
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (hasUnread)
+                  Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: AppTheme.primaryGradient(),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    constraints: const BoxConstraints(minWidth: 22),
+                    child: Text(
+                      chat.unreadCount > 99 ? '99+' : '${chat.unreadCount}',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: AppTheme.fontFor(isPersian),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
-                ),
-              ),
+                Icon(Icons.chevron_right, color: mutedColor),
+              ],
             ),
-        ],
-      ),
-      title: Text(
-        chat.user.name,
-        style: TextStyle(
-          fontFamily: 'Inter',
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-          color: textColor,
+          ),
         ),
       ),
-      subtitle: subtitle.isNotEmpty
-          ? Text(
-              subtitle,
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 13,
-                color: mutedColor,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            )
-          : null,
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (chat.unreadCount > 0)
-            Container(
-              margin: const EdgeInsets.only(right: 8),
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: primaryColor,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              constraints: const BoxConstraints(minWidth: 22),
-              child: Text(
-                chat.unreadCount > 99 ? '99+' : '${chat.unreadCount}',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          Icon(Icons.chevron_right, color: mutedColor),
-        ],
-      ),
-      onTap: () => onChatTap(chat),
-      onLongPress: onChatLongPress == null
-          ? null
-          : () => onChatLongPress!(chat),
     );
   }
 }

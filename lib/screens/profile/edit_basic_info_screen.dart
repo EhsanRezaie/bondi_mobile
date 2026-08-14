@@ -558,6 +558,7 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
           _errorMessage = authProvider.errorMessage ?? 'Failed to update profile';
           _isSaving = false;
         });
+        showActionToast(context, t.error_something_wrong, isError: true);
         return;
       }
 
@@ -575,6 +576,7 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
           _errorMessage = 'Failed to update location text';
           _isSaving = false;
         });
+        showActionToast(context, t.error_something_wrong, isError: true);
         return;
       }
 
@@ -591,6 +593,7 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
           _errorMessage = 'Failed to update GPS location';
           _isSaving = false;
         });
+        showActionToast(context, t.error_something_wrong, isError: true);
         return;
       }
 
@@ -609,6 +612,7 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
         _errorMessage = 'An error occurred. Please try again.';
         _isSaving = false;
       });
+      showActionToast(context, t.error_something_wrong, isError: true);
     }
   }
 
@@ -635,7 +639,7 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
           child: Text(
             labelText,
             style: TextStyle(
-              fontFamily: 'Inter',
+              fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
               fontSize: 14,
               fontWeight: FontWeight.w600,
               color: isEnabled
@@ -713,7 +717,7 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
               },
               textStyle: WidgetStatePropertyAll(
                 TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                   fontSize: 15,
                   color: isEnabled
                       ? Theme.of(context).colorScheme.onSurface
@@ -722,7 +726,7 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
               ),
               hintStyle: WidgetStatePropertyAll(
                 TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                   fontSize: 15,
                   color: isEnabled
                       ? Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5)
@@ -734,11 +738,11 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
           suggestionsBuilder: (context, searchController) {
             if (!isEnabled) {
               return [
-                const ListTile(
+                ListTile(
                   title: Text(
                     'Please select a country first',
                     style: TextStyle(
-                      fontFamily: 'Inter',
+                      fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                       color: Colors.grey,
                     ),
                   ),
@@ -761,7 +765,7 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
                   title: Text(
                     'No results found',
                     style: TextStyle(
-                      fontFamily: 'Inter',
+                      fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                       color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.5),
                     ),
                   ),
@@ -771,29 +775,32 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
 
             return filteredItems.map((item) {
               final isSelected = item == selectedItem;
-              return ListTile(
-                selected: isSelected,
-                selectedTileColor: primaryColor.withValues(alpha: 0.1),
-                title: Text(
-                  displayName(item),
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                    color: Theme.of(context).colorScheme.onSurface,
+              return Material(
+                type: MaterialType.transparency,
+                child: ListTile(
+                  selected: isSelected,
+                  selectedTileColor: primaryColor.withValues(alpha: 0.1),
+                  title: Text(
+                    displayName(item),
+                    style: TextStyle(
+                      fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                   ),
-                ),
-                trailing: isSelected
-                    ? Icon(
-                        Icons.check,
-                        color: primaryColor,
-                        size: 20,
-                      )
-                    : null,
-                onTap: () {
-                  searchController.closeView(displayName(item));
-                  onSelected(item);
+                  trailing: isSelected
+                      ? Icon(
+                          Icons.check,
+                          color: primaryColor,
+                          size: 20,
+                        )
+                      : null,
+                  onTap: () {
+                    searchController.closeView(displayName(item));
+                    onSelected(item);
                   searchController.text = displayName(item);
                 },
+                ),
               );
             }).toList();
           },
@@ -836,7 +843,7 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
         title: Text(
           'Edit Basic Info',
           style: TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
             fontSize: 18,
             fontWeight: FontWeight.w700,
             color: onSurfaceColor,
@@ -881,7 +888,7 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
                                       child: Text(
                                         _errorMessage!,
                                         style: TextStyle(
-                                          fontFamily: 'Inter',
+                                          fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                           fontSize: 14,
                                           color: errorColor,
                                           fontWeight: FontWeight.w500,
@@ -897,7 +904,7 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
                               controller: _nameController,
                               textInputAction: TextInputAction.next,
                               style: TextStyle(
-                                fontFamily: 'Inter',
+                                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                 fontSize: 16,
                                 color: onSurfaceColor,
                               ),
@@ -922,7 +929,7 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
                               readOnly: true,
                               onTap: _selectBirthDate,
                               style: TextStyle(
-                                fontFamily: 'Inter',
+                                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                 fontSize: 16,
                                 color: onSurfaceColor,
                               ),
@@ -947,7 +954,7 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
                                   child: Text(
                                     'Gender',
                                     style: TextStyle(
-                                      fontFamily: 'Inter',
+                                      fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
                                       color: onSurfaceColor,
@@ -994,7 +1001,7 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
                               maxLines: 3,
                               maxLength: 500,
                               style: TextStyle(
-                                fontFamily: 'Inter',
+                                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                 fontSize: 16,
                                 color: onSurfaceColor,
                               ),
@@ -1019,7 +1026,7 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
                                       child: Text(
                                         'Location',
                                         style: TextStyle(
-                                          fontFamily: 'Inter',
+                                          fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                           fontSize: 14,
                                           fontWeight: FontWeight.w600,
                                           color: onSurfaceColor,
@@ -1047,7 +1054,7 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
                                       label: Text(
                                         _isLoadingLocation ? 'Locating...' : 'GPS',
                                         style: TextStyle(
-                                          fontFamily: 'Inter',
+                                          fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                           fontSize: 12,
                                           fontWeight: FontWeight.w700,
                                           color: primaryColor,
@@ -1142,7 +1149,7 @@ class _EditBasicInfoScreenState extends State<EditBasicInfoScreen> {
                               : Text(
                                   'Save',
                                   style: TextStyle(
-                                    fontFamily: 'Inter',
+                                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
                                     color: Colors.white,
@@ -1213,7 +1220,7 @@ class _GenderOption extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                 fontSize: 15,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 color: isSelected ? primaryColor : onSurfaceColor,

@@ -25,6 +25,12 @@ class FakeDiscoverProvider extends DiscoverProvider {
   List<DiscoverProfile> get profiles => _profiles;
 
   @override
+  bool get hasProfiles => _profiles.isNotEmpty;
+
+  @override
+  List<DiscoverProfile> get visibleProfiles => _profiles.take(1).toList();
+
+  @override
   bool get isLoading => _isLoading;
 
   @override
@@ -55,7 +61,7 @@ void main() {
       );
 
       expect(find.byType(Scaffold), findsOneWidget);
-      expect(find.byIcon(Icons.wc), findsOneWidget);
+      expect(find.byIcon(Icons.tune), findsOneWidget);
     });
 
     testWidgets('shows empty state when feed is empty', (tester) async {

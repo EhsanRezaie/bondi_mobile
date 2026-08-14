@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dating_app/config/app_theme.dart';
 import 'package:dating_app/providers/chat_provider.dart';
 import 'package:dating_app/models/swipe_user.dart';
@@ -8,6 +7,7 @@ import 'package:dating_app/screens/chats/user_notification_profile_screen.dart';
 import 'package:dating_app/generated/app_localizations.dart';
 import 'package:dating_app/utils/relative_time.dart';
 import 'package:dating_app/utils/responsive.dart';
+import 'package:dating_app/utils/cached_image.dart';
 
 class ILikedScreen extends StatefulWidget {
   const ILikedScreen({super.key});
@@ -69,7 +69,11 @@ class _ILikedScreenState extends State<ILikedScreen> {
                 Text(
                   t.chat_empty_i_liked,
                   style: TextStyle(
-                    fontFamily: 'Inter',
+                    fontFamily: AppTheme.fontFor(
+                      !Localizations.localeOf(
+                        context,
+                      ).languageCode.contains('en'),
+                    ),
                     fontSize: 16,
                     color: mutedColor,
                   ),
@@ -81,7 +85,7 @@ class _ILikedScreenState extends State<ILikedScreen> {
 
         return ListView.builder(
           controller: _scrollController,
-          padding: const EdgeInsets.symmetric(vertical: 8),
+          padding: const EdgeInsets.symmetric(vertical: 12),
           itemCount:
               provider.likedUsers.length + (provider.hasMoreLiked ? 1 : 0),
           itemBuilder: (context, index) {
@@ -117,57 +121,76 @@ class _ILikedScreenState extends State<ILikedScreen> {
     Color borderColor,
   ) {
     final t = AppLocalizations.of(context)!;
+    final isPersian = !Localizations.localeOf(
+      context,
+    ).languageCode.contains('en');
 
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-      leading: CircleAvatar(
-        radius: AppLayout.s(context, 26),
-        backgroundColor: borderColor,
-        backgroundImage:
-            user.mainPhotoUrl != null && user.mainPhotoUrl!.isNotEmpty
-            ? CachedNetworkImageProvider(user.mainPhotoUrl!)
-            : null,
-        child: user.mainPhotoUrl == null || user.mainPhotoUrl!.isEmpty
-            ? Icon(
-                Icons.person,
-                size: AppLayout.s(context, 26),
-                color: borderColor,
-              )
-            : null,
-      ),
-      title: Text(
-        t.chat_you_liked(user.name),
-        style: TextStyle(
-          fontFamily: 'Inter',
-          fontSize: 15,
-          fontWeight: FontWeight.w600,
-          color: textColor,
-        ),
-      ),
-      subtitle: Text(
-        relativeTime(user.swipedAt, t),
-        style: TextStyle(fontFamily: 'Inter', fontSize: 13, color: mutedColor),
-      ),
-      trailing: Icon(Icons.chevron_right, color: mutedColor),
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => UserNotificationProfileScreen(
-              userId: user.id,
-              fallback: SwipeStubProfile(
-                id: user.id,
-                name: user.name,
-                age: user.age,
-                mainPhotoUrl: user.mainPhotoUrl,
-                isPremium: user.isPremium,
-                isVerified: user.isVerified,
-                distanceKm: user.distanceKm,
-              ),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: Material(
+        color: isDark ? AppTheme.darkSurface : AppTheme.lightSurface,
+        borderRadius: BorderRadius.circular(AppTheme.radiusModule),
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12,
+            vertical: 4,
+          ),
+          leading: CircleAvatar(
+            radius: AppLayout.s(context, 26),
+            backgroundColor: borderColor,
+             backgroundImage:
+                 user.mainPhotoUrl != null && user.mainPhotoUrl!.isNotEmpty
+                 ? CachedImage.provider(
+                     user.mainPhotoUrl!,
+                     diameter: AppLayout.s(context, 52),
+                   )
+                 : null,
+            child: user.mainPhotoUrl == null || user.mainPhotoUrl!.isEmpty
+                ? Icon(
+                    Icons.person,
+                    size: AppLayout.s(context, 26),
+                    color: borderColor,
+                  )
+                : null,
+          ),
+          title: Text(
+            t.chat_you_liked(user.name),
+            style: (isPersian ? AppTheme.bodyBoldFa : AppTheme.bodyBold)
+                .copyWith(
+              fontSize: 15,
+              color: textColor,
             ),
           ),
-        );
-      },
+          subtitle: Text(
+            relativeTime(user.swipedAt, t),
+            style:
+                (isPersian ? AppTheme.captionFa : AppTheme.caption).copyWith(
+              fontSize: 13,
+              color: mutedColor,
+            ),
+          ),
+          trailing: Icon(Icons.chevron_right, color: mutedColor),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => UserNotificationProfileScreen(
+                  userId: user.id,
+                  fallback: SwipeStubProfile(
+                    id: user.id,
+                    name: user.name,
+                    age: user.age,
+                    mainPhotoUrl: user.mainPhotoUrl,
+                    isPremium: user.isPremium,
+                    isVerified: user.isVerified,
+                    distanceKm: user.distanceKm,
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+      ),
     );
   }
 }

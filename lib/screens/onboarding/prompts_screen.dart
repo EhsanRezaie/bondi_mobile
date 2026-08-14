@@ -265,7 +265,7 @@ class _PromptsScreenState extends State<PromptsScreen> {
               Text(
                 'Your Prompts',
                 style: TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                   color: onSurfaceColor,
@@ -345,7 +345,7 @@ class _PromptsScreenState extends State<PromptsScreen> {
                             child: Text(
                               '$selectedCount',
                               style: TextStyle(
-                                fontFamily: 'Inter',
+                                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.white,
@@ -382,7 +382,7 @@ class _PromptsScreenState extends State<PromptsScreen> {
                               child: Text(
                                 _errorMessage!,
                                 style: TextStyle(
-                                  fontFamily: 'Inter',
+                                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                   fontSize: 14,
                                   color: errorColor,
                                   fontWeight: FontWeight.w500,
@@ -474,7 +474,7 @@ class _PromptsScreenState extends State<PromptsScreen> {
                                             child: Text(
                                               '$selectedInCategory',
                                               style: TextStyle(
-                                                fontFamily: 'Inter',
+                                                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                                 fontSize: 13,
                                                 fontWeight: FontWeight.w600,
                                                 color: primaryColor,
@@ -539,14 +539,7 @@ class _PromptsScreenState extends State<PromptsScreen> {
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () => Navigator.pop(context),
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(color: borderColor, width: 1.5),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          minimumSize: const Size(double.infinity, 52),
-                          foregroundColor: onSurfaceColor,
-                        ),
+                        style: AppTheme.outlineButton,
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -558,7 +551,7 @@ class _PromptsScreenState extends State<PromptsScreen> {
                             const SizedBox(width: 8),
                             Text(
                               'Back',
-                              style: AppTheme.buttonText.copyWith(
+                              style: AppTheme.button.copyWith(
                                 color: onSurfaceColor,
                                 fontSize: 16,
                               ),
@@ -569,19 +562,9 @@ class _PromptsScreenState extends State<PromptsScreen> {
                     ),
                     const SizedBox(width: 16),
                     Expanded(
-                      child: ElevatedButton(
+                      child: AppTheme.gradientButton(
+                        enabled: isComplete && !_isSubmitting,
                         onPressed: _isSubmitting ? null : _handleSubmit,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: isComplete
-                              ? primaryColor
-                              : Colors.grey.shade400,
-                          foregroundColor: Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          elevation: 0,
-                          minimumSize: const Size(double.infinity, 52),
-                        ),
                         child: _isSubmitting
                             ? const SizedBox(
                                 height: 24,
@@ -596,10 +579,8 @@ class _PromptsScreenState extends State<PromptsScreen> {
                                 children: [
                                   Text(
                                     'Continue',
-                                    style: AppTheme.buttonText.copyWith(
-                                      color: isComplete
-                                          ? Colors.white
-                                          : Colors.white.withValues(alpha: 0.7),
+                                    style: AppTheme.button.copyWith(
+                                      color: Colors.white,
                                       fontSize: 16,
                                     ),
                                   ),
@@ -729,7 +710,7 @@ class _PromptsScreenState extends State<PromptsScreen> {
                   contentPadding: const EdgeInsets.all(12),
                   isDense: true,
                   errorStyle: TextStyle(
-                    fontFamily: 'Inter',
+                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                     fontSize: 12,
                     color: errorColor,
                   ),
@@ -746,7 +727,7 @@ class _PromptsScreenState extends State<PromptsScreen> {
                   child: Text(
                     'Please write an answer',
                     style: TextStyle(
-                      fontFamily: 'Inter',
+                      fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                       fontSize: 12,
                       color: errorColor,
                       fontWeight: FontWeight.w500,

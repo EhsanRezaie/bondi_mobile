@@ -31,9 +31,11 @@ class ChatService {
     int limit = 20,
     int offset = 0,
     String? status,
+    String? cursor,
   }) async {
     try {
       final params = <String, dynamic>{'limit': limit, 'offset': offset};
+      if (cursor != null && cursor.isNotEmpty) params['cursor'] = cursor;
       if (status != null) params['status'] = status;
       return await ApiService.get(
         '/chats',
@@ -393,6 +395,42 @@ class ChatService {
   static Future<Response> deleteNotification(String id) async {
     try {
       return await ApiService.dio.delete('/notifications/$id');
+    } on DioException catch (e) {
+      if (e.response != null) return e.response!;
+      rethrow;
+    }
+  }
+
+  static Future<Response> registerDeviceToken({
+    required String token,
+    required String platform,
+  }) async {
+    try {
+      return await ApiService.post(
+        '/notifications/device-token',
+        data: {'token': token, 'platform': platform},
+      );
+    } on DioException catch (e) {
+      if (e.response != null) return e.response!;
+      rethrow;
+    }
+  }
+
+  static Future<Response> deleteDeviceToken(String tokenId) async {
+    try {
+      return await ApiService.dio.delete('/notifications/device-token/$tokenId');
+    } on DioException catch (e) {
+      if (e.response != null) return e.response!;
+      rethrow;
+    }
+  }
+
+  static Future<Response> getNotificationCounts() async {
+    try {
+      return await ApiService.get(
+        '/notifications/counts',
+        cacheOptions: ApiService.noCache,
+      );
     } on DioException catch (e) {
       if (e.response != null) return e.response!;
       rethrow;

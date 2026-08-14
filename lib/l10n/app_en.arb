@@ -28,6 +28,8 @@
   "splash_check_internet": "Please check your internet connection",
   "splash_retry": "Retry",
   "splash_connection_failed": "Connection failed",
+  "screenshot_disabled_notice": "Screenshots are disabled to protect your privacy",
+  "photo_fullscreen_hint": "Tap photo for full screen",
 
   "signup_title": "Create Account",
   "signup_subtitle": "Join us and find your match",
@@ -88,7 +90,22 @@
   "settings_logout": "Log Out",
   "settings_logout_desc": "Sign out of your account",
   "settings_logout_confirm": "Are you sure you want to log out?",
-  
+  "settings_premium_title": "Go Premium",
+  "settings_premium_subtitle": "Unlock unlimited likes, chats and profile boosts",
+  "settings_premium_perk_likes": "Unlimited likes",
+  "settings_premium_perk_chats": "Unlimited chats",
+  "settings_premium_perk_boost": "Profile boost",
+  "settings_premium_cta": "Upgrade now",
+
+  "notifications_title": "Notifications",
+  "notifications_empty": "No notifications yet",
+  "notifications_section_liked": "Liked",
+  "notifications_section_likes": "Likes",
+  "notifications_section_matches": "Matches",
+  "notifications_section_announcements": "Announcements",
+  "notifications_empty_section": "Nothing here yet",
+  "notifications_close": "Close",
+
   "error_email_exists": "This email is already registered",
   "error_email_invalid_format": "Invalid email format",
   "error_too_many_attempts": "Too many attempts. Please wait a moment",
@@ -137,6 +154,7 @@
   "discover_km_away": "{distance} km away",
   "discover_tap_for_more": "Tap for more",
   "discover_premium": "Premium",
+  "discover_revert_pass": "Revert last pass",
 
   "profile_section_about": "About",
   "profile_section_physical": "Physical",
@@ -165,7 +183,7 @@
   "search_no_results_hint": "Try adjusting your filters",
   "search_filters": "Filters",
   "search_advanced_filters": "Advanced Filters",
-  "search_apply_filters": "Apply Filters",
+  "search_apply_filters": "Apply",
   "search_reset_filters": "Reset All",
   "search_sort_by": "Sort By",
   "search_sort_recent": "Recent",
@@ -287,6 +305,7 @@
   "chat_delete_for_me": "Delete for me",
   "chat_delete_for_everyone": "Delete for everyone",
   "chat_edit_message": "Edit message",
+  "chat_message_reported": "Message reported",
   "chat_limit_reached": "Daily chat limit reached",
   "chat_limit_explanation": "You've used all your chats today. Come back tomorrow!",
   "chat_unmatched": "Start a conversation",
@@ -354,5 +373,33 @@
     "placeholders": {
       "reason": { "type": "String", "format": "text" }
     }
-  }
+  },
+
+  "support": "Support",
+  "my_tickets": "My Tickets",
+  "new_ticket": "New Ticket",
+  "ticket_subject": "Subject",
+  "ticket_message": "Message",
+  "ticket_message_hint": "Describe your issue in detail (at least 10 characters)",
+  "ticket_reply_hint": "Write a reply…",
+  "ticket_send": "Send",
+  "ticket_status_open": "Open",
+  "ticket_status_in_progress": "In progress",
+  "ticket_status_closed": "Closed",
+  "ticket_subject_account": "Account / Login issue",
+  "ticket_subject_photo": "Photo verification",
+  "ticket_subject_payment": "Payment / Premium",
+  "ticket_subject_bug": "Report a problem (bug)",
+  "ticket_subject_other": "Other",
+  "ticket_other_hint": "Selecting \u201cOther\u201d? Explain your issue in the message below.",
+  "ticket_empty_title": "No tickets yet",
+  "ticket_empty_body": "Have an issue? Create a support ticket and our team will help you.",
+  "ticket_create_first": "Create your first ticket",
+  "ticket_created": "Ticket created",
+  "ticket_reply_sent": "Reply sent",
+  "ticket_closed_note": "This ticket is closed. Sending a message will reopen it.",
+  "ticket_support_team": "Support Team",
+  "ticket_you": "You",
+  "ticket_load_error": "Couldn't load tickets. Pull to refresh.",
+  "notifications_see_details": "See details"
 }

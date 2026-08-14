@@ -267,7 +267,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           fillColor: surfaceColor,
                           errorText: _emailError,
                           errorStyle: TextStyle(
-                            fontFamily: 'Inter',
+                            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                             fontSize: 12,
                             color: errorColor,
                           ),
@@ -345,7 +345,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           fillColor: surfaceColor,
                           errorText: _passwordError,
                           errorStyle: TextStyle(
-                            fontFamily: 'Inter',
+                            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                             fontSize: 12,
                             color: errorColor,
                           ),
@@ -420,7 +420,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                           fillColor: surfaceColor,
                           errorText: _confirmPasswordError,
                           errorStyle: TextStyle(
-                            fontFamily: 'Inter',
+                            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                             fontSize: 12,
                             color: errorColor,
                           ),
@@ -470,7 +470,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                               t.signup_already_have_account,
                               textAlign: TextAlign.center,
                               style: TextStyle(
-                                fontFamily: 'Inter',
+                                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                 fontSize: 16.0,
                                 color: textMutedColor,
                               ),
@@ -488,7 +488,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                             child: Text(
                               t.sign_in,
                               style: TextStyle(
-                                fontFamily: 'Inter',
+                                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                 fontSize: 16.0,
                                 fontWeight: FontWeight.w600,
                                 color: primaryColor,

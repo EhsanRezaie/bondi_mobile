@@ -387,6 +387,7 @@ class _EditProfileDetailsScreenState extends State<EditProfileDetailsScreen> {
           _errorMessage = authProvider.errorMessage ?? 'Failed to update profile';
           _isSaving = false;
         });
+        showActionToast(context, t.error_something_wrong, isError: true);
       }
     } catch (e) {
       debugPrint('❌ Save error: $e');
@@ -395,6 +396,7 @@ class _EditProfileDetailsScreenState extends State<EditProfileDetailsScreen> {
           _errorMessage = 'An error occurred. Please try again.';
           _isSaving = false;
         });
+        showActionToast(context, t.error_something_wrong, isError: true);
       }
     }
   }
@@ -427,7 +429,7 @@ class _EditProfileDetailsScreenState extends State<EditProfileDetailsScreen> {
         title: Text(
           'Edit Profile Details',
           style: TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
             fontSize: 18,
             fontWeight: FontWeight.w700,
             color: onSurfaceColor,
@@ -472,7 +474,7 @@ class _EditProfileDetailsScreenState extends State<EditProfileDetailsScreen> {
                                       child: Text(
                                         _errorMessage!,
                                         style: TextStyle(
-                                          fontFamily: 'Inter',
+                                          fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                           fontSize: 14,
                                           color: errorColor,
                                           fontWeight: FontWeight.w500,
@@ -494,7 +496,7 @@ class _EditProfileDetailsScreenState extends State<EditProfileDetailsScreen> {
                                     Text(
                                       '📏 Height',
                                       style: TextStyle(
-                                        fontFamily: 'Inter',
+                                        fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                         fontSize: 15,
                                         fontWeight: FontWeight.w600,
                                         color: onSurfaceColor,
@@ -503,7 +505,7 @@ class _EditProfileDetailsScreenState extends State<EditProfileDetailsScreen> {
                                     Text(
                                       '${_height.toInt()} cm',
                                       style: TextStyle(
-                                        fontFamily: 'Inter',
+                                        fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                         fontSize: 14,
                                         fontWeight: FontWeight.w600,
                                         color: primaryColor,
@@ -537,7 +539,7 @@ class _EditProfileDetailsScreenState extends State<EditProfileDetailsScreen> {
                                     Text(
                                       '🏋️ Weight',
                                       style: TextStyle(
-                                        fontFamily: 'Inter',
+                                        fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                         fontSize: 15,
                                         fontWeight: FontWeight.w600,
                                         color: onSurfaceColor,
@@ -546,7 +548,7 @@ class _EditProfileDetailsScreenState extends State<EditProfileDetailsScreen> {
                                     Text(
                                       '${_weight.toInt()} kg',
                                       style: TextStyle(
-                                        fontFamily: 'Inter',
+                                        fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                         fontSize: 14,
                                         fontWeight: FontWeight.w600,
                                         color: primaryColor,
@@ -659,7 +661,7 @@ class _EditProfileDetailsScreenState extends State<EditProfileDetailsScreen> {
                                   child: Text(
                                     '🗣️ Languages (Multi-select)',
                                     style: TextStyle(
-                                      fontFamily: 'Inter',
+                                      fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                       fontSize: 14,
                                       fontWeight: FontWeight.w600,
                                       color: onSurfaceColor,
@@ -688,7 +690,7 @@ class _EditProfileDetailsScreenState extends State<EditProfileDetailsScreen> {
                                         child: Text(
                                           language,
                                           style: TextStyle(
-                                            fontFamily: 'Inter',
+                                            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                             fontSize: 14,
                                             fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                                             color: isSelected ? primaryColor : onSurfaceColor.withValues(alpha: 0.8),
@@ -705,7 +707,7 @@ class _EditProfileDetailsScreenState extends State<EditProfileDetailsScreen> {
                             TextFormField(
                               controller: _workplaceController,
                               style: TextStyle(
-                                fontFamily: 'Inter',
+                                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                 fontSize: 16,
                                 color: onSurfaceColor,
                               ),
@@ -748,7 +750,7 @@ class _EditProfileDetailsScreenState extends State<EditProfileDetailsScreen> {
                               : Text(
                                   'Save',
                                   style: TextStyle(
-                                    fontFamily: 'Inter',
+                                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                     fontSize: 16,
                                     fontWeight: FontWeight.w600,
                                     color: Colors.white,
@@ -788,7 +790,7 @@ class _EditProfileDetailsScreenState extends State<EditProfileDetailsScreen> {
           child: Text(
             label,
             style: TextStyle(
-              fontFamily: 'Inter',
+              fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
               fontSize: 14,
               fontWeight: FontWeight.w600,
               color: onSurfaceColor,
@@ -817,7 +819,7 @@ class _EditProfileDetailsScreenState extends State<EditProfileDetailsScreen> {
                 child: Text(
                   option,
                   style: TextStyle(
-                    fontFamily: 'Inter',
+                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                     fontSize: 14,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                     color: isSelected ? primaryColor : onSurfaceColor.withValues(alpha: 0.8),

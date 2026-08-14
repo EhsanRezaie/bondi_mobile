@@ -32,15 +32,20 @@ class SearchService {
     String sortOrder = 'desc',
     int limit = 9,
     int offset = 0,
+    String? cursor,
   }) async {
     try {
       final params = <String, dynamic>{
         'age_min': ageMin,
         'limit': limit,
-        'offset': offset,
         'sort_by': sortBy,
         'sort_order': sortOrder,
       };
+      if (cursor != null && cursor.isNotEmpty) {
+        params['cursor'] = cursor;
+      } else {
+        params['offset'] = offset;
+      }
       if (gender != null && gender != 'all') params['gender'] = gender;
       if (ageMax != null) params['age_max'] = ageMax;
       if (distanceKm != null) params['distance_km'] = distanceKm;

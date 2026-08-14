@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dating_app/config/app_theme.dart';
 import 'package:dating_app/utils/responsive.dart';
+import 'package:dating_app/utils/cached_image.dart';
 import 'package:dating_app/widgets/online_indicator.dart';
 
 class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -54,9 +54,12 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                 CircleAvatar(
                   radius: AppLayout.s(context, 18),
                   backgroundColor: borderColor,
-                  backgroundImage: avatarUrl != null && avatarUrl!.isNotEmpty
-                      ? CachedNetworkImageProvider(avatarUrl!)
-                      : null,
+                   backgroundImage: avatarUrl != null && avatarUrl!.isNotEmpty
+                       ? CachedImage.provider(
+                           avatarUrl!,
+                           diameter: AppLayout.s(context, 36),
+                         )
+                       : null,
                   child: avatarUrl == null || avatarUrl!.isEmpty
                       ? Icon(Icons.person,
                           size: AppLayout.s(context, 18), color: borderColor)
@@ -73,7 +76,11 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                 Text(
                   userName,
                   style: TextStyle(
-                    fontFamily: 'Inter',
+                    fontFamily: AppTheme.fontFor(
+                      !Localizations.localeOf(
+                        context,
+                      ).languageCode.contains('en'),
+                    ),
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: textColor,

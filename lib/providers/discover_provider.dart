@@ -26,12 +26,13 @@ class DiscoverProvider extends ChangeNotifier {
   }
 
   List<DiscoverProfile> _profiles = [];
-  bool _isLoading = false;
+  bool _isLoading = true;
   bool _isLoadingMore = false;
   String? _errorMessage;
   int _total = 0;
-  int _offset = 0;
+  String? _nextCursor;
   bool _hasMore = true;
+  final Set<String> _seenUserIds = {};
 
   bool _isPremium = false;
   int _likesRemaining = 0;
@@ -49,7 +50,15 @@ class DiscoverProvider extends ChangeNotifier {
   static const _keyAgeMax = 'discover_age_max';
   static const _keyDistance = 'discover_distance_km';
 
+  /// Number of profiles fetched per request. Also caps how many passed cards
+  /// can be reverted (the revert stack matches the page size).
+  static const int pageSize = 20;
+
+  final List<DiscoverProfile> _passed = [];
+
   List<DiscoverProfile> get profiles => _profiles;
+  List<DiscoverProfile> get passedProfiles => List.unmodifiable(_passed);
+  bool get canRevert => _passed.isNotEmpty;
   bool get isLoading => _isLoading;
   bool get isLoadingMore => _isLoadingMore;
   String? get errorMessage => _errorMessage;
@@ -71,7 +80,9 @@ class DiscoverProvider extends ChangeNotifier {
   bool get isLikeBlocked => !_isPremium && _likesRemaining <= 0;
   bool get isChatBlocked => !_isPremium && _chatsRemaining <= 0;
 
-  List<DiscoverProfile> get visibleProfiles => _profiles.take(1).toList();
+  /// Top of the deck plus the stacked cards behind it, so the next profile is
+  /// already visible while the current card is being swiped (no black screen).
+  List<DiscoverProfile> get visibleProfiles => _profiles.take(3).toList();
 
   bool get hasProfiles => _profiles.isNotEmpty;
 
@@ -120,7 +131,8 @@ class DiscoverProvider extends ChangeNotifier {
 
     _isLoading = true;
     _errorMessage = null;
-    _offset = 0;
+    _nextCursor = null;
+    _seenUserIds.clear();
     _hasMore = true;
     _safeNotify();
 
@@ -130,7 +142,7 @@ class DiscoverProvider extends ChangeNotifier {
         ageMin: _ageMin,
         ageMax: _ageMax,
         distanceKm: _distanceKm,
-        limit: 20,
+        limit: pageSize,
         offset: 0,
       );
 
@@ -139,9 +151,12 @@ class DiscoverProvider extends ChangeNotifier {
         _profiles = (data['users'] as List)
             .map((j) => DiscoverProfile.fromJson(j as Map<String, dynamic>))
             .toList();
+        _seenUserIds.addAll(_profiles.map((p) => p.id));
         _total = data['total'] ?? 0;
-        _hasMore = _profiles.length < _total && _profiles.isNotEmpty;
-        _offset = _profiles.length;
+        final next = data['next_cursor'] as String?;
+        _nextCursor = (next != null && next.isNotEmpty) ? next : null;
+        _hasMore = _nextCursor != null ||
+            (_profiles.isNotEmpty && _profiles.length < _total);
       } else {
         _errorMessage = 'Failed to load profiles';
       }
@@ -170,18 +185,22 @@ class DiscoverProvider extends ChangeNotifier {
         ageMin: _ageMin,
         ageMax: _ageMax,
         distanceKm: _distanceKm,
-        limit: 20,
-        offset: _offset,
+        limit: pageSize,
+        cursor: _nextCursor,
       );
 
       if (response.statusCode == 200) {
         final data = response.data;
         final more = (data['users'] as List)
             .map((j) => DiscoverProfile.fromJson(j as Map<String, dynamic>))
+            .where((p) => _seenUserIds.add(p.id))
             .toList();
         _profiles.addAll(more);
-        _offset = _profiles.length;
-        _hasMore = _profiles.length < (data['total'] ?? _total);
+        _total = data['total'] ?? _total;
+        final next = data['next_cursor'] as String?;
+        _nextCursor = (next != null && next.isNotEmpty) ? next : null;
+        _hasMore = _nextCursor != null ||
+            (_profiles.isNotEmpty && _profiles.length < _total);
       }
     } catch (_) {}
 
@@ -207,19 +226,50 @@ class DiscoverProvider extends ChangeNotifier {
         }
         return {};
       }
+      // A reverted (previously passed) card was liked. The backend still had
+      // the pass recorded; treat the like as accepted and advance the deck.
+      if (response.statusCode == 400) {
+        _profiles.removeWhere((p) => p.id == profile.id);
+        _passed.removeWhere((p) => p.id == profile.id);
+        _safeNotify();
+        _refillIfLow();
+        return {};
+      }
     } catch (_) {}
     return null;
   }
 
-  Future<void> swipeLeft(DiscoverProfile profile) async {
+  /// Returns `true` when the pass was recorded and the card advanced the deck,
+  /// `false` when the API call failed (caller should snap the card back).
+  Future<bool> swipeLeft(DiscoverProfile profile) async {
     try {
       final response = await DiscoverService.swipeUser(profile.id, 'pass');
-      if (response.statusCode == 200) {
+      // 200 = fresh pass; 400 = the card was already passed (e.g. reverted and
+      // re-passed). Either way the pass stands, so remove it and keep it in the
+      // revert stack so the user can undo again.
+      if (response.statusCode == 200 || response.statusCode == 400) {
         _profiles.removeWhere((p) => p.id == profile.id);
+        if (!_passed.any((p) => p.id == profile.id)) {
+          _passed.insert(0, profile);
+          if (_passed.length > pageSize) {
+            _passed.removeRange(pageSize, _passed.length);
+          }
+        }
         _refillIfLow();
         _safeNotify();
+        return true;
       }
     } catch (_) {}
+    return false;
+  }
+
+  /// Pops the most recently passed card back onto the top of the deck.
+  /// Local-only: the backend keeps the original pass until re-swiped.
+  void revertPass() {
+    if (_passed.isEmpty) return;
+    final profile = _passed.removeAt(0);
+    _profiles.insert(0, profile);
+    _safeNotify();
   }
 
   /// Pure chat start — no like is recorded. Creates or reuses the chat for the
@@ -290,16 +340,16 @@ class DiscoverProvider extends ChangeNotifier {
 
   void widenDistance() {
     final current = _distanceKm ?? 50;
-    final next = (current + 50).clamp(1, 500);
+    final next = (current + 10).clamp(1, 500);
     _distanceKm = next >= 500 ? null : next;
     _saveFilters();
     loadProfiles();
   }
 
   void widenAge() {
-    final current = _ageMax ?? 100;
-    final next = (current + 2).clamp(18, 100);
-    _ageMax = next >= 100 ? null : next;
+    final current = _ageMax ?? 80;
+    final next = (current + 2).clamp(18, 80);
+    _ageMax = next >= 80 ? null : next;
     _saveFilters();
     loadProfiles();
   }
@@ -311,5 +361,14 @@ class DiscoverProvider extends ChangeNotifier {
   void clearError() {
     _errorMessage = null;
     _safeNotify();
+  }
+
+  void resetFilters() {
+    _genderFilter = null;
+    _ageMin = 18;
+    _ageMax = null;
+    _distanceKm = null;
+    _saveFilters();
+    loadProfiles();
   }
 }

@@ -286,7 +286,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                               child: Text(
                                 _errorMessage!,
                                 style: TextStyle(
-                                  fontFamily: 'Inter',
+                                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                   fontSize: 14,
                                   color: errorColor,
                                 ),
@@ -316,7 +316,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                                   FilteringTextInputFormatter.digitsOnly,
                                 ],
                                 style: TextStyle(
-                                  fontFamily: 'Inter',
+                                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                   fontSize: AppLayout.s(context, 20),
                                   fontWeight: FontWeight.w600,
                                   color: onSurfaceColor,
@@ -327,7 +327,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                                   counterText: '',
                                   hintText: '—',
                                   hintStyle: TextStyle(
-                                    fontFamily: 'Inter',
+                                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                     fontSize: AppLayout.s(context, 20),
                                     fontWeight: FontWeight.w600,
                                     color: textMutedColor.withValues(
@@ -370,7 +370,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                             ? '${t.verify_resend} (${_formatTime(_resendTimerSeconds)})'
                             : t.verify_resend,
                         style: TextStyle(
-                          fontFamily: 'Inter',
+                          fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                           fontSize: 14,
                           color: _isTimerRunning
                               ? textMutedColor
@@ -386,7 +386,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                     Text(
                       t.verify_referral_hint,
                       style: TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                         fontSize: 14,
                         color: textMutedColor,
                       ),
@@ -425,7 +425,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                     Text(
                       t.verify_referral_bonus,
                       style: TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                         fontSize: 12,
                         color: textMutedColor,
                       ),

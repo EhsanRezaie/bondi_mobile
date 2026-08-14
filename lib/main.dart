@@ -1,4 +1,5 @@
 // lib/main.dart
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -13,7 +14,10 @@ import 'providers/language_provider.dart';
 import 'providers/settings_provider.dart';
 import 'providers/chat_provider.dart';
 import 'providers/notifications_provider.dart';
+import 'providers/ticket_provider.dart';
 import 'screens/splash_screen.dart';
+import 'utils/global_navigator.dart';
+import 'widgets/action_toast.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -38,12 +42,29 @@ void main() async {
 
   final prefs = await SharedPreferences.getInstance();
   final savedLanguage = prefs.getString('selected_language') ?? 'en';
-  
+
   runApp(
     MyApp(
       initialLanguage: savedLanguage,
     ),
   );
+
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      final alreadyShown =
+          prefs.getBool('screenshot_notice_shown') ?? false;
+      if (!alreadyShown) {
+        await prefs.setBool('screenshot_notice_shown', true);
+        final context = appNavigatorKey.currentContext;
+        if (context != null && context.mounted) {
+          showActionToast(
+            context,
+            AppLocalizations.of(context)!.screenshot_disabled_notice,
+          );
+        }
+      }
+    }
+  });
 }
 
 class MyApp extends StatelessWidget {
@@ -66,6 +87,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
         ChangeNotifierProvider(create: (_) => ChatProvider()),
         ChangeNotifierProvider(create: (_) => NotificationsProvider()),
+        ChangeNotifierProvider(create: (_) => TicketProvider()),
       ],
       child: const AppView(),
     );
@@ -81,9 +103,16 @@ class AppView extends StatelessWidget {
     final settingsProv = context.watch<SettingsProvider>();
 
     return MaterialApp(
+      navigatorKey: appNavigatorKey,
       title: 'AURA',
-      theme: AppTheme.lightTheme,
-      darkTheme: AppTheme.darkTheme,
+      theme: AppTheme.themeFor(
+        brightness: Brightness.light,
+        isPersian: !langProv.isEnglish,
+      ),
+      darkTheme: AppTheme.themeFor(
+        brightness: Brightness.dark,
+        isPersian: !langProv.isEnglish,
+      ),
       themeMode: settingsProv.darkMode ? ThemeMode.dark : ThemeMode.light,
       debugShowCheckedModeBanner: false,
       locale: langProv.locale,

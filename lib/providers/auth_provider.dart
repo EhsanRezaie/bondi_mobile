@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:dating_app/generated/app_localizations.dart';
 import '../services/auth_service.dart';
 import '../services/storage_service.dart';
+import '../services/push_service.dart';
 import '../models/user.dart';
 
 class AuthProvider extends ChangeNotifier {
@@ -340,6 +341,7 @@ class AuthProvider extends ChangeNotifier {
   // Logout
   // ============================================================
   Future<void> logout() async {
+    await PushService().logout();
     final refreshToken = await _storageService.getRefreshToken();
     if (refreshToken != null) {
       try {

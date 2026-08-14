@@ -1,7 +1,6 @@
 // lib/screens/profile/profile_screen.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dating_app/config/app_theme.dart';
 import 'package:dating_app/models/photo.dart';
 import 'package:dating_app/models/profile_stats.dart';
@@ -10,13 +9,14 @@ import 'package:dating_app/providers/auth_provider.dart';
 import 'package:dating_app/providers/profile_provider.dart';
 import 'package:dating_app/screens/profile/avatar_crop_screen.dart';
 import 'package:dating_app/utils/responsive.dart';
+import 'package:dating_app/utils/cached_image.dart';
 import 'package:dating_app/screens/profile/edit_basic_info_screen.dart';
 import 'package:dating_app/screens/profile/edit_profile_details_screen.dart';
 import 'package:dating_app/screens/profile/edit_interests_screen.dart';
 import 'package:dating_app/screens/profile/edit_prompts_screen.dart';
 import 'package:dating_app/screens/profile/edit_photos_screen.dart';
 import 'package:dating_app/screens/profile/settings_screen.dart';
-import 'package:dating_app/widgets/shimmer_avatar.dart';
+import 'package:dating_app/screens/profile/tickets_screen.dart';
 import 'package:dating_app/generated/app_localizations.dart';
 import 'package:dating_app/widgets/action_toast.dart';
 
@@ -89,7 +89,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             title: Text(
               'Profile',
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                 fontSize: 20,
                 fontWeight: FontWeight.w700,
                 color: onSurfaceColor,
@@ -99,6 +99,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
             backgroundColor: Colors.transparent,
             elevation: 0,
             centerTitle: true,
+            leading: IconButton(
+              icon: Icon(Icons.headset_mic_outlined, color: onSurfaceColor),
+              tooltip: AppLocalizations.of(context)!.support,
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const TicketsScreen(),
+                  ),
+                );
+              },
+            ),
             actions: [
               IconButton(
                 icon: Icon(Icons.settings_outlined, color: onSurfaceColor),
@@ -115,7 +127,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
             onRefresh: _onRefresh,
             child: SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
-              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              padding: EdgeInsets.fromLTRB(
+                24.0,
+                0,
+                24.0,
+                AppLayout.floatingNavClearance,
+              ),
               child: Column(
                 children: [
                   const SizedBox(height: 20),
@@ -189,6 +206,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     Color textMutedColor,
   ) {
     final t = AppLocalizations.of(context)!;
+    final isPersian = !Localizations.localeOf(
+      context,
+    ).languageCode.contains('en');
     final avatarSize = AppLayout.s(context, 120);
     return Column(
       children: [
@@ -199,57 +219,57 @@ class _ProfileScreenState extends State<ProfileScreen> {
               height: avatarSize,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: Colors.grey.shade200, width: 2),
+                gradient: AppTheme.primaryGradient(),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.04),
+                    color: AppTheme.primaryGradientStart.withValues(alpha: 0.3),
                     blurRadius: 16,
                     offset: const Offset(0, 4),
                   ),
                 ],
               ),
+              padding: const EdgeInsets.all(3),
               child: ClipOval(
-                child: mainPhoto != null && mainPhoto.url.isNotEmpty
-                    ? LayoutBuilder(
-                        builder: (context, constraints) {
-                          final double normX = mainPhoto.cropOffsetX;
-                          final double normY = mainPhoto.cropOffsetY;
-                          return Transform.translate(
-                            offset: Offset(
-                              normX * avatarSize,
-                              normY * avatarSize,
+                child: Container(
+                  color: Colors.white,
+                  child: ClipOval(
+                    child: mainPhoto != null && mainPhoto.url.isNotEmpty
+                        ? LayoutBuilder(
+                            builder: (context, constraints) {
+                              final double normX = mainPhoto.cropOffsetX;
+                              final double normY = mainPhoto.cropOffsetY;
+                              return Transform.translate(
+                                 offset: Offset(
+                                   normX * avatarSize,
+                                   normY * avatarSize,
+                                 ),
+                                 child: CachedImage.widget(
+                                   mainPhoto.displayUrl,
+                                   width: avatarSize,
+                                   height: avatarSize,
+                                   fit: BoxFit.cover,
+                                   errorWidget: Container(
+                                     color: Colors.grey.shade200,
+                                     child: const Icon(
+                                       Icons.person,
+                                       color: Colors.grey,
+                                       size: 50,
+                                     ),
+                                   ),
+                                 ),
+                               );
+                            },
+                          )
+                        : Container(
+                            color: Colors.grey.shade200,
+                            child: const Icon(
+                              Icons.person,
+                              color: Colors.grey,
+                              size: 50,
                             ),
-                            child: CachedNetworkImage(
-                              imageUrl: mainPhoto.displayUrl,
-                              fit: BoxFit.cover,
-                              width: avatarSize,
-                              height: avatarSize,
-                              memCacheWidth: 400,
-                              memCacheHeight: 400,
-                              maxWidthDiskCache: 800,
-                              maxHeightDiskCache: 800,
-                              placeholder: (context, url) =>
-                                  const ShimmerAvatar(),
-                              errorWidget: (context, url, error) => Container(
-                                color: Colors.grey.shade200,
-                                child: const Icon(
-                                  Icons.person,
-                                  color: Colors.grey,
-                                  size: 50,
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      )
-                    : Container(
-                        color: Colors.grey.shade200,
-                        child: const Icon(
-                          Icons.person,
-                          color: Colors.grey,
-                          size: 50,
-                        ),
-                      ),
+                          ),
+                  ),
+                ),
               ),
             ),
             Positioned(
@@ -298,10 +318,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         const SizedBox(height: 16),
         Text(
           '${user?.name ?? 'Alex'}, ${user?.age ?? 28}',
-          style: TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 24,
-            fontWeight: FontWeight.w600,
+          style: (isPersian ? AppTheme.h1Fa : AppTheme.h1).copyWith(
+            fontWeight: FontWeight.w800,
             color: onSurfaceColor,
           ),
         ),
@@ -315,8 +333,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               user?.city != null && user!.city!.isNotEmpty
                   ? '${user.city}, ${user.country ?? ''}'
                   : 'New York, NY',
-              style: TextStyle(
-                fontFamily: 'Inter',
+              style: (isPersian ? AppTheme.bodyFa : AppTheme.body).copyWith(
                 fontSize: 14,
                 color: textMutedColor,
               ),
@@ -386,7 +403,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Text(
           value.toString(),
           style: TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
             fontSize: 20,
             fontWeight: FontWeight.w700,
             color: onSurfaceColor,
@@ -395,7 +412,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Text(
           label,
           style: TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
             fontSize: 12,
             color: textMutedColor,
           ),
@@ -412,13 +429,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isDark
-              ? [const Color(0xFF1a1f24), const Color(0xFF0a0d10)]
-              : [const Color(0xFF001f3f), const Color(0xFF000613)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        gradient: AppTheme.primaryGradient(),
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
@@ -449,7 +460,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   Text(
                     isPremium ? 'PREMIUM' : 'BONDI PREMIUM',
                     style: TextStyle(
-                      fontFamily: 'Inter',
+                      fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                       fontSize: 12,
                       fontWeight: FontWeight.w700,
                       color: isPremium
@@ -469,10 +480,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         color: Colors.green,
                         borderRadius: BorderRadius.circular(10),
                       ),
-                      child: const Text(
+                      child: Text(
                         'Active',
                         style: TextStyle(
-                          fontFamily: 'Inter',
+                          fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                           fontSize: 8,
                           fontWeight: FontWeight.w700,
                           color: Colors.white,
@@ -504,7 +515,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Text(
                         '$daysLeft days',
                         style: TextStyle(
-                          fontFamily: 'Inter',
+                          fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                           fontSize: 12,
                           color: Colors.white.withValues(alpha: 0.8),
                           fontWeight: FontWeight.w500,
@@ -520,8 +531,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             isPremium
                 ? 'You have Premium access'
                 : 'Unlock Exclusive Connections',
-            style: const TextStyle(
-              fontFamily: 'Inter',
+            style: TextStyle(
+              fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
               fontSize: 22,
               fontWeight: FontWeight.w600,
               color: Colors.white,
@@ -533,7 +544,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ? 'Enjoy unlimited likes, advanced filters, and more.'
                 : 'See who liked you, advanced filters, and more.',
             style: TextStyle(
-              fontFamily: 'Inter',
+              fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
               fontSize: 14,
               color: Colors.white.withValues(alpha: 0.8),
             ),
@@ -565,7 +576,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               child: Text(
                 isPremium ? 'Manage Subscription' : 'Get Premium',
                 style: TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: isPremium ? Colors.white : primaryColor,
@@ -595,7 +606,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         Text(
           'ACCOUNT',
           style: TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
             fontSize: 12,
             fontWeight: FontWeight.w600,
             color: isDark ? Colors.grey.shade500 : Colors.grey.shade700,
@@ -792,7 +803,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                        fontFamily: 'Inter',
+                        fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                         color: onSurfaceColor,
@@ -807,7 +818,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          fontFamily: 'Inter',
+                          fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
                           color: status.contains('Verified')

@@ -166,7 +166,7 @@ class _UserNotificationProfileScreenState
           child: Text(
             t.error_something_wrong,
             style: TextStyle(
-              fontFamily: 'Inter',
+              fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
               fontSize: 15,
               color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
             ),

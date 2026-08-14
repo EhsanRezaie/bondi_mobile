@@ -9,6 +9,7 @@ class DiscoverService {
     int? distanceKm,
     int limit = 20,
     int offset = 0,
+    String? cursor,
   }) async {
     try {
       final params = <String, dynamic>{
@@ -16,6 +17,9 @@ class DiscoverService {
         'limit': limit,
         'offset': offset,
       };
+      if (cursor != null && cursor.isNotEmpty) {
+        params['cursor'] = cursor;
+      }
       if (ageMax != null) {
         params['age_max'] = ageMax;
       }

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dating_app/config/app_theme.dart';
 import 'package:dating_app/models/match.dart';
 import 'package:dating_app/utils/responsive.dart';
+import 'package:dating_app/utils/cached_image.dart';
 
 class MatchedAvatarStrip extends StatelessWidget {
   final List<Match> matches;
@@ -84,13 +84,14 @@ class MatchedAvatarStrip extends StatelessWidget {
                                   CircleAvatar(
                                     radius: avatarRadius,
                                     backgroundColor: borderColor,
-                                    backgroundImage:
-                                        match.user.mainPhotoUrl != null &&
-                                                match.user.mainPhotoUrl!.isNotEmpty
-                                            ? CachedNetworkImageProvider(
-                                                match.user.mainPhotoUrl!,
-                                              )
-                                            : null,
+                                     backgroundImage:
+                                         match.user.mainPhotoUrl != null &&
+                                                 match.user.mainPhotoUrl!.isNotEmpty
+                                             ? CachedImage.provider(
+                                                 match.user.mainPhotoUrl!,
+                                                 diameter: AppLayout.s(context, 56),
+                                               )
+                                             : null,
                                     child: match.user.mainPhotoUrl == null ||
                                             match.user.mainPhotoUrl!.isEmpty
                                         ? Icon(
@@ -108,7 +109,9 @@ class MatchedAvatarStrip extends StatelessWidget {
                                         width: 14,
                                         height: 14,
                                         decoration: BoxDecoration(
-                                          color: AppTheme.lightSuccess,
+                                          color: isDark
+                                              ? AppTheme.darkSuccess
+                                              : AppTheme.lightSuccess,
                                           shape: BoxShape.circle,
                                           border: Border.all(
                                             color: surfaceColor,
@@ -129,7 +132,11 @@ class MatchedAvatarStrip extends StatelessWidget {
                               match.user.name,
                               maxLines: 1,
                               style: TextStyle(
-                                fontFamily: 'Inter',
+                                fontFamily: AppTheme.fontFor(
+                                  !Localizations.localeOf(
+                                    context,
+                                  ).languageCode.contains('en'),
+                                ),
                                 fontSize: 11,
                                 fontWeight: FontWeight.w500,
                                 color: isDark

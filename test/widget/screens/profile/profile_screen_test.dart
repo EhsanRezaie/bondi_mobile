@@ -97,5 +97,24 @@ void main() {
 
       expect(find.byIcon(Icons.settings_outlined), findsOneWidget);
     });
+
+    testWidgets('shows support headset icon in the top-left', (tester) async {
+      await tester.pumpWidget(
+        buildTestable(
+          const ProfileScreen(),
+          providers: [
+            ChangeNotifierProvider<ProfileProvider>(
+              create: (_) => FakeProfileProvider(),
+            ),
+            ChangeNotifierProvider<AuthProvider>(
+              create: (_) => FakeAuthProvider(user: user()),
+            ),
+            ChangeNotifierProvider(create: (_) => SettingsProvider()),
+          ],
+        ),
+      );
+
+      expect(find.byIcon(Icons.headset_mic_outlined), findsOneWidget);
+    });
   });
 }

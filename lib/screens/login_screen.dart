@@ -470,12 +470,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       width: double.infinity,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(16.0),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Color(0x14001F3F),
-                            offset: Offset(0, 12),
-                            blurRadius: 32.0,
-                          ),
+                        boxShadow: [
+                          AppTheme.shadowFloatingBtn(
+                            primaryColor,
+                            blur: 32,
+                          ).copyWith(offset: const Offset(0, 12)),
                         ],
                       ),
                       child: ElevatedButton(
@@ -565,7 +564,7 @@ class _LoginScreenState extends State<LoginScreen> {
                             t.dont_have_an_account,
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              fontFamily: 'Inter',
+                              fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                               fontSize: 16.0,
                               color: textMutedColor,
                             ),
@@ -583,7 +582,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           child: Text(
                             t.sign_up,
                             style: TextStyle(
-                              fontFamily: 'Inter',
+                              fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                               fontSize: 16.0,
                               fontWeight: FontWeight.w600,
                               color: primaryColor,
@@ -642,7 +641,11 @@ class _LanguageOption extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFFE8EDF5) : Colors.transparent,
+          color: isSelected
+              ? AppTheme.moduleFillTinted(
+                  isDark: colors.brightness == Brightness.dark,
+                )
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(12.0),
           border: Border.all(
             color: isSelected ? colors.primary : Colors.transparent,
@@ -656,7 +659,7 @@ class _LanguageOption extends StatelessWidget {
             Text(
               languageName,
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                 fontSize: 16.0,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
                 color: isSelected ? colors.primary : AppTheme.lightTextMuted,

@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dating_app/config/app_theme.dart';
 import 'package:dating_app/generated/app_localizations.dart';
 import 'package:dating_app/models/discover_profile.dart';
 import 'package:dating_app/utils/responsive.dart';
-import 'package:dating_app/widgets/shimmer_avatar.dart';
+import 'package:dating_app/utils/cached_image.dart';
 import 'package:dating_app/widgets/discover_action_button.dart';
+import 'package:dating_app/widgets/photo_gallery_page.dart';
 
 class ProfileDetailScreen extends StatefulWidget {
   final DiscoverProfile profile;
@@ -176,8 +176,22 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
     return photos;
   }
 
+  void _openGallery() {
+    final photos = allPhotos;
+    if (photos.isEmpty) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => PhotoGalleryPage(
+          photos: photos,
+          initialIndex: _currentPhotoIndex,
+        ),
+      ),
+    );
+  }
+
   @override
-  Widget build(BuildContext context) {
+   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
     final isDark = context.isDarkMode;
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
@@ -192,58 +206,60 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
     final photos = allPhotos;
 
     return Scaffold(
+      extendBody: true,
       backgroundColor: bgColor,
       body: SafeArea(
-        child: Column(
+        bottom: false,
+        child: Stack(
           children: [
-            Expanded(
-              child: AppLayout.box(
-                context: context,
-                child: CustomScrollView(
-                  slivers: [
-                    SliverToBoxAdapter(
-                      child: AnimatedBuilder(
-                        animation: _dismissController,
-                        builder: (context, child) {
-                          return Transform.translate(
-                            offset:
-                                _dismissAnimation.value *
-                                MediaQuery.of(context).size.width,
-                            child: child,
-                          );
-                        },
-                        child: _buildHeaderSection(
-                          t,
-                          isDark,
-                          primaryColor,
-                          mutedColor,
-                          textColor,
-                          surfaceColor,
-                          borderColor,
-                          photos,
-                        ),
-                      ),
+            CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(
+                  child: AnimatedBuilder(
+                    animation: _dismissController,
+                    builder: (context, child) {
+                      return Transform.translate(
+                        offset:
+                            _dismissAnimation.value *
+                            MediaQuery.of(context).size.width,
+                        child: child,
+                      );
+                    },
+                    child: _buildHeaderSection(
+                      t,
+                      isDark,
+                      primaryColor,
+                      mutedColor,
+                      textColor,
+                      surfaceColor,
+                      borderColor,
+                      photos,
                     ),
-                    SliverToBoxAdapter(
-                      child: _buildBodySection(
-                        t,
-                        isDark,
-                        primaryColor,
-                        mutedColor,
-                        textColor,
-                        surfaceColor,
-                        borderColor,
-                      ),
-                    ),
-                    SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: SizedBox(height: 80),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
+                SliverToBoxAdapter(
+                  child: _buildBodySection(
+                    t,
+                    isDark,
+                    primaryColor,
+                    mutedColor,
+                    textColor,
+                    surfaceColor,
+                    borderColor,
+                  ),
+                ),
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: SizedBox(height: 120),
+                ),
+              ],
             ),
-            _buildBottomActionBar(t, isDark),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: _buildBottomActionBar(t, isDark),
+            ),
           ],
         ),
       ),
@@ -260,44 +276,44 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
     Color borderColor,
     List<String> photos,
   ) {
+    final isPersian = !Localizations.localeOf(
+      context,
+    ).languageCode.contains('en');
+    final font = AppTheme.fontFor(isPersian);
+    final screenSize = MediaQuery.of(context).size;
+    final heroH = (screenSize.height * 0.42).clamp(220.0, 560.0);
+    final photoPlaceholder = isDark
+        ? AppTheme.darkSecondary
+        : Colors.grey.shade200;
+    final photoError = Container(
+      color: photoPlaceholder,
+      child: Icon(
+        Icons.person,
+        size: 80,
+        color: isDark ? AppTheme.darkTextMuted : Colors.grey,
+      ),
+    );
     return Column(
       children: [
         Stack(
           children: [
-            SizedBox(
-              // Bounded hero height: ~42% on phones, capped on tall tablets so
-              // the photo never dominates the screen.
-              height: (MediaQuery.of(context).size.height * 0.42).clamp(
-                220.0,
-                560.0,
+            GestureDetector(
+              onTap: photos.isNotEmpty ? _openGallery : null,
+              child: SizedBox(
+                // Bounded hero height: ~42% on phones, capped on tall tablets so
+                // the photo never dominates the screen.
+                height: heroH,
+                width: double.infinity,
+                child: photos.isNotEmpty
+                    ? CachedImage.widget(
+                        _getDisplayUrl(photos[_currentPhotoIndex]),
+                        width: screenSize.width,
+                        height: heroH,
+                        fit: BoxFit.cover,
+                        errorWidget: photoError,
+                      )
+                    : photoError,
               ),
-              width: double.infinity,
-              child: photos.isNotEmpty
-                  ? CachedNetworkImage(
-                      imageUrl: _getDisplayUrl(photos[_currentPhotoIndex]),
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) => const ShimmerAvatar(),
-                      errorWidget: (context, url, error) => Container(
-                        color: isDark
-                            ? AppTheme.darkSecondary
-                            : Colors.grey.shade200,
-                        child: Icon(
-                          Icons.person,
-                          size: 80,
-                          color: isDark ? AppTheme.darkTextMuted : Colors.grey,
-                        ),
-                      ),
-                    )
-                  : Container(
-                      color: isDark
-                          ? AppTheme.darkSecondary
-                          : Colors.grey.shade200,
-                      child: Icon(
-                        Icons.person,
-                        size: 80,
-                        color: isDark ? AppTheme.darkTextMuted : Colors.grey,
-                      ),
-                    ),
             ),
             Container(
               decoration: BoxDecoration(
@@ -332,7 +348,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
             ),
             if (photos.length > 1)
               Positioned(
-                bottom: 60,
+                top: 56,
                 left: 0,
                 right: 0,
                 child: Center(
@@ -363,50 +379,58 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (photos.length > 1) ...[
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.touch_app,
+                          size: 14,
+                          color: Colors.white54,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          t.photo_fullscreen_hint,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.white54,
+                            fontFamily: font,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                  ],
                   Row(
                     children: [
                       Text(
                         profile.name,
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 26,
-                          fontWeight: FontWeight.w700,
+                        style: TextStyle(
+                          fontFamily: font,
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800,
                           color: Colors.white,
                         ),
                       ),
                       const SizedBox(width: 8),
                       Text(
                         '${profile.age}',
-                        style: const TextStyle(
-                          fontFamily: 'Inter',
+                        style: TextStyle(
+                          fontFamily: font,
                           fontSize: 24,
                           fontWeight: FontWeight.w400,
                           color: Colors.white,
                         ),
                       ),
-                      const SizedBox(width: 6),
-                      Icon(
-                        profile.gender == 'male' ? Icons.male : Icons.female,
-                        size: 20,
-                        color: profile.gender == 'male'
-                            ? (isDark
-                                  ? AppTheme.darkPrimary
-                                  : AppTheme.lightPrimary)
-                            : (isDark
-                                  ? AppTheme.darkError
-                                  : AppTheme.lightError),
-                      ),
                       if (profile.isPremium) ...[
                         const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
+                            horizontal: 10,
                             vertical: 3,
                           ),
                           decoration: BoxDecoration(
-                            color: isDark
-                                ? AppTheme.darkError
-                                : AppTheme.lightError,
+                            gradient: AppTheme.likeGradient(isDark: isDark),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Row(
@@ -420,7 +444,8 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
                               const SizedBox(width: 3),
                               Text(
                                 t.discover_premium,
-                                style: const TextStyle(
+                                style: TextStyle(
+                                  fontFamily: font,
                                   fontSize: 10,
                                   fontWeight: FontWeight.w700,
                                   color: Colors.white,
@@ -445,7 +470,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
                         Text(
                           t.discover_km_away(profile.distanceKm!.round()),
                           style: TextStyle(
-                            fontFamily: 'Inter',
+                            fontFamily: font,
                             fontSize: 13,
                             color: Colors.white.withValues(alpha: 0.8),
                           ),
@@ -462,7 +487,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
                         Text(
                           profile.locationDisplay,
                           style: TextStyle(
-                            fontFamily: 'Inter',
+                            fontFamily: font,
                             fontSize: 13,
                             color: Colors.white.withValues(alpha: 0.85),
                           ),
@@ -473,9 +498,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
                         Container(
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
-                            color: isDark
-                                ? AppTheme.darkPrimary
-                                : AppTheme.lightPrimary,
+                            gradient: AppTheme.primaryGradient(),
                             shape: BoxShape.circle,
                           ),
                           child: const Icon(
@@ -523,26 +546,22 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
                         width: 2.5,
                       ),
                     ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(
-                        AppLayout.s(context, 8),
-                      ),
-                      child: CachedNetworkImage(
-                        imageUrl: _getDisplayUrl(photos[index]),
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) => Container(
-                          color: isDark
-                              ? AppTheme.darkSecondary
-                              : Colors.grey.shade200,
-                        ),
-                        errorWidget: (context, url, error) => Container(
-                          color: isDark
-                              ? AppTheme.darkSecondary
-                              : Colors.grey.shade200,
-                          child: const Icon(Icons.broken_image, size: 20),
-                        ),
-                      ),
-                    ),
+                     child: CachedImage.widget(
+                       _getDisplayUrl(photos[index]),
+                       width: AppLayout.s(context, 56),
+                       height: AppLayout.s(context, 56),
+                       fit: BoxFit.cover,
+                       borderRadius: BorderRadius.circular(
+                         AppLayout.s(context, 8),
+                       ),
+                       placeholder: Container(
+                         color: photoPlaceholder,
+                       ),
+                       errorWidget: Container(
+                         color: photoPlaceholder,
+                         child: const Icon(Icons.broken_image, size: 20),
+                       ),
+                     ),
                   ),
                 );
               },
@@ -580,6 +599,13 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
             emoji: '💪',
             title: t.profile_section_physical,
             chips: [
+              _buildValueChip(
+                profile.gender == 'male' ? '♂️' : '♀️',
+                _capitalize(profile.gender),
+                isDark,
+                textColor,
+                borderColor,
+              ),
               if (profile.height != null)
                 _buildValueChip(
                   '📏',
@@ -757,7 +783,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
             Text(
               t.profile_section_about,
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: primaryColor,
@@ -777,7 +803,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
           child: Text(
             profile.bio!,
             style: TextStyle(
-              fontFamily: 'Inter',
+              fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
               fontSize: 15,
               height: 1.5,
               color: textColor,
@@ -806,7 +832,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
             Text(
               title,
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: context.isDarkMode
@@ -843,7 +869,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
       child: Text(
         '$emoji $value',
         style: TextStyle(
-          fontFamily: 'Inter',
+          fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
           fontSize: 13,
           fontWeight: FontWeight.w500,
           color: textColor,
@@ -874,7 +900,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
             Text(
               title,
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: primaryColor,
@@ -899,7 +925,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
               child: Text(
                 icon != null ? '$icon $item' : item,
                 style: TextStyle(
-                  fontFamily: 'Inter',
+                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                   color: textColor,
@@ -932,7 +958,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
             Text(
               t.profile_section_prompts,
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
                 color: primaryColor,
@@ -960,7 +986,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
                 Text(
                   question,
                   style: TextStyle(
-                    fontFamily: 'Inter',
+                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: primaryColor,
@@ -971,7 +997,7 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
                 Text(
                   answer,
                   style: TextStyle(
-                    fontFamily: 'Inter',
+                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                     fontSize: 15,
                     height: 1.4,
                     color: textColor,
@@ -986,19 +1012,10 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
   }
 
   Widget _buildBottomActionBar(AppLocalizations t, bool isDark) {
-    return Container(
-      decoration: BoxDecoration(
-        color: isDark ? AppTheme.darkSurface : Colors.white,
-        border: Border(
-          top: BorderSide(
-            color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder,
-            width: 0.5,
-          ),
-        ),
-      ),
+    return Padding(
       padding: EdgeInsets.only(
-        top: 10,
-        bottom: MediaQuery.of(context).padding.bottom > 0 ? 10 : 10,
+        top: 12,
+        bottom: MediaQuery.of(context).padding.bottom + 16,
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -1006,24 +1023,24 @@ class _ProfileDetailScreenState extends State<ProfileDetailScreen>
           DiscoverActionButton(
             icon: Icons.close_rounded,
             gradient: AppTheme.rejectGradient(isDark: isDark),
-            size: 52,
+            size: 56,
             onPressed: _isAnimating ? null : _onSwipeLeft,
           ),
-          const SizedBox(width: 20),
+          const SizedBox(width: 24),
           DiscoverActionButton(
             icon: Icons.chat_bubble_rounded,
             backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
             iconColor: isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary,
             borderColor: isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary,
-            size: 58,
+            size: 64,
             badgeCount: widget.isPremium ? null : widget.chatsRemaining,
             onPressed: _isAnimating ? null : _onChat,
           ),
-          const SizedBox(width: 20),
+          const SizedBox(width: 24),
           DiscoverActionButton(
             icon: Icons.favorite_rounded,
             gradient: AppTheme.likeGradient(isDark: isDark),
-            size: 52,
+            size: 56,
             badgeCount: widget.isPremium ? null : widget.likesRemaining,
             onPressed: _isAnimating ? null : _onSwipeRight,
           ),

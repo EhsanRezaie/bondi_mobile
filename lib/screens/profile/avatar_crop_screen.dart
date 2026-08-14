@@ -146,7 +146,7 @@ class _AvatarCropScreenState extends State<AvatarCropScreen> {
         title: Text(
           'Adjust Profile Picture',
           style: TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
             fontSize: 16,
             fontWeight: FontWeight.w600,
             color: onSurfaceColor,
@@ -170,7 +170,7 @@ class _AvatarCropScreenState extends State<AvatarCropScreen> {
                 : Text(
                     'Save',
                     style: TextStyle(
-                      fontFamily: 'Inter',
+                      fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: isDark
@@ -201,7 +201,7 @@ class _AvatarCropScreenState extends State<AvatarCropScreen> {
                   Text(
                     'Failed to load image',
                     style: TextStyle(
-                      fontFamily: 'Inter',
+                      fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                       color: isDark
                           ? Colors.grey.shade400
                           : Colors.grey.shade600,
@@ -293,7 +293,7 @@ class _AvatarCropScreenState extends State<AvatarCropScreen> {
                               child: Text(
                                 'Drag anywhere to adjust',
                                 style: TextStyle(
-                                  fontFamily: 'Inter',
+                                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                   fontSize: AppLayout.s(context, 14),
                                   color: Colors.white.withValues(alpha: 0.8),
                                 ),
@@ -318,7 +318,7 @@ class _AvatarCropScreenState extends State<AvatarCropScreen> {
                               child: Text(
                                 'Reset',
                                 style: TextStyle(
-                                  fontFamily: 'Inter',
+                                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                   color: Colors.white,
                                   fontSize: AppLayout.s(context, 13),
                                   fontWeight: FontWeight.w500,

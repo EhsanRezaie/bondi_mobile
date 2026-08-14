@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:dating_app/config/app_theme.dart';
-import 'package:dating_app/utils/formatters.dart';
 import 'package:dating_app/generated/app_localizations.dart';
 import 'package:dating_app/models/discover_profile.dart';
 import 'package:dating_app/providers/discover_provider.dart';
@@ -12,7 +11,6 @@ import 'package:dating_app/widgets/discover_action_button.dart';
 import 'package:dating_app/screens/discover/profile_detail_screen.dart';
 import 'package:dating_app/screens/shared/profile_detail_loader.dart';
 import 'package:dating_app/screens/chats/chat_detail_screen.dart';
-import 'package:dating_app/screens/chats/notifications_screen.dart';
 import 'package:dating_app/widgets/action_toast.dart';
 
 class DiscoverScreen extends StatefulWidget {
@@ -39,7 +37,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     _loadInterestIcons();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final provider = Provider.of<DiscoverProvider>(context, listen: false);
-      if (provider.profiles.isEmpty && !provider.isLoading) {
+      if (provider.profiles.isEmpty) {
         provider.loadProfiles();
       }
     });
@@ -66,20 +64,54 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       _showLimitReached('likes');
       return;
     }
-    final result = await provider.swipeRight(profile);
-    if (!mounted) return;
-    if (result != null && result['matched'] == true) {
-      _showMatchDialog(result, profile);
-    } else if (result != null) {
-      final t = AppLocalizations.of(context)!;
-      showActionToast(context, t.toast_like_sent);
+
+    _isSwiping = true;
+    if (mounted) setState(() {});
+    try {
+      final result = await provider.swipeRight(profile);
+      if (!mounted) return;
+      if (result == null) {
+        await _waitForAnimation(_currentCardState?.snapBack());
+        if (!mounted) return;
+        final t = AppLocalizations.of(context)!;
+        showActionToast(context, t.error_something_wrong, isError: true);
+        return;
+      }
+      if (result['matched'] == true) {
+        _showMatchDialog(result, profile);
+      } else {
+        final t = AppLocalizations.of(context)!;
+        showActionToast(context, t.toast_like_sent);
+      }
+    } finally {
+      if (mounted) {
+        _isSwiping = false;
+        setState(() {});
+      }
     }
   }
 
   Future<void> _handleSwipeLeft(DiscoverProfile profile) async {
     if (!mounted) return;
     final provider = Provider.of<DiscoverProvider>(context, listen: false);
-    await provider.swipeLeft(profile);
+
+    _isSwiping = true;
+    if (mounted) setState(() {});
+    try {
+      final ok = await provider.swipeLeft(profile);
+      if (!mounted) return;
+      if (!ok) {
+        await _waitForAnimation(_currentCardState?.snapBack());
+        if (!mounted) return;
+        final t = AppLocalizations.of(context)!;
+        showActionToast(context, t.error_something_wrong, isError: true);
+      }
+    } finally {
+      if (mounted) {
+        _isSwiping = false;
+        setState(() {});
+      }
+    }
   }
 
   Future<void> _handleChat(DiscoverProfile profile) async {
@@ -101,7 +133,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       _openChat(chatId, profile);
     } else {
       final t = AppLocalizations.of(context)!;
-      showActionToast(context, t.error_something_wrong);
+      showActionToast(context, t.error_something_wrong, isError: true);
     }
   }
 
@@ -162,14 +194,14 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
         await _waitForAnimation(_currentCardState?.snapBack());
         if (!mounted) return;
         final t = AppLocalizations.of(context)!;
-        showActionToast(context, t.error_something_wrong);
+        showActionToast(context, t.error_something_wrong, isError: true);
       }
     } catch (e) {
       // API threw - snap back
       await _waitForAnimation(_currentCardState?.snapBack());
       if (!mounted) return;
       final t = AppLocalizations.of(context)!;
-      showActionToast(context, t.error_something_wrong);
+      showActionToast(context, t.error_something_wrong, isError: true);
     } finally {
       if (mounted) {
         _isSwiping = false;
@@ -188,20 +220,28 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     final animationFuture = _currentCardState?.swipeOut(-1);
 
     try {
-      await Provider.of<DiscoverProvider>(
+      final ok = await Provider.of<DiscoverProvider>(
         context,
         listen: false,
       ).swipeLeft(profile);
       if (!mounted) return;
 
-      // API succeeded - wait for animation to complete
-      await _waitForAnimation(animationFuture);
+      if (ok) {
+        // API succeeded - wait for animation to complete
+        await _waitForAnimation(animationFuture);
+      } else {
+        // API failed - snap back
+        await _waitForAnimation(_currentCardState?.snapBack());
+        if (!mounted) return;
+        final t = AppLocalizations.of(context)!;
+        showActionToast(context, t.error_something_wrong, isError: true);
+      }
     } catch (e) {
-      // API failed - snap back
+      // API threw - snap back
       await _waitForAnimation(_currentCardState?.snapBack());
       if (!mounted) return;
       final t = AppLocalizations.of(context)!;
-      showActionToast(context, t.error_something_wrong);
+      showActionToast(context, t.error_something_wrong, isError: true);
     } finally {
       if (mounted) {
         _isSwiping = false;
@@ -229,7 +269,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
       _openChat(chatId, profile);
     } else {
       final t = AppLocalizations.of(context)!;
-      showActionToast(context, t.error_something_wrong);
+      showActionToast(context, t.error_something_wrong, isError: true);
     }
   }
 
@@ -244,7 +284,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
         title: Text(
           t.discover_limit_reached_title,
           style: TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
             fontWeight: FontWeight.w700,
             color: isDark ? AppTheme.darkText : AppTheme.lightText,
           ),
@@ -254,7 +294,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
               ? t.discover_limit_reached_likes
               : t.discover_limit_reached_chats,
           style: TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
             color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
           ),
         ),
@@ -264,7 +304,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             child: Text(
               'OK',
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                 fontWeight: FontWeight.w600,
                 color: isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary,
               ),
@@ -319,7 +359,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                       Text(
                         t.discover_say_something,
                         style: TextStyle(
-                          fontFamily: 'Inter',
+                          fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                           fontSize: 18,
                           fontWeight: FontWeight.w600,
                           color: isDark
@@ -367,79 +407,109 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
   }) {
     if (!mounted) return;
     final t = AppLocalizations.of(context)!;
-    final isDark = context.isDarkMode;
+    final isPersian = !Localizations.localeOf(
+      context,
+    ).languageCode.contains('en');
+    final heroStyle =
+        (isPersian ? AppTheme.heroDisplayFa : AppTheme.heroDisplay).copyWith(
+          fontSize: 30,
+        );
+    final bodyStyle = (isPersian ? AppTheme.bodyFa : AppTheme.body).copyWith(
+      color: Colors.white.withValues(alpha: 0.85),
+      fontSize: 15,
+    );
 
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (ctx) {
         return Dialog(
-          backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(28),
-          ),
-          child: Padding(
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          child: Container(
             padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(28),
+              gradient: AppTheme.primaryGradient(),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.primaryGradientStart.withValues(alpha: 0.4),
+                  blurRadius: 32,
+                  offset: const Offset(0, 12),
+                ),
+              ],
+            ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
-                  width: 100,
-                  height: 100,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: AppTheme.likeGradient(isDark: isDark),
-                  ),
-                  child: const Icon(
-                    Icons.favorite,
-                    size: 48,
-                    color: Colors.white,
-                  ),
+                Stack(
+                  clipBehavior: Clip.none,
+                  alignment: Alignment.center,
+                  children: [
+                    Container(
+                      width: 72,
+                      height: 72,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white.withValues(alpha: 0.2),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.6),
+                          width: 2,
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.favorite,
+                        size: 34,
+                        color: Colors.white,
+                      ),
+                    ),
+                    if (profile.mainPhotoUrl != null &&
+                        profile.mainPhotoUrl!.isNotEmpty)
+                      Positioned(
+                        top: -40,
+                        child: ClipOval(
+                          child: SizedBox(
+                            width: 56,
+                            height: 56,
+                            child: Image.network(
+                              profile.mainPhotoUrl!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, _, _) =>
+                                  const SizedBox.shrink(),
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 56),
                 Text(
                   t.discover_match_title,
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 28,
-                    fontWeight: FontWeight.w700,
-                    color: isDark ? AppTheme.darkText : AppTheme.lightText,
-                  ),
+                  textAlign: TextAlign.center,
+                  style: heroStyle.copyWith(color: Colors.white),
                 ),
                 const SizedBox(height: 8),
                 Text(
                   t.discover_match_subtitle(profile.name),
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontFamily: 'Inter',
-                    fontSize: 14,
-                    color: isDark
-                        ? AppTheme.darkTextMuted
-                        : AppTheme.lightTextMuted,
-                  ),
+                  style: bodyStyle,
                 ),
                 if (messageSent) ...[
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.check_circle,
                         size: 16,
-                        color: isDark
-                            ? AppTheme.darkSuccess
-                            : AppTheme.lightSuccess,
+                        color: Colors.white,
                       ),
                       const SizedBox(width: 6),
                       Text(
                         t.discover_match_message_sent,
-                        style: TextStyle(
-                          fontFamily: 'Inter',
-                          fontSize: 13,
-                          color: isDark
-                              ? AppTheme.darkSuccess
-                              : AppTheme.lightSuccess,
-                          fontWeight: FontWeight.w500,
+                        style: bodyStyle.copyWith(
+                          fontWeight: FontWeight.w600,
+                          color: Colors.white,
                         ),
                       ),
                     ],
@@ -448,6 +518,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                 const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
+                  height: 52,
                   child: ElevatedButton(
                     onPressed: () {
                       Navigator.pop(ctx);
@@ -455,7 +526,20 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                         _switchToChatsTab();
                       }
                     },
-                    child: Text(t.discover_send_message),
+                    style: AppTheme.primaryButton.copyWith(
+                      backgroundColor: const WidgetStatePropertyAll<Color>(
+                        Colors.white,
+                      ),
+                      foregroundColor: const WidgetStatePropertyAll<Color>(
+                        AppTheme.primaryGradientStart,
+                      ),
+                      elevation: const WidgetStatePropertyAll<double>(0),
+                    ),
+                    child: Text(
+                      t.discover_send_message,
+                      style: (isPersian ? AppTheme.buttonFa : AppTheme.button)
+                          .copyWith(color: AppTheme.primaryGradientStart),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -463,13 +547,8 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
                   onPressed: () => Navigator.pop(ctx),
                   child: Text(
                     t.discover_keep_swiping,
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 14,
-                      color: isDark
-                          ? AppTheme.darkTextMuted
-                          : AppTheme.lightTextMuted,
-                    ),
+                    style: (isPersian ? AppTheme.bodyBoldFa : AppTheme.bodyBold)
+                        .copyWith(color: Colors.white, fontSize: 15),
                   ),
                 ),
               ],
@@ -518,37 +597,9 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     final isDark = context.isDarkMode;
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
     final bgColor = isDark ? AppTheme.darkBackground : AppTheme.lightBackground;
-    final onSurfaceColor = Theme.of(context).colorScheme.onSurface;
 
     return Scaffold(
       backgroundColor: bgColor,
-      appBar: AppBar(
-        title: Text(
-          t.discover_title,
-          style: TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 22,
-            fontWeight: FontWeight.w800,
-            color: onSurfaceColor,
-          ),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.notifications_outlined, color: onSurfaceColor),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute<void>(
-                  builder: (_) => const NotificationsScreen(),
-                ),
-              );
-            },
-          ),
-        ],
-      ),
       body: Consumer<DiscoverProvider>(
         builder: (context, provider, _) {
           if (provider.isLoading && provider.profiles.isEmpty) {
@@ -559,21 +610,133 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             return _buildErrorState(provider, t, isDark, primaryColor);
           }
 
-          return Column(
-            children: [
-              _buildFilterBar(provider, t, isDark, primaryColor),
-              Expanded(
-                child: provider.hasProfiles
-                    ? _buildCardStack(provider, isDark)
-                    : _buildEmptyState(provider, t, isDark, primaryColor),
-              ),
-              if (provider.hasProfiles)
-                _buildActionButtons(provider, t, isDark),
-              const SizedBox(height: 16),
-            ],
-          );
+          if (!provider.hasProfiles) {
+            return _buildEmptyState(provider, t, isDark, primaryColor);
+          }
+
+          // Mode A: photo flush to the screen edges. A top scrim hosts the
+          // tune filter icon; the floating circular actions hover the bottom.
+          return _buildFullBleedDeck(provider, t, isDark);
         },
       ),
+    );
+  }
+
+  Widget _buildFullBleedDeck(
+    DiscoverProvider provider,
+    AppLocalizations t,
+    bool isDark,
+  ) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        _buildCardStack(provider, isDark),
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: _buildTopOverlay(provider, t, isDark),
+        ),
+        if (provider.visibleProfiles.isNotEmpty)
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: AppLayout.discoverActionRowBottom,
+            child: _buildActionButtons(provider, t, isDark),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildTopOverlay(
+    DiscoverProvider provider,
+    AppLocalizations t,
+    bool isDark,
+  ) {
+    final activeFilters = (provider.genderFilter != null ? 1 : 0) +
+        (provider.ageMax != null ? 1 : 0) +
+        (provider.distanceKm != null ? 1 : 0);
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Colors.black.withValues(alpha: 0.45), Colors.transparent],
+          stops: const [0.0, 1.0],
+        ),
+      ),
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.only(top: 8, left: 8, right: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Stack(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.tune, color: Colors.white, size: 28),
+                    onPressed: () => _openDiscoverFilters(provider),
+                  ),
+                  if (activeFilters > 0)
+                    Positioned(
+                      right: 4,
+                      top: 4,
+                      child: Container(
+                        padding: const EdgeInsets.all(2),
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                        constraints: const BoxConstraints(
+                          minWidth: 16,
+                          minHeight: 16,
+                        ),
+                        child: Center(
+                          child: Text(
+                            '$activeFilters',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              IconButton(
+                icon: Icon(
+                  Icons.undo,
+                  color: provider.canRevert
+                      ? Colors.white
+                      : Colors.white.withValues(alpha: 0.35),
+                  size: 28,
+                ),
+                tooltip: t.discover_revert_pass,
+                onPressed: provider.canRevert
+                    ? () => _onRevertPass(provider)
+                    : null,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _onRevertPass(DiscoverProvider provider) {
+    provider.revertPass();
+  }
+
+void _openDiscoverFilters(DiscoverProvider provider) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _DiscoverFilterSheet(provider: provider),
     );
   }
 
@@ -591,7 +754,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           Text(
             t.discover_loading,
             style: TextStyle(
-              fontFamily: 'Inter',
+              fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
               fontSize: 14,
               color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
             ),
@@ -623,7 +786,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
               provider.errorMessage ?? t.error_something_wrong,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                 fontSize: 14,
                 color: isDark
                     ? AppTheme.darkTextMuted
@@ -649,76 +812,133 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     Color primaryColor,
   ) {
     final canWiden = provider.canWidenDistance || provider.canWidenAge;
+    final activeFilters = (provider.genderFilter != null ? 1 : 0) +
+        (provider.ageMax != null ? 1 : 0) +
+        (provider.distanceKm != null ? 1 : 0);
 
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(32),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              canWiden ? Icons.explore_off : Icons.person_search,
-              size: 64,
-              color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
+    return Stack(
+      children: [
+        Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  canWiden ? Icons.explore_off : Icons.person_search,
+                  size: 64,
+                  color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  canWiden ? t.discover_widen_title : t.discover_no_profiles,
+                  style: TextStyle(
+                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                    fontSize: 20,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? AppTheme.darkText : AppTheme.lightText,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  canWiden
+                      ? t.discover_widen_subtitle
+                      : t.discover_no_profiles_hint,
+                  style: TextStyle(
+                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                    fontSize: 14,
+                    color: isDark
+                        ? AppTheme.darkTextMuted
+                        : AppTheme.lightTextMuted,
+                  ),
+                ),
+                if (canWiden) ...[
+                  const SizedBox(height: 20),
+                  Wrap(
+                    spacing: 10,
+                    runSpacing: 10,
+                    alignment: WrapAlignment.center,
+                    children: [
+                      if (provider.canWidenDistance)
+                        _buildWidenButton(
+                          label: t.discover_widen_distance(10),
+                          icon: Icons.near_me,
+                          isDark: isDark,
+                          primaryColor: primaryColor,
+                          onTap: () => provider.widenDistance(),
+                        ),
+                      if (provider.canWidenAge)
+                        _buildWidenButton(
+                          label: t.discover_widen_age(2),
+                          icon: Icons.cake_outlined,
+                          isDark: isDark,
+                          primaryColor: primaryColor,
+                          onTap: () => provider.widenAge(),
+                        ),
+                    ],
+                  ),
+                ],
+              ],
             ),
-            const SizedBox(height: 16),
-            Text(
-              canWiden ? t.discover_widen_title : t.discover_no_profiles,
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: isDark ? AppTheme.darkText : AppTheme.lightText,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              canWiden
-                  ? t.discover_widen_subtitle
-                  : t.discover_no_profiles_hint,
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 14,
-                color: isDark
-                    ? AppTheme.darkTextMuted
-                    : AppTheme.lightTextMuted,
-              ),
-            ),
-            if (canWiden) ...[
-              const SizedBox(height: 20),
-              Wrap(
-                spacing: 10,
-                runSpacing: 10,
-                alignment: WrapAlignment.center,
+          ),
+        ),
+        Positioned(
+          top: 0,
+          left: 0,
+          right: 0,
+          child: SafeArea(
+            bottom: false,
+            child: Padding(
+              padding: const EdgeInsets.only(top: 8, left: 8, right: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (provider.canWidenDistance)
-                    _buildWidenButton(
-                      label: t.discover_widen_distance(50),
-                      icon: Icons.near_me,
-                      isDark: isDark,
-                      primaryColor: primaryColor,
-                      onTap: () => provider.widenDistance(),
-                    ),
-                  if (provider.canWidenAge)
-                    _buildWidenButton(
-                      label: t.discover_widen_age(2),
-                      icon: Icons.cake_outlined,
-                      isDark: isDark,
-                      primaryColor: primaryColor,
-                      onTap: () => provider.widenAge(),
-                    ),
+                  Stack(
+                    children: [
+                      IconButton(
+                        icon: Icon(
+                          Icons.tune,
+                          color: isDark ? AppTheme.darkText : AppTheme.lightText,
+                          size: 28,
+                        ),
+                        onPressed: () => _openDiscoverFilters(provider),
+                      ),
+                      if (activeFilters > 0)
+                        Positioned(
+                          right: 4,
+                          top: 4,
+                          child: Container(
+                            padding: const EdgeInsets.all(2),
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            constraints: const BoxConstraints(
+                              minWidth: 16,
+                              minHeight: 16,
+                            ),
+                            child: Center(
+                              child: Text(
+                                '$activeFilters',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(width: 48),
                 ],
               ),
-            ],
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: () => provider.refresh(),
-              icon: const Icon(Icons.refresh),
-              label: Text(t.discover_refresh),
             ),
-          ],
+          ),
         ),
-      ),
+      ],
     );
   }
 
@@ -748,7 +968,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
             Text(
               label,
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                 fontSize: 14,
                 fontWeight: FontWeight.w600,
                 color: primaryColor,
@@ -760,156 +980,33 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     );
   }
 
-  Widget _buildFilterBar(
-    DiscoverProvider provider,
-    AppLocalizations t,
-    bool isDark,
-    Color primaryColor,
-  ) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        child: Row(
-          children: [
-            _buildFilterChip(
-              icon: Icons.wc,
-              label: provider.genderFilter != null
-                  ? provider.genderFilter == 'male'
-                        ? t.discover_filter_male
-                        : t.discover_filter_female
-                  : t.discover_filter_all,
-              onTap: () => _showGenderPicker(provider),
-              isDark: isDark,
-              primaryColor: primaryColor,
-            ),
-            const SizedBox(width: 8),
-            _buildFilterChip(
-              icon: Icons.cake_outlined,
-              label: provider.ageMax == null
-                  ? '${provider.ageMin}-100+'
-                  : '${provider.ageMin}-${provider.ageMax}',
-              onTap: () => _showAgePicker(provider),
-              isDark: isDark,
-              primaryColor: primaryColor,
-            ),
-            const SizedBox(width: 8),
-            _buildFilterChip(
-              icon: Icons.near_me,
-              label: formatDistanceKm(provider.distanceKm?.toDouble()),
-              onTap: () => _showDistancePicker(provider),
-              isDark: isDark,
-              primaryColor: primaryColor,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  Widget _buildCardStack(DiscoverProvider provider, bool isDark) {
+    final cards = provider.visibleProfiles;
+    if (cards.isEmpty) return const SizedBox.shrink();
 
-  Widget _buildFilterChip({
-    required IconData icon,
-    required String label,
-    required VoidCallback onTap,
-    required bool isDark,
-    required Color primaryColor,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: isDark ? AppTheme.darkSurface : Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 16, color: primaryColor),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: isDark ? AppTheme.darkText : AppTheme.lightText,
-              ),
-            ),
-            const SizedBox(width: 4),
-            Icon(
-              Icons.arrow_drop_down,
-              size: 18,
-              color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final horizontalMargin = EdgeInsets.symmetric(
+          // Mode A: photo is flush to the screen edges. On tablets the deck is
+          // still capped to a comfortable card width and centered.
+          horizontal: switch (constraints.maxWidth) {
+            final w when w >= Breakpoints.tablet =>
+              (constraints.maxWidth - 520) / 2,
+            _ => 0,
+          },
+        );
 
-  void _showGenderPicker(DiscoverProvider provider) {
-    final t = AppLocalizations.of(context)!;
-    final isDark = context.isDarkMode;
-    final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) {
-        return Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+        return Container(
+          height: constraints.maxHeight,
+          margin: horizontalMargin,
+          child: Stack(
+            fit: StackFit.expand,
             children: [
-              Text(
-                t.discover_filter_show,
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: isDark ? AppTheme.darkText : AppTheme.lightText,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: ['all', 'male', 'female'].map((g) {
-                  final selected =
-                      (g == 'all' && provider.genderFilter == null) ||
-                      provider.genderFilter == g;
-                  return ChoiceChip(
-                    label: Text(
-                      g == 'all'
-                          ? t.discover_filter_all
-                          : g == 'male'
-                          ? t.discover_filter_male
-                          : t.discover_filter_female,
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontWeight: FontWeight.w500,
-                        color: selected ? Colors.white : null,
-                      ),
-                    ),
-                    selected: selected,
-                    selectedColor: primaryColor,
-                    onSelected: (_) {
-                      Navigator.pop(ctx);
-                      provider.setGenderFilter(g == 'all' ? null : g);
-                    },
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 16),
+              // Build back cards first so they sit behind the top card. They
+              // are full-size so the next profile is already covering the whole
+              // screen the moment the current card starts moving — no black gap.
+              for (var i = cards.length - 1; i >= 0; i--)
+                _buildStackedCard(provider, cards[i], i),
             ],
           ),
         );
@@ -917,193 +1014,31 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     );
   }
 
-  void _showAgePicker(DiscoverProvider provider) {
-    final t = AppLocalizations.of(context)!;
-    final isDark = context.isDarkMode;
-    final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
-    double min = provider.ageMin.toDouble().clamp(18.0, 100.0);
-    double max = (provider.ageMax ?? 100).toDouble().clamp(18.0, 100.0);
-
-    String ageLabel(double value) {
-      if (value >= 100) return '100+';
-      return '${value.round()}';
-    }
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (ctx, setSheetState) {
-            return Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    t.discover_filter_age_range,
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: isDark ? AppTheme.darkText : AppTheme.lightText,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '${ageLabel(min)} - ${ageLabel(max)} years',
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 14,
-                      color: isDark
-                          ? AppTheme.darkTextMuted
-                          : AppTheme.lightTextMuted,
-                    ),
-                  ),
-                  RangeSlider(
-                    values: RangeValues(min, max),
-                    min: 18,
-                    max: 100,
-                    divisions: 82,
-                    activeColor: primaryColor,
-                    labels: RangeLabels(ageLabel(min), ageLabel(max)),
-                    onChanged: (values) {
-                      setSheetState(() {
-                        min = values.start;
-                        max = values.end;
-                      });
-                    },
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(ctx);
-                        final apiMax = max >= 100 ? null : max.round();
-                        provider.setAgeRange(min.round(), apiMax);
-                      },
-                      child: Text(t.discover_filter_apply),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
+  Widget _buildStackedCard(
+    DiscoverProvider provider,
+    DiscoverProfile profile,
+    int index,
+  ) {
+    final isTop = index == 0;
+    return UserCard(
+      key: ValueKey(profile.id),
+      profile: profile,
+      interestIcons: _interestIcons,
+      isTop: isTop,
+      onTap: isTop ? () => _openProfileDetail(profile) : null,
+      onSwipeLeft: isTop ? () => _handleSwipeLeft(profile) : null,
+      onSwipeRight: isTop ? () => _handleSwipeRight(profile) : null,
+      onSwipeStarted: isTop ? _onSwipeStarted : null,
+      onCardReady: isTop ? _onCardReady : null,
     );
   }
 
-  void _showDistancePicker(DiscoverProvider provider) {
-    final t = AppLocalizations.of(context)!;
-    final isDark = context.isDarkMode;
-    final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
-    double distance = (provider.distanceKm ?? 500).toDouble().clamp(1.0, 500.0);
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (ctx) {
-        return StatefulBuilder(
-          builder: (ctx, setSheetState) {
-            return Padding(
-              padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    t.discover_filter_max_distance,
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: isDark ? AppTheme.darkText : AppTheme.lightText,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    formatDistanceKm(distance),
-                    style: TextStyle(
-                      fontFamily: 'Inter',
-                      fontSize: 14,
-                      color: isDark
-                          ? AppTheme.darkTextMuted
-                          : AppTheme.lightTextMuted,
-                    ),
-                  ),
-                  Slider(
-                    value: distance,
-                    min: 1,
-                    max: 500,
-                    divisions: 499,
-                    activeColor: primaryColor,
-                    label: formatDistanceKm(distance),
-                    onChanged: (v) => setSheetState(() => distance = v),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(ctx);
-                        final apiDistance = distance >= 500
-                            ? null
-                            : distance.round();
-                        provider.setDistance(apiDistance);
-                      },
-                      child: Text(t.discover_filter_apply),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  Widget _buildCardStack(DiscoverProvider provider, bool isDark) {
-    final profile = provider.visibleProfiles.isNotEmpty
-        ? provider.visibleProfiles.first
-        : null;
-    if (profile == null) return const SizedBox.shrink();
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final horizontalMargin = EdgeInsets.symmetric(
-          // On tablets the deck is capped to a comfortable card width and
-          // centered, otherwise it uses 16dp side margins.
-          horizontal: switch (constraints.maxWidth) {
-            final w when w >= Breakpoints.tablet =>
-              (constraints.maxWidth - 520) / 2,
-            _ => 16,
-          },
-        );
-
-        return Container(
-          height: constraints.maxHeight,
-          margin: horizontalMargin,
-          child: UserCard(
-            key: ValueKey(profile.id),
-            profile: profile,
-            interestIcons: _interestIcons,
-            isTop: true,
-            onTap: () => _openProfileDetail(profile),
-            onSwipeLeft: () => _handleSwipeLeft(profile),
-            onSwipeRight: () => _handleSwipeRight(profile),
-            onCardReady: _onCardReady,
-          ),
-        );
-      },
-    );
+  void _onSwipeStarted(bool isRight) {
+    // A finger swipe committed — lock all actions (like/pass/chat) until the
+    // API responds, so a second action can't race the in-flight one.
+    if (_isSwiping || !mounted) return;
+    _isSwiping = true;
+    setState(() {});
   }
 
   Widget _buildActionButtons(
@@ -1117,7 +1052,7 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
     if (profile == null) return const SizedBox.shrink();
 
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 20),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -1151,6 +1086,257 @@ class _DiscoverScreenState extends State<DiscoverScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _DiscoverFilterSheet extends StatefulWidget {
+  final DiscoverProvider provider;
+
+  const _DiscoverFilterSheet({required this.provider});
+
+  @override
+  State<_DiscoverFilterSheet> createState() => _DiscoverFilterSheetState();
+}
+
+class _DiscoverFilterSheetState extends State<_DiscoverFilterSheet> {
+  late String? _gender;
+  late int _ageMin;
+  late int? _ageMax;
+  late double _distance;
+
+  @override
+  void initState() {
+    super.initState();
+    _gender = widget.provider.genderFilter;
+    _ageMin = widget.provider.ageMin;
+    _ageMax = (widget.provider.ageMax ?? 80) > 80 ? null : widget.provider.ageMax;
+    _distance = (widget.provider.distanceKm ?? 500).toDouble().clamp(1.0, 500.0);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
+    final isDark = context.isDarkMode;
+    final bgColor = isDark ? AppTheme.darkSurface : Colors.white;
+    final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
+    final mutedColor = isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted;
+    final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
+    final isPersian = !Localizations.localeOf(context).languageCode.contains('en');
+    final font = AppTheme.fontFor(isPersian);
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.55,
+      minChildSize: 0.4,
+      maxChildSize: 0.85,
+      builder: (context, scrollController) {
+        return Container(
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+          ),
+          child: Stack(
+            children: [
+              Column(
+                children: [
+                  // Drag handle
+                  Container(
+                    margin: const EdgeInsets.only(top: 12),
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: isDark ? AppTheme.darkBorder : Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  // Header
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          t.discover_filter_show,
+                          style: TextStyle(
+                            fontFamily: font,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            color: textColor,
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            widget.provider.resetFilters();
+                            Navigator.pop(context);
+                          },
+                          child: Text(
+                            t.search_reset_filters,
+                            style: TextStyle(fontFamily: font, color: mutedColor),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Divider(height: 1),
+                  // Content
+                  Expanded(
+                    child: ListView(
+                      controller: scrollController,
+                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 100),
+                      children: [
+                        _buildSectionHeader('👤', t.search_filter_gender, primaryColor),
+                        _buildChipRow(
+                          options: ['all', 'male', 'female'],
+                          selected: _gender,
+                          onTap: (v) => setState(() => _gender = v),
+                          isDark: isDark,
+                          primaryColor: primaryColor,
+                          textColor: textColor,
+                          labelBuilder: (v) => v == 'all'
+                              ? t.discover_filter_all
+                              : v == 'male'
+                                  ? t.discover_filter_male
+                                  : t.discover_filter_female,
+                        ),
+                        _buildSectionHeader('🎂', t.search_filter_age_range, primaryColor),
+                        Text(
+                          '$_ageMin - ${_ageMax ?? 80}+',
+                          style: TextStyle(fontFamily: font, fontSize: 14, color: textColor),
+                        ),
+                        RangeSlider(
+                          values: RangeValues(_ageMin.toDouble(), (_ageMax ?? 80).toDouble()),
+                          min: 18,
+                          max: 80,
+                          divisions: 62,
+                          activeColor: primaryColor,
+                          inactiveColor: primaryColor.withValues(alpha: 0.2),
+                          onChanged: (v) => setState(() {
+                            _ageMin = v.start.round();
+                            _ageMax = v.end.round() == 80 ? null : v.end.round();
+                          }),
+                        ),
+                        _buildSectionHeader('📏', t.search_filter_distance_km, primaryColor),
+                        Text(
+                          _distance >= 500 ? '500+ km' : '${_distance.round()} km',
+                          style: TextStyle(fontFamily: font, fontSize: 14, color: textColor),
+                        ),
+                        Slider(
+                          value: _distance,
+                          min: 1,
+                          max: 500,
+                          divisions: 499,
+                          activeColor: primaryColor,
+                          inactiveColor: primaryColor.withValues(alpha: 0.2),
+                          onChanged: (v) => setState(() => _distance = v),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              // Floating apply button (content scrolls behind it)
+              Positioned(
+                left: 20,
+                right: 20,
+                bottom: MediaQuery.of(context).padding.bottom > 0 ? 16 : 20,
+                child: AppTheme.gradientButton(
+                  onPressed: _applyFilters,
+                  child: Text(
+                    t.discover_filter_apply,
+                    style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _applyFilters() {
+    final apiMax = _ageMax != null && _ageMax! < 80 ? _ageMax : null;
+    final apiDistance = _distance >= 500 ? null : _distance.round();
+    widget.provider.setGenderFilter(_gender);
+    widget.provider.setAgeRange(_ageMin, apiMax);
+    widget.provider.setDistance(apiDistance);
+    Navigator.pop(context);
+  }
+
+  Widget _buildSectionHeader(String emoji, String title, Color primaryColor) {
+    final isPersian = !Localizations.localeOf(context).languageCode.contains('en');
+    return Padding(
+      padding: const EdgeInsets.only(top: 24, bottom: 12),
+      child: Row(
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 18)),
+          const SizedBox(width: 8),
+          Text(
+            title,
+            style: (isPersian ? AppTheme.bodyBoldFa : AppTheme.bodyBold).copyWith(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: primaryColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildChipRow({
+    required List<String> options,
+    required String? selected,
+    required ValueChanged<String?> onTap,
+    required bool isDark,
+    required Color primaryColor,
+    required Color textColor,
+    String Function(String)? labelBuilder,
+  }) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: options.map((option) {
+        final isSelected =
+            selected == option || (option == 'all' && selected == null);
+        final label = labelBuilder != null
+            ? labelBuilder(option)
+            : option.replaceAll('_', ' ');
+        return GestureDetector(
+          onTap: () => onTap(isSelected ? null : (option == 'all' ? null : option)),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? primaryColor
+                  : isDark
+                      ? AppTheme.darkSecondary.withValues(alpha: 0.4)
+                      : Colors.white,
+              borderRadius: BorderRadius.circular(AppTheme.radiusChip),
+              border: Border.all(
+                color: isSelected
+                    ? primaryColor
+                    : (isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
+              ),
+            ),
+            child: Text(
+              label[0].toUpperCase() + label.substring(1),
+              style: TextStyle(
+                fontFamily: AppTheme.fontFor(
+                  !Localizations.localeOf(context).languageCode.contains('en'),
+                ),
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: isSelected
+                    ? Colors.white
+                    : isDark
+                        ? AppTheme.darkText
+                        : AppTheme.lightText,
+              ),
+            ),
+          ),
+        );
+      }).toList(),
     );
   }
 }

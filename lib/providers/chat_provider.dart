@@ -16,6 +16,8 @@ class ChatProvider extends ChangeNotifier {
   StreamSubscription<bool>? _connectionStateSubscription;
   StreamSubscription<Map<String, dynamic>>? _eventsSubscription;
   SessionSocketService? _socketService;
+
+  Stream<Map<String, dynamic>> get socketEvents => _socketService?.events ?? const Stream.empty();
   DateTime? _lastListRefetch;
   static const _listRefetchMinInterval = Duration(seconds: 2);
 
@@ -81,10 +83,12 @@ class ChatProvider extends ChangeNotifier {
   String? _peerId;
 
   int _matchesOffset = 0;
-  int _conversationsOffset = 0;
-  int _pendingOffset = 0;
+  String? _conversationsNextCursor;
+  String? _pendingNextCursor;
   int _likersOffset = 0;
   int _likedOffset = 0;
+  final Set<String> _seenConversationIds = {};
+  final Set<String> _seenPendingIds = {};
   bool _hasMoreMatches = true;
   bool _hasMoreConversations = true;
   bool _hasMorePending = true;
@@ -211,7 +215,8 @@ class ChatProvider extends ChangeNotifier {
   Future<void> loadConversations() async {
     _isLoading = true;
     _errorMessage = null;
-    _conversationsOffset = 0;
+    _conversationsNextCursor = null;
+    _seenConversationIds.clear();
     _hasMoreConversations = true;
     _safeNotify();
 
@@ -225,8 +230,12 @@ class ChatProvider extends ChangeNotifier {
       if (response.statusCode == 200) {
         final items = (data['chats'] ?? data ?? []) as List;
         _conversations = items.map((j) => ChatCard.fromJson(j)).toList();
-        _conversationsOffset = _conversations.length;
-        _hasMoreConversations = data['next_offset'] != null;
+        _seenConversationIds.addAll(_conversations.map((c) => c.id));
+        final next = data['next_cursor'] as String?;
+        _conversationsNextCursor =
+            (next != null && next.isNotEmpty) ? next : null;
+        _hasMoreConversations = _conversationsNextCursor != null ||
+            data['next_offset'] != null;
       } else {
         _errorMessage = data?['detail'] ?? 'Failed to load conversations';
       }
@@ -246,16 +255,22 @@ class ChatProvider extends ChangeNotifier {
     try {
       final response = await ChatService.getChats(
         limit: _pageSize,
-        offset: _conversationsOffset,
         status: 'accepted',
+        cursor: _conversationsNextCursor,
       );
       if (response.statusCode == 200) {
         final data = response.data;
         final items = (data['chats'] ?? data ?? []) as List;
-        final newConversations = items.map((j) => ChatCard.fromJson(j)).toList();
+        final newConversations = items
+            .map((j) => ChatCard.fromJson(j))
+            .where((c) => _seenConversationIds.add(c.id))
+            .toList();
         _conversations.addAll(newConversations);
-        _conversationsOffset += newConversations.length;
-        _hasMoreConversations = data['next_offset'] != null;
+        final next = data['next_cursor'] as String?;
+        _conversationsNextCursor =
+            (next != null && next.isNotEmpty) ? next : null;
+        _hasMoreConversations = _conversationsNextCursor != null ||
+            data['next_offset'] != null;
       }
     } catch (e) {
       // silent
@@ -272,7 +287,8 @@ class ChatProvider extends ChangeNotifier {
   Future<void> loadPendingIncoming() async {
     _isLoading = true;
     _errorMessage = null;
-    _pendingOffset = 0;
+    _pendingNextCursor = null;
+    _seenPendingIds.clear();
     _hasMorePending = true;
     _hasMoreIncoming = true;
     _safeNotify();
@@ -288,12 +304,16 @@ class ChatProvider extends ChangeNotifier {
       if (response.statusCode == 200) {
         final items = (data['chats'] ?? data ?? []) as List;
         final all = items.map((j) => ChatCard.fromJson(j)).toList();
+        _seenPendingIds.addAll(all.map((c) => c.id));
         _pendingChats = all.where((c) => c.initiatorId == myUserId).toList();
         _incomingChats =
             all.where((c) => c.initiatorId != myUserId).toList();
-        _pendingOffset = _pendingChats.length;
-        _hasMorePending = data['next_offset'] != null;
-        _hasMoreIncoming = data['next_offset'] != null;
+        final next = data['next_cursor'] as String?;
+        _pendingNextCursor = (next != null && next.isNotEmpty) ? next : null;
+        _hasMorePending = _pendingNextCursor != null ||
+            data['next_offset'] != null;
+        _hasMoreIncoming = _pendingNextCursor != null ||
+            data['next_offset'] != null;
       } else {
         _errorMessage = data?['detail'] ?? 'Failed to load chats';
       }
@@ -314,22 +334,28 @@ class ChatProvider extends ChangeNotifier {
       final myUserId = await _storageService.getUserId();
       final response = await ChatService.getChats(
         limit: _pageSize,
-        offset: _pendingOffset,
         status: 'pending',
+        cursor: _pendingNextCursor,
       );
       if (response.statusCode == 200) {
         final data = response.data;
         final items = (data['chats'] ?? data ?? []) as List;
-        final newChats = items.map((j) => ChatCard.fromJson(j)).toList();
+        final newChats = items
+            .map((j) => ChatCard.fromJson(j))
+            .where((c) => _seenPendingIds.add(c.id))
+            .toList();
         final newPending =
             newChats.where((c) => c.initiatorId == myUserId).toList();
         final newIncoming =
             newChats.where((c) => c.initiatorId != myUserId).toList();
         _pendingChats.addAll(newPending);
         _incomingChats.addAll(newIncoming);
-        _pendingOffset += newPending.length;
-        _hasMorePending = data['next_offset'] != null;
-        _hasMoreIncoming = data['next_offset'] != null;
+        final next = data['next_cursor'] as String?;
+        _pendingNextCursor = (next != null && next.isNotEmpty) ? next : null;
+        _hasMorePending = _pendingNextCursor != null ||
+            data['next_offset'] != null;
+        _hasMoreIncoming = _pendingNextCursor != null ||
+            data['next_offset'] != null;
       }
     } catch (e) {
       // silent
@@ -1156,6 +1182,10 @@ class ChatProvider extends ChangeNotifier {
         handleNewMatch(data);
         break;
 
+      case 'new_notification':
+        _handleNewNotification(data);
+        break;
+
       case 'blocked':
         _handleBlockedEvent(event, data);
         break;
@@ -1338,6 +1368,12 @@ class ChatProvider extends ChangeNotifier {
   @visibleForTesting
   void applyMessageEdited(Map<String, dynamic> data) =>
       _handleMessageEdited(data);
+
+  void _handleNewNotification(Map<String, dynamic> data) {
+    debugPrint('WS new_notification: $data');
+    // NotificationProvider will listen to socketEvents and handle this
+    // This method is a no-op in ChatProvider; NotificationsProvider subscribes directly to socketEvents
+  }
 
   void handleNewMatch(Map<String, dynamic> data) {
     try {

@@ -6,8 +6,10 @@ import 'package:dating_app/providers/chat_provider.dart';
 import 'package:dating_app/screens/auth/sign_up_screen.dart';
 import 'package:dating_app/screens/chats/chat_list_screen.dart';
 import 'package:dating_app/screens/chats/chat_detail_screen.dart';
+import 'package:dating_app/screens/chats/notifications_screen.dart';
 import 'package:dating_app/models/chat_card.dart';
 import 'package:dating_app/generated/app_localizations.dart';
+import 'package:dating_app/widgets/notification_bell.dart';
 
 class ChatsScreen extends StatefulWidget {
   const ChatsScreen({super.key});
@@ -80,6 +82,9 @@ class _ChatsScreenState extends State<ChatsScreen>
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
     final isDark = context.isDarkMode;
+    final isPersian = !Localizations.localeOf(
+      context,
+    ).languageCode.contains('en');
     final bgColor = isDark ? AppTheme.darkBackground : AppTheme.lightBackground;
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
     final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
@@ -103,75 +108,131 @@ class _ChatsScreenState extends State<ChatsScreen>
         centerTitle: true,
         title: Text(
           t.chat_chats,
-          style: TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
+          style: (isPersian ? AppTheme.h2Fa : AppTheme.h2).copyWith(
             color: textColor,
           ),
         ),
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: primaryColor,
-          unselectedLabelColor: isDark
-              ? AppTheme.darkTextMuted
-              : AppTheme.lightTextMuted,
-          indicatorColor: primaryColor,
-          indicatorSize: TabBarIndicatorSize.label,
-          labelStyle: const TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
+        actions: [
+          NotificationBell(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const NotificationsScreen(),
+                ),
+              );
+            },
           ),
-          unselectedLabelStyle: const TextStyle(
-            fontFamily: 'Inter',
-            fontSize: 14,
-            fontWeight: FontWeight.w500,
-          ),
-          tabs: [
-            Tab(text: t.chat_chats),
-            Tab(text: t.chat_pending),
-            Tab(text: t.chat_incoming),
-          ],
-        ),
+          const SizedBox(width: 8),
+        ],
       ),
-      body: TabBarView(
-        controller: _tabController,
+      body: Column(
         children: [
-          ChatListScreen(
-            chats: context.watch<ChatProvider>().conversations,
-            isLoading: context.watch<ChatProvider>().isLoading,
-            hasMore: context.watch<ChatProvider>().hasMoreConversations,
-            emptyText: t.chat_empty_chats,
-            onRefresh: () => context.read<ChatProvider>().loadConversations(),
-            onLoadMore: () =>
-                context.read<ChatProvider>().loadMoreConversations(),
-            onChatTap: _openChat,
-            onChatLongPress: _showChatActions,
-          ),
-          ChatListScreen(
-            chats: context.watch<ChatProvider>().pendingChats,
-            isLoading: context.watch<ChatProvider>().isLoading,
-            hasMore: context.watch<ChatProvider>().hasMorePending,
-            emptyText: t.chat_empty_pending,
-            onRefresh: () => context.read<ChatProvider>().loadPendingIncoming(),
-            onLoadMore: () =>
-                context.read<ChatProvider>().loadMorePendingIncoming(),
-            onChatTap: _openChat,
-            onChatLongPress: _showChatActions,
-          ),
-          ChatListScreen(
-            chats: context.watch<ChatProvider>().incomingChats,
-            isLoading: context.watch<ChatProvider>().isLoading,
-            hasMore: context.watch<ChatProvider>().hasMoreIncoming,
-            emptyText: t.chat_empty_incoming,
-            onRefresh: () => context.read<ChatProvider>().loadPendingIncoming(),
-            onLoadMore: () =>
-                context.read<ChatProvider>().loadMorePendingIncoming(),
-            onChatTap: _openChat,
-            onChatLongPress: _showChatActions,
+          _buildSegmentedTabs(t, isDark, primaryColor),
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [
+                ChatListScreen(
+                  chats: context.watch<ChatProvider>().conversations,
+                  isLoading: context.watch<ChatProvider>().isLoading,
+                  hasMore: context.watch<ChatProvider>().hasMoreConversations,
+                  emptyText: t.chat_empty_chats,
+                  onRefresh: () =>
+                      context.read<ChatProvider>().loadConversations(),
+                  onLoadMore: () =>
+                      context.read<ChatProvider>().loadMoreConversations(),
+                  onChatTap: _openChat,
+                  onChatLongPress: _showChatActions,
+                ),
+                ChatListScreen(
+                  chats: context.watch<ChatProvider>().pendingChats,
+                  isLoading: context.watch<ChatProvider>().isLoading,
+                  hasMore: context.watch<ChatProvider>().hasMorePending,
+                  emptyText: t.chat_empty_pending,
+                  onRefresh: () =>
+                      context.read<ChatProvider>().loadPendingIncoming(),
+                  onLoadMore: () =>
+                      context.read<ChatProvider>().loadMorePendingIncoming(),
+                  onChatTap: _openChat,
+                  onChatLongPress: _showChatActions,
+                ),
+                ChatListScreen(
+                  chats: context.watch<ChatProvider>().incomingChats,
+                  isLoading: context.watch<ChatProvider>().isLoading,
+                  hasMore: context.watch<ChatProvider>().hasMoreIncoming,
+                  emptyText: t.chat_empty_incoming,
+                  onRefresh: () =>
+                      context.read<ChatProvider>().loadPendingIncoming(),
+                  onLoadMore: () =>
+                      context.read<ChatProvider>().loadMorePendingIncoming(),
+                  onChatTap: _openChat,
+                  onChatLongPress: _showChatActions,
+                ),
+              ],
+            ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSegmentedTabs(
+    AppLocalizations t,
+    bool isDark,
+    Color primaryColor,
+  ) {
+    final isPersian = !Localizations.localeOf(
+      context,
+    ).languageCode.contains('en');
+    final mutedColor = isDark
+        ? AppTheme.darkTextMuted
+        : AppTheme.lightTextMuted;
+    final labels = [t.chat_chats, t.chat_pending, t.chat_incoming];
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: isDark ? AppTheme.darkSecondary : AppTheme.lightSecondary,
+          borderRadius: BorderRadius.circular(AppTheme.radiusChip),
+        ),
+        child: AnimatedBuilder(
+          animation: _tabController,
+          builder: (context, _) {
+            return Row(
+              children: List.generate(labels.length, (i) {
+                final selected = _tabController.index == i;
+                return Expanded(
+                  child: GestureDetector(
+                    onTap: () => _tabController.animateTo(i),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(vertical: 10),
+                      decoration: BoxDecoration(
+                        color: selected ? primaryColor : Colors.transparent,
+                        borderRadius: BorderRadius.circular(
+                          AppTheme.radiusChip - 4,
+                        ),
+                      ),
+                      child: Text(
+                        labels[i],
+                        textAlign: TextAlign.center,
+                        style: (isPersian
+                                ? AppTheme.bodyBoldFa
+                                : AppTheme.bodyBold)
+                            .copyWith(
+                          fontSize: 14,
+                          color: selected ? Colors.white : mutedColor,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            );
+          },
+        ),
       ),
     );
   }
@@ -196,7 +257,7 @@ class _ChatsScreenState extends State<ChatsScreen>
               leading: const Icon(Icons.delete_outline),
               title: Text(
                 'Delete Chat',
-                style: TextStyle(fontFamily: 'Inter', color: textColor),
+                style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), color: textColor),
               ),
               onTap: () {
                 Navigator.pop(sheetContext);
@@ -217,19 +278,19 @@ class _ChatsScreenState extends State<ChatsScreen>
       context: context,
       builder: (dialogContext) => AlertDialog(
         backgroundColor: surfaceColor,
-        title: const Text('Delete Chat', style: TextStyle(fontFamily: 'Inter')),
-        content: const Text(
+        title: Text('Delete Chat', style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')))),
+        content: Text(
           'This hides the chat on your side.',
-          style: TextStyle(fontFamily: 'Inter'),
+          style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en'))),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Cancel', style: TextStyle(fontFamily: 'Inter')),
+            child: Text('Cancel', style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')))),
           ),
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Delete', style: TextStyle(fontFamily: 'Inter')),
+            child: Text('Delete', style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')))),
           ),
         ],
       ),

@@ -37,7 +37,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         title: Text(
           t.settings_logout,
           style: TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
             fontWeight: FontWeight.w700,
             color: isDark ? AppTheme.darkText : AppTheme.lightText,
           ),
@@ -45,7 +45,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         content: Text(
           t.settings_logout_confirm,
           style: TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
             color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
           ),
         ),
@@ -55,7 +55,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Text(
               t.cancel,
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                 color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
               ),
             ),
@@ -72,7 +72,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             child: Text(
               t.settings_logout,
               style: TextStyle(
-                fontFamily: 'Inter',
+                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                 fontWeight: FontWeight.w600,
                 color: isDark ? AppTheme.darkError : AppTheme.lightError,
               ),
@@ -87,11 +87,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final t = AppLocalizations.of(context)!;
     showModalBottomSheet(
       context: context,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (ctx) {
         final isDark = ctx.isDarkMode;
+        final isPersian = !Localizations.localeOf(
+          ctx,
+        ).languageCode.contains('en');
         return Container(
           padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 24),
           child: Column(
@@ -101,21 +105,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: isDark ? Colors.grey.shade600 : Colors.grey.shade300,
+                  color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
               const SizedBox(height: 20),
-              Text(
-                t.select_language,
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: Theme.of(ctx).colorScheme.onSurface,
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  t.select_language,
+                  style: (isPersian ? AppTheme.h2Fa : AppTheme.h2).copyWith(
+                    color: Theme.of(ctx).colorScheme.onSurface,
+                  ),
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
               _LanguageOption(
                 label: t.english,
                 isSelected: context.read<SettingsProvider>().language == 'en',
@@ -164,7 +168,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         title: Text(
           t.settings_title,
           style: TextStyle(
-            fontFamily: 'Inter',
+            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
             fontSize: 18,
             fontWeight: FontWeight.w700,
             color: onSurfaceColor,
@@ -181,6 +185,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              _buildPremiumModule(t, isDark, onSurfaceColor, textMutedColor),
+              const SizedBox(height: 28),
               _buildSectionHeader(t.settings_appearance, isDark, onSurfaceColor),
               const SizedBox(height: 12),
               _buildSettingsCard(
@@ -334,12 +340,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             width: 40,
                             height: 40,
                             decoration: BoxDecoration(
-                              color: isDark ? Colors.grey.shade800 : Colors.grey.shade100,
+                              color: AppTheme.moduleFillTinted(
+                                isDark: isDark,
+                                accent: primaryColor,
+                              ),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Icon(
                               Icons.language,
-                              color: textMutedColor,
+                              color: primaryColor,
                               size: 22,
                             ),
                           ),
@@ -351,7 +360,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 Text(
                                   t.settings_language,
                                   style: TextStyle(
-                                    fontFamily: 'Inter',
+                                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                     fontSize: 16,
                                     fontWeight: FontWeight.w500,
                                     color: onSurfaceColor,
@@ -361,7 +370,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 Text(
                                   t.settings_language_desc,
                                   style: TextStyle(
-                                    fontFamily: 'Inter',
+                                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                     fontSize: 13,
                                     color: textMutedColor,
                                   ),
@@ -374,7 +383,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 ? t.persian
                                 : t.english,
                             style: TextStyle(
-                              fontFamily: 'Inter',
+                              fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
                               color: primaryColor,
@@ -428,7 +437,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 Text(
                                   t.settings_logout,
                                   style: TextStyle(
-                                    fontFamily: 'Inter',
+                                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                     fontSize: 16,
                                     fontWeight: FontWeight.w500,
                                     color: isDark ? AppTheme.darkError : AppTheme.lightError,
@@ -438,7 +447,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 Text(
                                   t.settings_logout_desc,
                                   style: TextStyle(
-                                    fontFamily: 'Inter',
+                                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                     fontSize: 13,
                                     color: textMutedColor,
                                   ),
@@ -467,17 +476,152 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  Widget _buildPremiumModule(
+    AppLocalizations t,
+    bool isDark,
+    Color onSurfaceColor,
+    Color textMutedColor,
+  ) {
+    final isPersian = !Localizations.localeOf(
+      context,
+    ).languageCode.contains('en');
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppTheme.moduleFillTinted(
+          isDark: isDark,
+          accent: AppTheme.accentLike,
+        ),
+        borderRadius: BorderRadius.circular(AppTheme.radiusModule),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  gradient: AppTheme.likeGradient(isDark: isDark),
+                ),
+                child: const Icon(
+                  Icons.workspace_premium,
+                  color: Colors.white,
+                  size: 22,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      t.settings_premium_title,
+                      style: (isPersian ? AppTheme.h2Fa : AppTheme.h2).copyWith(
+                        color: onSurfaceColor,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    Text(
+                      t.settings_premium_subtitle,
+                      style: (isPersian ? AppTheme.captionFa : AppTheme.caption)
+                          .copyWith(color: textMutedColor),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              _buildPerkPill(
+                icon: Icons.favorite,
+                label: t.settings_premium_perk_likes,
+                isDark: isDark,
+                onSurfaceColor: onSurfaceColor,
+              ),
+              _buildPerkPill(
+                icon: Icons.chat_bubble,
+                label: t.settings_premium_perk_chats,
+                isDark: isDark,
+                onSurfaceColor: onSurfaceColor,
+              ),
+              _buildPerkPill(
+                icon: Icons.rocket_launch,
+                label: t.settings_premium_perk_boost,
+                isDark: isDark,
+                onSurfaceColor: onSurfaceColor,
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          AppTheme.gradientButton(
+            onPressed: () {},
+            height: 48,
+            child: Text(
+              t.settings_premium_cta,
+              style: (isPersian ? AppTheme.buttonFa : AppTheme.button).copyWith(
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPerkPill({
+    required IconData icon,
+    required String label,
+    required bool isDark,
+    required Color onSurfaceColor,
+  }) {
+    final isPersian = !Localizations.localeOf(
+      context,
+    ).languageCode.contains('en');
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: isDark ? AppTheme.darkSurface : AppTheme.lightSurface,
+        borderRadius: BorderRadius.circular(AppTheme.radiusChip),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 13, color: AppTheme.accentLike),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: (isPersian ? AppTheme.captionFa : AppTheme.caption).copyWith(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: onSurfaceColor,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildSectionHeader(String title, bool isDark, Color onSurfaceColor) {
+    final isPersian = !Localizations.localeOf(
+      context,
+    ).languageCode.contains('en');
+    final mutedColor = isDark
+        ? AppTheme.darkTextMuted
+        : AppTheme.lightTextMuted;
     return Padding(
       padding: const EdgeInsets.only(left: 4),
       child: Text(
-        title,
-        style: TextStyle(
-          fontFamily: 'Inter',
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          color: isDark ? Colors.grey.shade500 : Colors.grey.shade700,
-          letterSpacing: 0.5,
+        title.toUpperCase(),
+        style: (isPersian ? AppTheme.overlineFa : AppTheme.overline).copyWith(
+          color: mutedColor,
         ),
       ),
     );
@@ -520,10 +664,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: isDark ? Colors.grey.shade800 : Colors.grey.shade100,
+              color: AppTheme.moduleFillTinted(
+                isDark: isDark,
+                accent: primaryColor,
+              ),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: textMutedColor, size: 22),
+            child: Icon(icon, color: primaryColor, size: 22),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -533,7 +680,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Text(
                   title,
                   style: TextStyle(
-                    fontFamily: 'Inter',
+                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                     fontSize: 16,
                     fontWeight: FontWeight.w500,
                     color: onSurfaceColor,
@@ -542,7 +689,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Text(
                   subtitle,
                   style: TextStyle(
-                    fontFamily: 'Inter',
+                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                     fontSize: 12,
                     color: textMutedColor,
                   ),
@@ -553,7 +700,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
           Switch(
             value: value,
             onChanged: onChanged,
-            activeThumbColor: primaryColor,
+            activeThumbColor: Colors.white,
+            activeTrackColor: primaryColor,
           ),
         ],
       ),
@@ -565,7 +713,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       height: 1,
       thickness: 1,
       indent: 72,
-      color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+      color: isDark ? AppTheme.darkDivider : AppTheme.lightDivider,
     );
   }
 }
@@ -584,6 +732,9 @@ class _LanguageOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = context.isDarkMode;
+    final isPersian = !Localizations.localeOf(
+      context,
+    ).languageCode.contains('en');
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
     final surfaceColor = isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
@@ -596,7 +747,9 @@ class _LanguageOption extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
         decoration: BoxDecoration(
-          color: isSelected ? primaryColor.withValues(alpha: 0.06) : surfaceColor,
+          color: isSelected
+              ? primaryColor.withValues(alpha: isDark ? 0.18 : 0.10)
+              : surfaceColor,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
             color: isSelected ? primaryColor : borderColor,
@@ -608,11 +761,12 @@ class _LanguageOption extends StatelessWidget {
             Expanded(
               child: Text(
                 label,
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 16,
+                style: (isPersian ? AppTheme.bodyBoldFa : AppTheme.bodyBold)
+                    .copyWith(
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color: isSelected ? primaryColor : Theme.of(context).colorScheme.onSurface,
+                  color: isSelected
+                      ? primaryColor
+                      : Theme.of(context).colorScheme.onSurface,
                 ),
               ),
             ),

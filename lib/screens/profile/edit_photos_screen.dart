@@ -1,13 +1,13 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dating_app/config/app_theme.dart';
 import 'package:dating_app/generated/app_localizations.dart';
 import 'package:dating_app/models/photo.dart';
 import 'package:dating_app/providers/profile_provider.dart';
 import 'package:dating_app/services/photo_service.dart';
 import 'package:dating_app/utils/responsive.dart';
+import 'package:dating_app/utils/cached_image.dart';
 import 'package:dating_app/widgets/action_toast.dart';
 import 'package:dating_app/widgets/shimmer_avatar.dart';
 
@@ -236,10 +236,12 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
         if (item.isNew && item.localFile != null) {
           final result = await PhotoService.uploadPhoto(item.localFile!);
           if (result == null) {
+            if (!mounted) return;
             setState(() {
               _errorMessage = 'Failed to upload a photo';
               _isSaving = false;
             });
+            showActionToast(context, t.error_something_wrong, isError: true);
             return;
           }
           uploadedItems.add(
@@ -284,10 +286,12 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
             mainItem.serverPhoto!.id,
           );
           if (result == null) {
+            if (!mounted) return;
             setState(() {
               _errorMessage = 'Failed to set main photo';
               _isSaving = false;
             });
+            showActionToast(context, t.error_something_wrong, isError: true);
             return;
           }
         }
@@ -310,10 +314,12 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
         }
         final ok = await PhotoService.reorderPhotos(orders);
         if (!ok) {
+          if (!mounted) return;
           setState(() {
             _errorMessage = 'Failed to reorder photos';
             _isSaving = false;
           });
+          showActionToast(context, t.error_something_wrong, isError: true);
           return;
         }
       }
@@ -330,6 +336,7 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
           _errorMessage = 'An error occurred. Please try again.';
           _isSaving = false;
         });
+        showActionToast(context, t.error_something_wrong, isError: true);
       }
     }
   }
@@ -375,7 +382,7 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
           title: Text(
             'Edit Photos',
             style: TextStyle(
-              fontFamily: 'Inter',
+              fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
               fontSize: 18,
               fontWeight: FontWeight.w700,
               color: onSurfaceColor,
@@ -409,7 +416,7 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
                                   Text(
                                     'Manage your photos. Add new ones, reorder, or set a main photo.',
                                     style: TextStyle(
-                                      fontFamily: 'Inter',
+                                      fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                       fontSize: 15,
                                       color: textMutedColor,
                                     ),
@@ -420,7 +427,7 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
                                       Text(
                                         '${_items.length} / $maxPhotos photos',
                                         style: TextStyle(
-                                          fontFamily: 'Inter',
+                                          fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                           fontSize: 13,
                                           fontWeight: FontWeight.w600,
                                           color: onSurfaceColor,
@@ -431,7 +438,7 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
                                         Text(
                                           '(${minPhotos - _items.length} more required)',
                                           style: TextStyle(
-                                            fontFamily: 'Inter',
+                                            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                             fontSize: 12,
                                             color: errorColor,
                                           ),
@@ -472,7 +479,7 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
                                             child: Text(
                                               _errorMessage!,
                                               style: TextStyle(
-                                                fontFamily: 'Inter',
+                                                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                                 fontSize: 14,
                                                 color: errorColor,
                                                 fontWeight: FontWeight.w500,
@@ -520,21 +527,29 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
                                     color: textMutedColor,
                                   ),
                                   const SizedBox(width: 6),
-                                  Text(
-                                    'Drag to reorder',
-                                    style: TextStyle(
-                                      fontFamily: 'Inter',
-                                      fontSize: 11,
-                                      color: textMutedColor,
+                                  Expanded(
+                                    child: Text(
+                                      'Drag to reorder',
+                                      softWrap: false,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                                        fontSize: 11,
+                                        color: textMutedColor,
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(width: 16),
-                                  Text(
-                                    'Drag to first slot to set as main',
-                                    style: TextStyle(
-                                      fontFamily: 'Inter',
-                                      fontSize: 11,
-                                      color: textMutedColor,
+                                  Expanded(
+                                    child: Text(
+                                      'Drag to first slot to set as main',
+                                      softWrap: false,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                                        fontSize: 11,
+                                        color: textMutedColor,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -590,7 +605,7 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
                                                     ? 'Save'
                                                     : 'No changes'),
                                           style: TextStyle(
-                                            fontFamily: 'Inter',
+                                            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                                             fontSize: 16,
                                             fontWeight: FontWeight.w600,
                                             color: canSave
@@ -624,10 +639,8 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
       builder: (context, constraints) {
         final double width = constraints.maxWidth;
         final double gap = 10.0;
-        final double smallItemWidth = (width - gap * 2) / 3;
-        final double smallItemHeight = smallItemWidth * 1.1;
-        final double mainWidth = smallItemWidth * 2 + gap;
-        final double mainHeight = smallItemHeight * 2 + gap;
+        final double slotW = (width - gap * 2) / 3;
+        final double slotH = slotW * 1.1;
 
         final List<_EditablePhoto> displayItems = List.from(_items);
 
@@ -637,162 +650,37 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
             width: width,
             child: Column(
               children: [
-                // Row 1: Main slot + 2 small
-                Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    SizedBox(
-                      width: mainWidth,
-                      height: mainHeight,
-                      child: _buildDraggableSlot(
-                        index: 0,
-                        items: displayItems,
-                        primaryColor: primaryColor,
-                        borderColor: borderColor,
-                        textMutedColor: textMutedColor,
-                        onSurfaceColor: onSurfaceColor,
-                        isBig: true,
-                      ),
-                    ),
-                    SizedBox(width: gap),
-                    Column(
+                for (int row = 0; row < 3; row++)
+                  Padding(
+                    padding: EdgeInsets.only(bottom: row < 2 ? gap : 0),
+                    child: Row(
                       children: [
-                        SizedBox(
-                          width: smallItemWidth,
-                          height: smallItemHeight,
-                          child: _buildDraggableSlot(
-                            index: 1,
-                            items: displayItems,
-                            primaryColor: primaryColor,
-                            borderColor: borderColor,
-                            textMutedColor: textMutedColor,
-                            onSurfaceColor: onSurfaceColor,
-                            isBig: false,
+                        for (int col = 0; col < 3; col++) ...[
+                          if (col > 0) SizedBox(width: gap),
+                          SizedBox(
+                            width: slotW,
+                            height: slotH,
+                            child: _buildDraggableSlot(
+                              index: row * 3 + col,
+                              items: displayItems,
+                              primaryColor: primaryColor,
+                              borderColor: borderColor,
+                              textMutedColor: textMutedColor,
+                              onSurfaceColor: onSurfaceColor,
+                              isBig: false,
+                              slotWidth: slotW,
+                              slotHeight: slotH,
+                            ),
                           ),
-                        ),
-                        SizedBox(height: gap),
-                        SizedBox(
-                          width: smallItemWidth,
-                          height: smallItemHeight,
-                          child: _buildDraggableSlot(
-                            index: 2,
-                            items: displayItems,
-                            primaryColor: primaryColor,
-                            borderColor: borderColor,
-                            textMutedColor: textMutedColor,
-                            onSurfaceColor: onSurfaceColor,
-                            isBig: false,
-                          ),
-                        ),
+                        ],
                       ],
                     ),
-                  ],
-                ),
-                SizedBox(height: gap),
-                // Row 2: 3 small
-                Row(
-                  children: [
-                    _buildSmallSlot(
-                      3,
-                      displayItems,
-                      primaryColor,
-                      borderColor,
-                      textMutedColor,
-                      onSurfaceColor,
-                      gap,
-                      width,
-                    ),
-                    _buildSmallSlot(
-                      4,
-                      displayItems,
-                      primaryColor,
-                      borderColor,
-                      textMutedColor,
-                      onSurfaceColor,
-                      gap,
-                      width,
-                    ),
-                    _buildSmallSlot(
-                      5,
-                      displayItems,
-                      primaryColor,
-                      borderColor,
-                      textMutedColor,
-                      onSurfaceColor,
-                      gap,
-                      width,
-                    ),
-                  ],
-                ),
-                SizedBox(height: gap),
-                // Row 3: 3 small
-                Row(
-                  children: [
-                    _buildSmallSlot(
-                      6,
-                      displayItems,
-                      primaryColor,
-                      borderColor,
-                      textMutedColor,
-                      onSurfaceColor,
-                      gap,
-                      width,
-                    ),
-                    _buildSmallSlot(
-                      7,
-                      displayItems,
-                      primaryColor,
-                      borderColor,
-                      textMutedColor,
-                      onSurfaceColor,
-                      gap,
-                      width,
-                    ),
-                    _buildSmallSlot(
-                      8,
-                      displayItems,
-                      primaryColor,
-                      borderColor,
-                      textMutedColor,
-                      onSurfaceColor,
-                      gap,
-                      width,
-                    ),
-                  ],
-                ),
+                  ),
               ],
             ),
           ),
         );
       },
-    );
-  }
-
-  Widget _buildSmallSlot(
-    int index,
-    List<_EditablePhoto> displayItems,
-    Color primaryColor,
-    Color borderColor,
-    Color textMutedColor,
-    Color onSurfaceColor,
-    double gap,
-    double width,
-  ) {
-    final double smallItemWidth = (width - gap * 2) / 3;
-    final double smallItemHeight = smallItemWidth * 1.1;
-
-    return SizedBox(
-      width: smallItemWidth,
-      height: smallItemHeight,
-      child: _buildDraggableSlot(
-        index: index,
-        items: displayItems,
-        primaryColor: primaryColor,
-        borderColor: borderColor,
-        textMutedColor: textMutedColor,
-        onSurfaceColor: onSurfaceColor,
-        isBig: false,
-      ),
     );
   }
 
@@ -804,6 +692,8 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
     required Color textMutedColor,
     required Color onSurfaceColor,
     required bool isBig,
+    required double slotWidth,
+    required double slotHeight,
   }) {
     final bool hasItem = index < items.length;
     final item = hasItem ? items[index] : null;
@@ -817,6 +707,8 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
         textMutedColor: textMutedColor,
         onSurfaceColor: onSurfaceColor,
         isBig: isBig,
+        slotWidth: slotWidth,
+        slotHeight: slotHeight,
       );
     }
 
@@ -843,24 +735,36 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
                 border: Border.all(color: primaryColor, width: 2),
               ),
               child: ClipRRect(
-                borderRadius: BorderRadius.circular(13),
-                child: item?.localFile != null
-                    ? Image.file(item!.localFile!, fit: BoxFit.cover)
-                    : (item?.serverPhoto != null
-                          ? CachedNetworkImage(
-                              imageUrl: item!.serverPhoto!.displayUrl,
-                              fit: BoxFit.cover,
-                              placeholder: (_, _) =>
-                                  Container(color: Colors.grey.shade200),
-                              errorWidget: (_, _, _) =>
-                                  const Icon(Icons.broken_image),
-                            )
-                          : Container()),
-              ),
+                 borderRadius: BorderRadius.circular(13),
+                 child: item?.localFile != null
+                     ? Image.file(item!.localFile!, fit: BoxFit.cover)
+                     : (item?.serverPhoto != null
+                           ? CachedImage.widget(
+                               item!.serverPhoto!.displayUrl,
+                               width: isBig ? 160 : 80,
+                               height: isBig ? 160 : 80,
+                               fit: BoxFit.cover,
+                               placeholder: Container(color: Colors.grey.shade200),
+                               errorWidget: const Icon(Icons.broken_image),
+                             )
+                           : Container()),
+               ),
             ),
           ),
           childWhenDragging: Opacity(
-            opacity: 0.3,
+              opacity: 0.3,
+              child: _buildSlotContent(
+                item: item,
+                index: index,
+                primaryColor: primaryColor,
+                borderColor: borderColor,
+                textMutedColor: textMutedColor,
+                onSurfaceColor: onSurfaceColor,
+                isBig: isBig,
+                slotWidth: slotWidth,
+                slotHeight: slotHeight,
+              ),
+            ),
             child: _buildSlotContent(
               item: item,
               index: index,
@@ -869,17 +773,9 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
               textMutedColor: textMutedColor,
               onSurfaceColor: onSurfaceColor,
               isBig: isBig,
+              slotWidth: slotWidth,
+              slotHeight: slotHeight,
             ),
-          ),
-          child: _buildSlotContent(
-            item: item,
-            index: index,
-            primaryColor: primaryColor,
-            borderColor: borderColor,
-            textMutedColor: textMutedColor,
-            onSurfaceColor: onSurfaceColor,
-            isBig: isBig,
-          ),
         );
       },
     );
@@ -893,6 +789,8 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
     required Color textMutedColor,
     required Color onSurfaceColor,
     required bool isBig,
+    required double slotWidth,
+    required double slotHeight,
   }) {
     final bool hasItem = item != null;
 
@@ -929,11 +827,13 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
                   errorBuilder: (_, _, _) => _imageErrorWidget(),
                 )
               else if (hasItem && item.serverPhoto != null)
-                CachedNetworkImage(
-                  imageUrl: item.serverPhoto!.displayUrl,
+                CachedImage.widget(
+                  item.serverPhoto!.displayUrl,
+                  width: slotWidth,
+                  height: slotHeight,
                   fit: BoxFit.cover,
-                  placeholder: (_, _) => const ShimmerAvatar(),
-                  errorWidget: (_, _, _) => _imageErrorWidget(),
+                  placeholder: const ShimmerAvatar(),
+                  errorWidget: _imageErrorWidget(),
                 )
               else
                 Center(
@@ -965,7 +865,7 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
                         Text(
                           'Main',
                           style: TextStyle(
-                            fontFamily: 'Inter',
+                            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                             fontSize: 9,
                             fontWeight: FontWeight.w600,
                             color: Colors.white,
@@ -1072,8 +972,8 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
               const SizedBox(width: 3),
               Text(
                 'Rejected',
-                style: const TextStyle(
-                  fontFamily: 'Inter',
+                style: TextStyle(
+                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                   fontSize: 8,
                   fontWeight: FontWeight.w600,
                   color: Colors.white,

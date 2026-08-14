@@ -92,6 +92,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get splash_connection_failed => 'Connection failed';
 
   @override
+  String get screenshot_disabled_notice =>
+      'Screenshots are disabled to protect your privacy';
+
+  @override
+  String get photo_fullscreen_hint => 'Tap photo for full screen';
+
+  @override
   String get signup_title => 'Create Account';
 
   @override
@@ -265,6 +272,49 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settings_logout_confirm => 'Are you sure you want to log out?';
 
   @override
+  String get settings_premium_title => 'Go Premium';
+
+  @override
+  String get settings_premium_subtitle =>
+      'Unlock unlimited likes, chats and profile boosts';
+
+  @override
+  String get settings_premium_perk_likes => 'Unlimited likes';
+
+  @override
+  String get settings_premium_perk_chats => 'Unlimited chats';
+
+  @override
+  String get settings_premium_perk_boost => 'Profile boost';
+
+  @override
+  String get settings_premium_cta => 'Upgrade now';
+
+  @override
+  String get notifications_title => 'Notifications';
+
+  @override
+  String get notifications_empty => 'No notifications yet';
+
+  @override
+  String get notifications_section_liked => 'Liked';
+
+  @override
+  String get notifications_section_likes => 'Likes';
+
+  @override
+  String get notifications_section_matches => 'Matches';
+
+  @override
+  String get notifications_section_announcements => 'Announcements';
+
+  @override
+  String get notifications_empty_section => 'Nothing here yet';
+
+  @override
+  String get notifications_close => 'Close';
+
+  @override
   String get error_email_exists => 'This email is already registered';
 
   @override
@@ -421,6 +471,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get discover_premium => 'Premium';
 
   @override
+  String get discover_revert_pass => 'Revert last pass';
+
+  @override
   String get profile_section_about => 'About';
 
   @override
@@ -499,7 +552,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get search_advanced_filters => 'Advanced Filters';
 
   @override
-  String get search_apply_filters => 'Apply Filters';
+  String get search_apply_filters => 'Apply';
 
   @override
   String get search_reset_filters => 'Reset All';
@@ -766,6 +819,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get chat_edit_message => 'Edit message';
 
   @override
+  String get chat_message_reported => 'Message reported';
+
+  @override
   String get chat_limit_reached => 'Daily chat limit reached';
 
   @override
@@ -878,4 +934,89 @@ class AppLocalizationsEn extends AppLocalizations {
   String photo_rejected_reason(String reason) {
     return 'Reason: $reason';
   }
+
+  @override
+  String get support => 'Support';
+
+  @override
+  String get my_tickets => 'My Tickets';
+
+  @override
+  String get new_ticket => 'New Ticket';
+
+  @override
+  String get ticket_subject => 'Subject';
+
+  @override
+  String get ticket_message => 'Message';
+
+  @override
+  String get ticket_message_hint =>
+      'Describe your issue in detail (at least 10 characters)';
+
+  @override
+  String get ticket_reply_hint => 'Write a reply…';
+
+  @override
+  String get ticket_send => 'Send';
+
+  @override
+  String get ticket_status_open => 'Open';
+
+  @override
+  String get ticket_status_in_progress => 'In progress';
+
+  @override
+  String get ticket_status_closed => 'Closed';
+
+  @override
+  String get ticket_subject_account => 'Account / Login issue';
+
+  @override
+  String get ticket_subject_photo => 'Photo verification';
+
+  @override
+  String get ticket_subject_payment => 'Payment / Premium';
+
+  @override
+  String get ticket_subject_bug => 'Report a problem (bug)';
+
+  @override
+  String get ticket_subject_other => 'Other';
+
+  @override
+  String get ticket_other_hint =>
+      'Selecting “Other”? Explain your issue in the message below.';
+
+  @override
+  String get ticket_empty_title => 'No tickets yet';
+
+  @override
+  String get ticket_empty_body =>
+      'Have an issue? Create a support ticket and our team will help you.';
+
+  @override
+  String get ticket_create_first => 'Create your first ticket';
+
+  @override
+  String get ticket_created => 'Ticket created';
+
+  @override
+  String get ticket_reply_sent => 'Reply sent';
+
+  @override
+  String get ticket_closed_note =>
+      'This ticket is closed. Sending a message will reopen it.';
+
+  @override
+  String get ticket_support_team => 'Support Team';
+
+  @override
+  String get ticket_you => 'You';
+
+  @override
+  String get ticket_load_error => 'Couldn\'t load tickets. Pull to refresh.';
+
+  @override
+  String get notifications_see_details => 'See details';
 }
