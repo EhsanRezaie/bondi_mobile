@@ -21,6 +21,10 @@ class PushService {
 
   bool _initialized = false;
 
+  /// Message ids already routed, so a single tap that reaches both
+  /// `onMessageOpenedApp` and `getInitialMessage` navigates only once.
+  final Set<String> _handledMessageIds = {};
+
   static const _tokenKey = 'fcm_token';
   static const _tokenIdKey = 'fcm_token_id';
   static const _tokenSentKey = 'fcm_token_sent';
@@ -162,6 +166,12 @@ class PushService {
     RemoteMessage message,
     Function(String, Map<String, dynamic>) onNotificationTap,
   ) {
+    final messageId = message.messageId;
+    if (messageId != null) {
+      if (_handledMessageIds.contains(messageId)) return;
+      _handledMessageIds.add(messageId);
+    }
+
     final data = message.data;
     final type = data['type'] ?? 'system';
 

@@ -1,6 +1,6 @@
 # Plan — Real-time Notifications (4 Sections) + FCM Push + Unread Badges
 
-Status: **Backend P1-P3 complete** (tests added, incl. WS `new_notification` events) · **Mobile P4-P9 complete** (M4-M9 committed + P9 bug-fix pass)
+Status: **Backend P1-P3 complete** (tests added, incl. WS `new_notification` events) · **Mobile P4-P9 complete** (M4-M9 committed + P9 bug-fix pass) · **P10 compact push + announcement push ✅** (backend `main` `push_service` data-only payload + `admin_announcements` FCM; mobile `warm_orange` native `FcmNotificationService`)
 Repos: backend `C:\Users\Ehsan\Desktop\project_d` · mobile `C:\Users\Ehsan\Desktop\project_d_mobile`
 Docs precedent: `project_d_mobile/PLAN_CHAT_REDESIGN.md`
 
@@ -268,10 +268,13 @@ New file `lib/widgets/notification_toast.dart` (distinct from API `action_toast`
 7. **P7** ✅ Mobile provider + real-time wiring (M7)
 8. **P8** ✅ Mobile bell badge + section pills (M8)
 9. **P9** ✅ i18n + regression (§9) — **incl. bug-fix pass**: compile fix, real toast wiring, background-tap navigation, unread-count refresh lifecycle, PushService logout + lazy Firebase init, test-harness fixes → `flutter analyze` clean + **all 397 mobile tests pass**; backend `test_notifications.py` **21 tests pass** (incl. new WS-event tests)
+10. **P10** ✅ **Compact non-expandable push + announcement push** (Aug 14 user feedback: "notifications too big / expandable", "announcements don't push"):
+    - Backend (`project_d` on `main`): `push_service.py` now sends **data-only** FCM (title/body/image_url moved into `data`, `notification` block dropped — `notification.image` caused the Android BigPicture), `admin_announcements.py` `POST /admin/announcements` + `/admin/announcements/test` now also dispatch an FCM push (`type=system`, `is_announcement`) with celery/inline fallback; `notify_message` pushes `sender_name`; new `_build_data` unit tests → **full backend suite 795 passed**.
+    - Mobile (`project_d_mobile` on `warm_orange`): new native `FcmNotificationService.kt` (manifest-registered) renders a compact single-row notification — small circular avatar (`image_url`, loaded + circle-cropped), title = sender name (messages) / "It's a match!" / announcement title, body = "<name> sent you a message", tap opens MainActivity with `google.message_id` extra; plugin store seeded so Dart `getInitialMessage`/`onMessageOpenedApp` route taps (also dedupe-by-messageId guard in `push_service.dart`); `MainActivity` tracks foreground so in-app foreground keeps the custom toast (no system double); `android/app/build.gradle.kts` adds `firebase-messaging` (BOM 33.16.0) for the compile classpath; white-heart `ic_notification.xml` small icon. → `flutter analyze` clean, **397 mobile tests pass**, debug APK builds.
 
 ---
 
 ## Open follow-ups (out of scope for now)
 
 - [ ] iOS system push: needs APNs key/cert + `AppDelegate.swift` Firebase init (deferred by decision)
-- [ ] Compact-row avatar in the system tray requires an Android `NotificationService` + local avatar cache (BigPicture used for now)
+- [ ] Compact-row avatar in the system tray: now implemented for Android via native `FcmNotificationService`; no iOS equivalent yet

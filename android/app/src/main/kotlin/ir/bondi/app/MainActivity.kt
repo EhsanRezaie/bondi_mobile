@@ -8,4 +8,14 @@ class MainActivity: FlutterActivity() {
         super.onCreate(savedInstanceState)
         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
     }
+
+    override fun onResume() {
+        super.onResume()
+        FcmNotificationService.isAppInForeground = true
+    }
+
+    override fun onPause() {
+        super.onPause()
+        FcmNotificationService.isAppInForeground = false
+    }
 }

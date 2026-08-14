@@ -32,6 +32,9 @@ kotlin {
 
 dependencies {
     implementation("com.google.android.gms:play-services-auth:20.7.0")
+    // Referenced directly by FcmNotificationService (compact push rendering).
+    implementation(platform("com.google.firebase:firebase-bom:33.16.0"))
+    implementation("com.google.firebase:firebase-messaging")
 }
 
 flutter {
