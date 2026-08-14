@@ -44,18 +44,20 @@ class _TypingIndicatorState extends State<TypingIndicator>
   Widget build(BuildContext context) {
     final isDark = context.isDarkMode;
     final surfaceColor = isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
-    final mutedColor =
-        isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted;
+    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
+    final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         color: surfaceColor,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(
-          color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder,
-          width: 1,
+        borderRadius: BorderRadius.only(
+          topLeft: const Radius.circular(18),
+          topRight: const Radius.circular(18),
+          bottomLeft: const Radius.circular(4),
+          bottomRight: const Radius.circular(18),
         ),
+        border: Border.all(color: borderColor, width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -64,7 +66,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
             animation: _animation1,
             builder: (context, child) => Transform.translate(
               offset: Offset(0, _animation1.value),
-              child: _buildDot(mutedColor),
+              child: _buildDot(primaryColor),
             ),
           ),
           const SizedBox(width: 4),
@@ -72,7 +74,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
             animation: _animation2,
             builder: (context, child) => Transform.translate(
               offset: Offset(0, _animation2.value),
-              child: _buildDot(mutedColor),
+              child: _buildDot(primaryColor),
             ),
           ),
           const SizedBox(width: 4),
@@ -80,7 +82,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
             animation: _animation3,
             builder: (context, child) => Transform.translate(
               offset: Offset(0, _animation3.value),
-              child: _buildDot(mutedColor),
+              child: _buildDot(primaryColor),
             ),
           ),
         ],
@@ -93,7 +95,7 @@ class _TypingIndicatorState extends State<TypingIndicator>
       width: 8,
       height: 8,
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.5),
+        color: color.withValues(alpha: 0.6),
         shape: BoxShape.circle,
       ),
     );

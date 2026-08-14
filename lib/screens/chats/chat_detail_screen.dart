@@ -137,7 +137,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       context: context,
       backgroundColor: surfaceColor,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (context) => SafeArea(
         child: Column(
@@ -151,6 +151,21 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 color: isDark ? AppTheme.darkBorder : Colors.grey.shade300,
                 borderRadius: BorderRadius.circular(2),
               ),
+            ),
+            const SizedBox(height: 8),
+            ListTile(
+              leading: Icon(Icons.reply, color: primaryColor),
+              title: Text(
+                'Reply',
+                style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), color: textColor),
+              ),
+              onTap: () {
+                Navigator.pop(context);
+                setState(() {
+                  _replyToId = message.id;
+                  _replyToContent = message.content;
+                });
+              },
             ),
             if (message.messageType == MessageType.text &&
                 message.content != null) ...[
@@ -193,20 +208,6 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               ),
             ],
             ListTile(
-              leading: Icon(Icons.reply, color: primaryColor),
-              title: Text(
-                'Reply',
-                style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), color: textColor),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                setState(() {
-                  _replyToId = message.id;
-                  _replyToContent = message.content;
-                });
-              },
-            ),
-            ListTile(
               leading: Icon(Icons.flag, color: errorColor),
               title: Text(
                 'Report',
@@ -217,6 +218,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 _showReportDialog(message);
               },
             ),
+            const SizedBox(height: 8),
           ],
         ),
       ),
@@ -387,12 +389,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final surfaceColor = isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
     final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
+    final errorColor = isDark ? AppTheme.darkError : AppTheme.lightError;
 
     showModalBottomSheet(
       context: context,
       backgroundColor: surfaceColor,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (sheetContext) => SafeArea(
         child: Column(
@@ -400,14 +403,25 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           children: [
             const SizedBox(height: 12),
             ListTile(
-              leading: const Icon(Icons.person_outline),
+              leading: Icon(Icons.flag, color: errorColor),
               title: Text(
-                'View Profile',
+                'Report',
                 style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), color: textColor),
               ),
               onTap: () {
                 Navigator.pop(sheetContext);
-                _openPeerProfile();
+                _reportProfile();
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.block, color: errorColor),
+              title: Text(
+                'Block User',
+                style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), color: textColor),
+              ),
+              onTap: () {
+                Navigator.pop(sheetContext);
+                _confirmBlockUser();
               },
             ),
             ListTile(
@@ -426,6 +440,132 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         ),
       ),
     );
+  }
+
+  String? _peerUserId() {
+    final provider = context.read<ChatProvider>();
+    final peerId = widget.peerId ?? provider.peerId;
+    return (peerId == null || peerId.isEmpty) ? null : peerId;
+  }
+
+  Future<void> _reportProfile() async {
+    final peerId = _peerUserId();
+    if (peerId == null) return;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surfaceColor = isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
+    final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
+    final controller = TextEditingController();
+
+    final reported = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: surfaceColor,
+        title: Text(
+          'Report User',
+          style: TextStyle(
+            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+            color: textColor,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        content: TextField(
+          controller: controller,
+          maxLines: 3,
+          maxLength: 500,
+          autofocus: true,
+          decoration: InputDecoration(
+            hintText: 'Tell us what went wrong...',
+            border: const OutlineInputBorder(),
+            hintStyle: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), color: textColor),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(
+              'Cancel',
+              style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), color: textColor),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              if (controller.text.trim().length < 5) return;
+              Navigator.pop(dialogContext, true);
+            },
+            child: Text(
+              'Send',
+              style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), color: textColor),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (reported != true || !mounted) return;
+    final ok = await context.read<ChatProvider>().reportUser(
+      peerId,
+      controller.text.trim(),
+    );
+    if (!mounted) return;
+    final t = AppLocalizations.of(context)!;
+    showActionToast(context, ok ? 'Reported' : t.error_something_wrong, isError: !ok);
+  }
+
+  Future<void> _confirmBlockUser() async {
+    final peerId = _peerUserId();
+    if (peerId == null) return;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final surfaceColor = isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
+    final t = AppLocalizations.of(context)!;
+    final errorColor = isDark ? AppTheme.darkError : AppTheme.lightError;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: surfaceColor,
+        title: Text(
+          'Block User',
+          style: TextStyle(
+            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+            color: errorColor,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        content: Text(
+          'You will no longer see each other. Their messages will stop.',
+          style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en'))),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(
+              'Cancel',
+              style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en'))),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(
+              'Block',
+              style: TextStyle(
+                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                color: errorColor,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+    final ok = await context.read<ChatProvider>().blockUser(peerId);
+    if (!mounted) return;
+    if (ok) {
+      showActionToast(context, 'Blocked');
+      Navigator.pop(context);
+    } else {
+      showActionToast(context, t.error_something_wrong, isError: true);
+    }
   }
 
   Future<void> _confirmDeleteChat() async {
@@ -480,7 +620,6 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
           fontSize: 13,
           color: mutedColor,
-          fontStyle: FontStyle.italic,
         ),
       ),
     );
@@ -626,7 +765,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
       decoration: BoxDecoration(
         color: bgColor,
         border: Border(top: BorderSide(color: borderColor, width: 0.5)),
@@ -640,11 +779,12 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
             textAlign: TextAlign.center,
             style: TextStyle(
               fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
-              fontSize: 13,
+              fontSize: 14,
+              fontWeight: FontWeight.w500,
               color: textColor,
             ),
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
           SizedBox(
             width: double.infinity,
             child: provider.isAccepting
@@ -702,7 +842,6 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
           fontSize: 13,
           color: mutedColor,
-          fontStyle: FontStyle.italic,
         ),
       ),
     );
@@ -728,14 +867,17 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
           },
           child: ListView.builder(
             controller: _scrollController,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             itemCount: provider.messages.length + (provider.isTyping ? 1 : 0),
             itemBuilder: (context, index) {
               if (index == provider.messages.length) {
                 return Align(
                   alignment: Alignment.centerLeft,
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 4,
+                      vertical: 8,
+                    ),
                     child: TypingIndicator(),
                   ),
                 );
@@ -799,12 +941,32 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
               child: Material(
                 color: isDark ? AppTheme.darkSurface : AppTheme.lightSurface,
                 shape: const CircleBorder(),
-                elevation: 4,
-                child: IconButton(
-                  onPressed: _scrollToBottom,
-                  icon: Icon(
-                    Icons.keyboard_arrow_down,
-                    color: isDark ? AppTheme.darkText : AppTheme.lightText,
+                elevation: 0,
+                child: Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: isDark
+                          ? AppTheme.darkBorder
+                          : AppTheme.lightBorder,
+                      width: 1,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: isDark
+                            ? AppTheme.darkShadow
+                            : AppTheme.lightShadow,
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: IconButton(
+                    onPressed: _scrollToBottom,
+                    icon: Icon(
+                      Icons.keyboard_arrow_down,
+                      color: isDark ? AppTheme.darkText : AppTheme.lightText,
+                    ),
                   ),
                 ),
               ),
@@ -843,23 +1005,21 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
     return Align(
       alignment: Alignment.center,
       child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 10),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         decoration: BoxDecoration(
           color: isDark
-              ? AppTheme.darkSurface.withValues(alpha: 0.9)
-              : AppTheme.lightSurface.withValues(alpha: 0.9),
+              ? AppTheme.darkSecondary.withValues(alpha: 0.6)
+              : AppTheme.lightBackground.withValues(alpha: 0.7),
           borderRadius: BorderRadius.circular(AppTheme.radiusChip),
-          border: Border.all(
-            color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder,
-            width: 0.5,
-          ),
         ),
         child: Text(
           label,
           style: TextStyle(
             fontFamily: AppTheme.fontFor(isPersian),
-            fontSize: 12,
+            fontSize: 11,
+            fontWeight: FontWeight.w500,
+            letterSpacing: 0.4,
             color: mutedColor,
           ),
         ),

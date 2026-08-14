@@ -10,6 +10,7 @@ import 'package:dating_app/screens/chats/notifications_screen.dart';
 import 'package:dating_app/models/chat_card.dart';
 import 'package:dating_app/generated/app_localizations.dart';
 import 'package:dating_app/widgets/notification_bell.dart';
+import 'package:dating_app/widgets/segmented_tabs.dart';
 
 class ChatsScreen extends StatefulWidget {
   const ChatsScreen({super.key});
@@ -86,7 +87,6 @@ class _ChatsScreenState extends State<ChatsScreen>
       context,
     ).languageCode.contains('en');
     final bgColor = isDark ? AppTheme.darkBackground : AppTheme.lightBackground;
-    final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
     final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
 
     final authProvider = context.watch<AuthProvider>();
@@ -128,7 +128,14 @@ class _ChatsScreenState extends State<ChatsScreen>
       ),
       body: Column(
         children: [
-          _buildSegmentedTabs(t, isDark, primaryColor),
+          SegmentedTabs(
+            controller: _tabController,
+            tabs: [
+              SegmentedTab(label: t.chat_chats),
+              SegmentedTab(label: t.chat_pending),
+              SegmentedTab(label: t.chat_incoming),
+            ],
+          ),
           Expanded(
             child: TabBarView(
               controller: _tabController,
@@ -173,66 +180,6 @@ class _ChatsScreenState extends State<ChatsScreen>
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildSegmentedTabs(
-    AppLocalizations t,
-    bool isDark,
-    Color primaryColor,
-  ) {
-    final isPersian = !Localizations.localeOf(
-      context,
-    ).languageCode.contains('en');
-    final mutedColor = isDark
-        ? AppTheme.darkTextMuted
-        : AppTheme.lightTextMuted;
-    final labels = [t.chat_chats, t.chat_pending, t.chat_incoming];
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
-      child: Container(
-        padding: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          color: isDark ? AppTheme.darkSecondary : AppTheme.lightSecondary,
-          borderRadius: BorderRadius.circular(AppTheme.radiusChip),
-        ),
-        child: AnimatedBuilder(
-          animation: _tabController,
-          builder: (context, _) {
-            return Row(
-              children: List.generate(labels.length, (i) {
-                final selected = _tabController.index == i;
-                return Expanded(
-                  child: GestureDetector(
-                    onTap: () => _tabController.animateTo(i),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      padding: const EdgeInsets.symmetric(vertical: 10),
-                      decoration: BoxDecoration(
-                        color: selected ? primaryColor : Colors.transparent,
-                        borderRadius: BorderRadius.circular(
-                          AppTheme.radiusChip - 4,
-                        ),
-                      ),
-                      child: Text(
-                        labels[i],
-                        textAlign: TextAlign.center,
-                        style: (isPersian
-                                ? AppTheme.bodyBoldFa
-                                : AppTheme.bodyBold)
-                            .copyWith(
-                          fontSize: 14,
-                          color: selected ? Colors.white : mutedColor,
-                        ),
-                      ),
-                    ),
-                  ),
-                );
-              }),
-            );
-          },
-        ),
       ),
     );
   }

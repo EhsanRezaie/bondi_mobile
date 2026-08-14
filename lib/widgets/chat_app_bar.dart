@@ -38,69 +38,81 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
     return AppBar(
       backgroundColor: bgColor,
       elevation: 0,
+      scrolledUnderElevation: 0,
       leading: IconButton(
         icon: Icon(
           Icons.arrow_back,
           color: textColor,
+          size: 22,
         ),
         onPressed: onBackPressed ?? () => Navigator.pop(context),
       ),
-      title: Row(
-        children: [
-          GestureDetector(
-            onTap: onAvatarTap,
-            child: Stack(
-              children: [
-                CircleAvatar(
-                  radius: AppLayout.s(context, 18),
-                  backgroundColor: borderColor,
-                   backgroundImage: avatarUrl != null && avatarUrl!.isNotEmpty
-                       ? CachedImage.provider(
-                           avatarUrl!,
-                           diameter: AppLayout.s(context, 36),
-                         )
-                       : null,
-                  child: avatarUrl == null || avatarUrl!.isEmpty
-                      ? Icon(Icons.person,
-                          size: AppLayout.s(context, 18), color: borderColor)
-                      : null,
-                ),
-              ],
+      title: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onAvatarTap,
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(2),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: isOnline
+                    ? AppTheme.primaryGradient()
+                    : null,
+                border: isOnline
+                    ? null
+                    : Border.all(color: borderColor, width: 1.5),
+              ),
+              child: CircleAvatar(
+                radius: AppLayout.s(context, 15),
+                backgroundColor: borderColor,
+                backgroundImage:
+                    avatarUrl != null && avatarUrl!.isNotEmpty
+                        ? CachedImage.provider(
+                            avatarUrl!,
+                            diameter: AppLayout.s(context, 30),
+                          )
+                        : null,
+                child: avatarUrl == null || avatarUrl!.isEmpty
+                    ? Icon(Icons.person,
+                        size: AppLayout.s(context, 16), color: borderColor)
+                    : null,
+              ),
             ),
-          ),
-          SizedBox(width: AppLayout.s(context, 10)),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  userName,
-                  style: TextStyle(
-                    fontFamily: AppTheme.fontFor(
-                      !Localizations.localeOf(
-                        context,
-                      ).languageCode.contains('en'),
+            SizedBox(width: AppLayout.s(context, 10)),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    userName,
+                    style: TextStyle(
+                      fontFamily: AppTheme.fontFor(
+                        !Localizations.localeOf(
+                          context,
+                        ).languageCode.contains('en'),
+                      ),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: textColor,
                     ),
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: textColor,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                OnlineIndicator(
-                  isOnline: isOnline,
-                  lastSeenAt: lastSeenAt,
-                ),
-              ],
+                  OnlineIndicator(
+                    isOnline: isOnline,
+                    lastSeenAt: lastSeenAt,
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       actions: [
         if (onMenuPressed != null)
           IconButton(
             onPressed: onMenuPressed,
-            icon: Icon(Icons.more_vert, color: textColor),
+            icon: Icon(Icons.more_horiz, color: textColor, size: 22),
           ),
       ],
     );

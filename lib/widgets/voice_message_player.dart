@@ -7,11 +7,15 @@ import 'package:dating_app/utils/responsive.dart';
 class VoiceMessagePlayer extends StatefulWidget {
   final String? audioUrl;
   final bool isMine;
+  final Color? mineFill;
+  final Color? mineForeground;
 
   const VoiceMessagePlayer({
     super.key,
     this.audioUrl,
     required this.isMine,
+    this.mineFill,
+    this.mineForeground,
   });
 
   @override
@@ -78,6 +82,8 @@ class _VoiceMessagePlayerState extends State<VoiceMessagePlayer> {
 
     final isDark = context.isDarkMode;
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
+    final mineFg = widget.mineForeground ??
+        (isDark ? AppTheme.lightText : Colors.white);
 
     final maxW = MediaQuery.of(context).size.width * 0.78 - 28;
     final width = AppLayout.s(context, 200).clamp(0.0, maxW);
@@ -90,6 +96,7 @@ class _VoiceMessagePlayerState extends State<VoiceMessagePlayer> {
         isDark: isDark,
         primaryColor: primaryColor,
         isMine: widget.isMine,
+        mineFg: mineFg,
         width: width,
         onTogglePlay: _togglePlay,
         formatDuration: _formatDuration,
@@ -105,6 +112,7 @@ class _VoiceControls extends StatelessWidget {
     required this.isDark,
     required this.primaryColor,
     required this.isMine,
+    required this.mineFg,
     required this.width,
     required this.onTogglePlay,
     required this.formatDuration,
@@ -115,6 +123,7 @@ class _VoiceControls extends StatelessWidget {
   final bool isDark;
   final Color primaryColor;
   final bool isMine;
+  final Color mineFg;
   final double width;
   final Future<void> Function() onTogglePlay;
   final String Function(Duration) formatDuration;
@@ -153,7 +162,7 @@ class _VoiceControls extends StatelessWidget {
                             ? Icons.pause_circle_filled
                             : Icons.play_circle_fill,
                         size: AppLayout.s(context, 32),
-                        color: isMine ? Colors.white : primaryColor,
+                        color: isMine ? mineFg : primaryColor,
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -164,13 +173,13 @@ class _VoiceControls extends StatelessWidget {
                           thumbShape: const RoundSliderThumbShape(
                               enabledThumbRadius: 5),
                           activeTrackColor: isMine
-                              ? Colors.white.withValues(alpha: 0.8)
+                              ? mineFg.withValues(alpha: 0.8)
                               : primaryColor,
                           inactiveTrackColor: isMine
-                              ? Colors.white.withValues(alpha: 0.3)
+                              ? mineFg.withValues(alpha: 0.3)
                               : mutedColor.withValues(alpha: 0.3),
                           thumbColor:
-                              isMine ? Colors.white : primaryColor,
+                              isMine ? mineFg : primaryColor,
                         ),
                         child: Slider(
                           value: progress.clamp(0.0, 1.0),
@@ -192,7 +201,7 @@ class _VoiceControls extends StatelessWidget {
                     fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                     fontSize: 10,
                     color: isMine
-                        ? Colors.white.withValues(alpha: 0.7)
+                        ? mineFg.withValues(alpha: 0.7)
                         : mutedColor,
                   ),
                 ),

@@ -6,7 +6,7 @@ import 'package:dating_app/providers/notifications_provider.dart';
 import 'package:dating_app/utils/responsive.dart';
 import 'package:dating_app/generated/app_localizations.dart';
 import 'package:dating_app/screens/chats/user_notification_profile_screen.dart';
-import 'package:dating_app/widgets/notification_bell.dart';
+import 'package:dating_app/widgets/segmented_tabs.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -15,13 +15,25 @@ class NotificationsScreen extends StatefulWidget {
   State<NotificationsScreen> createState() => _NotificationsScreenState();
 }
 
-class _NotificationsScreenState extends State<NotificationsScreen> {
+class _NotificationsScreenState extends State<NotificationsScreen>
+    with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+
+  static const _types = ['like', 'liked', 'match', 'system'];
+
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: _types.length, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<NotificationsProvider>().loadNotifications();
     });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
@@ -100,52 +112,74 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             );
           }
 
-          final sections = [
-            _NotificationSection(
-              title: t.notifications_section_liked,
-              type: 'like',
-              items: provider.notifications.where((n) => n.type == 'like').toList(),
-              unreadCount: provider.unreadFor('like'),
+          final tabs = [
+            SegmentedTab(
+              label: t.notifications_section_liked,
+              badgeCount: provider.unreadFor('like'),
             ),
-            _NotificationSection(
-              title: t.notifications_section_likes,
-              type: 'liked',
-              items: provider.notifications.where((n) => n.type == 'liked').toList(),
-              unreadCount: provider.unreadFor('liked'),
+            SegmentedTab(
+              label: t.notifications_section_likes,
+              badgeCount: provider.unreadFor('liked'),
             ),
-            _NotificationSection(
-              title: t.notifications_section_matches,
-              type: 'match',
-              items: provider.notifications.where((n) => n.type == 'match').toList(),
-              unreadCount: provider.unreadFor('match'),
+            SegmentedTab(
+              label: t.notifications_section_matches,
+              badgeCount: provider.unreadFor('match'),
             ),
-            _NotificationSection(
-              title: t.notifications_section_announcements,
-              type: 'system',
-              items: provider.notifications
-                  .where((n) => n.type == 'system')
-                  .toList(),
-              unreadCount: provider.unreadFor('system'),
+            SegmentedTab(
+              label: t.notifications_section_announcements,
+              badgeCount: provider.unreadFor('system'),
             ),
           ];
 
-          return RefreshIndicator(
-            onRefresh: () =>
-                context.read<NotificationsProvider>().loadNotifications(),
-            child: NotificationListener<ScrollNotification>(
-              onNotification: (notification) {
-                if (notification.metrics.pixels >=
-                    notification.metrics.maxScrollExtent - 200) {
-                  context.read<NotificationsProvider>().loadMoreNotifications();
-                }
-                return false;
-              },
-              child: ListView.builder(
+          return Column(
+            children: [
+              SegmentedTabs(controller: _tabController, tabs: tabs),
+              Expanded(
+                child: TabBarView(
+                  controller: _tabController,
+                  children: [
+                    for (final type in _types)
+                      _buildTabList(context, provider, type),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildTabList(
+    BuildContext context,
+    NotificationsProvider provider,
+    String type,
+  ) {
+    final items =
+        provider.notifications.where((n) => n.type == type).toList();
+    final hasMore = provider.hasMore;
+    final primaryColor =
+        context.isDarkMode ? AppTheme.darkPrimary : AppTheme.lightPrimary;
+
+    return RefreshIndicator(
+      onRefresh: () =>
+          context.read<NotificationsProvider>().loadNotifications(),
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (notification) {
+          if (notification.metrics.pixels >=
+              notification.metrics.maxScrollExtent - 200) {
+            context.read<NotificationsProvider>().loadMoreNotifications();
+          }
+          return false;
+        },
+        child: items.isEmpty && !hasMore
+            ? _buildEmptyTab(context)
+            : ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.symmetric(vertical: 12),
-                itemCount: sections.length + (provider.hasMore ? 1 : 0),
+                itemCount: items.length + (hasMore ? 1 : 0),
                 itemBuilder: (context, index) {
-                  if (index == sections.length) {
+                  if (index == items.length) {
                     return Center(
                       child: Padding(
                         padding: const EdgeInsets.all(16),
@@ -156,18 +190,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       ),
                     );
                   }
-                  final section = sections[index];
-                  return _buildSection(context, section);
+                  return _buildItem(items[index]);
                 },
               ),
-            ),
-          );
-        },
       ),
     );
   }
 
-  Widget _buildSection(BuildContext context, _NotificationSection section) {
+  Widget _buildEmptyTab(BuildContext context) {
     final isDark = context.isDarkMode;
     final mutedColor = isDark
         ? AppTheme.darkTextMuted
@@ -177,46 +207,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     ).languageCode.contains('en');
     final t = AppLocalizations.of(context)!;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
+    return ListView(
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 32),
       children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(
-            16,
-            12,
-            16,
-            4,
-          ),
-          child: Row(
-            children: [
-              Text(
-                section.title.toUpperCase(),
-                style: (isPersian ? AppTheme.overlineFa : AppTheme.overline)
-                    .copyWith(color: mutedColor),
-              ),
-              if (section.unreadCount > 0) ...[
-                const SizedBox(width: 8),
-                NotificationSectionPill(
-                  type: section.type,
-                  count: section.unreadCount,
-                ),
-              ],
-            ],
+        Text(
+          t.notifications_empty_section,
+          textAlign: TextAlign.center,
+          style: (isPersian ? AppTheme.bodyFa : AppTheme.body).copyWith(
+            fontSize: 13,
+            color: mutedColor,
           ),
         ),
-        if (section.items.isEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Text(
-              t.notifications_empty_section,
-              style: (isPersian ? AppTheme.bodyFa : AppTheme.body).copyWith(
-                fontSize: 13,
-                color: mutedColor,
-              ),
-            ),
-          )
-        else
-          for (final item in section.items) _buildItem(item),
       ],
     );
   }
@@ -435,18 +437,4 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Color _iconColorFor(String type, bool isDark) {
     return isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
   }
-}
-
-class _NotificationSection {
-  final String title;
-  final String type;
-  final List<AppNotification> items;
-  final int unreadCount;
-
-  const _NotificationSection({
-    required this.title,
-    required this.type,
-    required this.items,
-    required this.unreadCount,
-  });
 }

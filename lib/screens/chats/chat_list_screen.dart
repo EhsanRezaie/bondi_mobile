@@ -126,7 +126,6 @@ class ChatListScreen extends StatelessWidget {
         ? AppTheme.darkTextMuted
         : AppTheme.lightTextMuted;
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
-    final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
     final hasUnread = chat.unreadCount > 0;
 
     final lastMsg = chat.lastMessage;
@@ -138,12 +137,10 @@ class ChatListScreen extends StatelessWidget {
       subtitle = '$prefix$content · $time';
     }
 
-    return Padding(
+return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
       child: Material(
-        color: hasUnread
-            ? AppTheme.moduleFillTinted(isDark: isDark, accent: primaryColor)
-            : (isDark ? AppTheme.darkSurface : AppTheme.lightSurface),
+        color: Colors.transparent,
         borderRadius: BorderRadius.circular(AppTheme.radiusModule),
         child: InkWell(
           borderRadius: BorderRadius.circular(AppTheme.radiusModule),
@@ -193,8 +190,8 @@ class ChatListScreen extends StatelessWidget {
                         shape: BoxShape.circle,
                         border: Border.all(
                           color: isDark
-                              ? AppTheme.darkSurface
-                              : AppTheme.lightSurface,
+                              ? AppTheme.darkBackground
+                              : AppTheme.lightBackground,
                           width: 2,
                         ),
                       ),
@@ -231,21 +228,19 @@ class ChatListScreen extends StatelessWidget {
                 if (hasUnread)
                   Container(
                     margin: const EdgeInsets.only(right: 8),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
+                    width: 22,
+                    height: 22,
+                    alignment: Alignment.center,
                     decoration: BoxDecoration(
                       gradient: AppTheme.primaryGradient(),
-                      borderRadius: BorderRadius.circular(12),
+                      shape: BoxShape.circle,
                     ),
-                    constraints: const BoxConstraints(minWidth: 22),
                     child: Text(
-                      chat.unreadCount > 99 ? '99+' : '${chat.unreadCount}',
+                      chat.unreadCount > 9 ? '9+' : '${chat.unreadCount}',
                       textAlign: TextAlign.center,
                       style: TextStyle(
                         fontFamily: AppTheme.fontFor(isPersian),
-                        fontSize: 12,
+                        fontSize: 11,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
                       ),

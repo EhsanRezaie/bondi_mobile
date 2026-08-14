@@ -23,6 +23,17 @@ class ChatMessageBubble extends StatelessWidget {
     this.onReplyTap,
   });
 
+  /// Background fill of my (sent) bubble.
+  /// Background fill of my (sent) bubble — the warm orange brand color.
+  /// Light mode: full `lightPrimary`; dark mode: `darkPrimary @ 85%`.
+  Color _sentFill(BuildContext context) =>
+      context.isDarkMode
+          ? AppTheme.darkPrimary.withValues(alpha: 0.85)
+          : AppTheme.lightPrimary;
+
+  /// Foreground color on my (sent) bubble — white text reads on the orange.
+  Color _sentForeground(BuildContext context) => Colors.white;
+
   @override
   Widget build(BuildContext context) {
     final isDark = context.isDarkMode;
@@ -30,8 +41,16 @@ class ChatMessageBubble extends StatelessWidget {
     final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
     final mutedColor =
         isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted;
-    final successColor =
-        isDark ? AppTheme.darkSuccess : AppTheme.lightSuccess;
+    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
+    final sentFill = _sentFill(context);
+    final sentFg = _sentForeground(context);
+
+    final borderRadius = BorderRadius.only(
+      topLeft: const Radius.circular(18),
+      topRight: const Radius.circular(18),
+      bottomLeft: Radius.circular(isMine ? 18 : 4),
+      bottomRight: Radius.circular(isMine ? 4 : 18),
+    );
 
     return Align(
       alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
@@ -55,7 +74,13 @@ class ChatMessageBubble extends StatelessWidget {
                 isMine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
             children: [
               if (message.replyTo != null)
-                _buildReplyPreview(context, isDark, mutedColor),
+                _buildReplyPreview(
+                  context,
+                  isDark,
+                  mutedColor,
+                  sentFill,
+                  sentFg,
+                ),
               Container(
                 padding: const EdgeInsets.only(
                   left: 14,
@@ -64,37 +89,39 @@ class ChatMessageBubble extends StatelessWidget {
                   bottom: 6,
                 ),
                 decoration: BoxDecoration(
-                  color: isMine
-                      ? (isDark
-                          ? AppTheme.darkPrimary.withValues(alpha: 0.85)
-                          : AppTheme.lightPrimary)
-                      : surfaceColor,
-                  borderRadius: BorderRadius.only(
-                    topLeft: const Radius.circular(18),
-                    topRight: const Radius.circular(18),
-                    bottomLeft: Radius.circular(isMine ? 18 : 4),
-                    bottomRight: Radius.circular(isMine ? 4 : 18),
-                  ),
+                  color: isMine ? sentFill : surfaceColor,
+                  borderRadius: borderRadius,
                   border: isMine
                       ? null
-                      : Border.all(
-                          color: isDark
-                              ? AppTheme.darkBorder
-                              : AppTheme.lightBorder,
-                          width: 1,
-                        ),
+                      : Border.all(color: borderColor, width: 1),
+                  boxShadow: isMine
+                      ? [
+                          BoxShadow(
+                            color: sentFill.withValues(alpha: 0.28),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
+                          ),
+                        ]
+                      : null,
                 ),
                 child: Column(
                   crossAxisAlignment:
                       isMine ? CrossAxisAlignment.end : CrossAxisAlignment.start,
                   children: [
-                    _buildContent(context, isDark, textColor, mutedColor),
+                    _buildContent(
+                      context,
+                      isDark,
+                      textColor,
+                      mutedColor,
+                      sentFill,
+                      sentFg,
+                    ),
                     const SizedBox(height: 2),
                     _buildTimestampAndStatus(
                       context,
                       isDark,
                       mutedColor,
-                      successColor,
+                      sentFg,
                     ),
                   ],
                 ),
@@ -106,68 +133,103 @@ class ChatMessageBubble extends StatelessWidget {
     );
   }
 
-  Widget _buildReplyPreview(BuildContext context, bool isDark, Color mutedColor) {
+  Widget _buildReplyPreview(
+    BuildContext context,
+    bool isDark,
+    Color mutedColor,
+    Color sentFill,
+    Color sentFg,
+  ) {
+    final isReplyMine = message.replyTo!.senderId == message.senderId;
+    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 4),
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
-        color: isDark
-            ? AppTheme.darkSurface.withValues(alpha: 0.6)
-            : AppTheme.lightBackground,
+        color: isMine
+            ? sentFg.withValues(alpha: 0.12)
+            : isDark
+                ? AppTheme.darkSecondary
+                : AppTheme.lightSecondary,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder,
+          color: isMine ? sentFg.withValues(alpha: 0.22) : borderColor,
           width: 1,
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Text(
-            message.replyTo!.senderId == message.senderId ? 'You' : '',
-            style: TextStyle(
-              fontFamily: AppTheme.fontFor(
-                !Localizations.localeOf(
-                  context,
-                ).languageCode.contains('en'),
-              ),
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary,
+          Container(
+            width: 3,
+            height: 28,
+            decoration: BoxDecoration(
+              color: isMine
+                  ? sentFg
+                  : (isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary),
+              borderRadius: BorderRadius.circular(2),
             ),
           ),
-          const SizedBox(height: 2),
-          Text(
-            message.replyTo!.content ?? '',
-            style: TextStyle(
-              fontFamily: AppTheme.fontFor(
-                !Localizations.localeOf(
-                  context,
-                ).languageCode.contains('en'),
-              ),
-              fontSize: 12,
-              color: mutedColor,
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  isReplyMine ? 'You' : '',
+                  style: TextStyle(
+                    fontFamily: AppTheme.fontFor(
+                      !Localizations.localeOf(
+                        context,
+                      ).languageCode.contains('en'),
+                    ),
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: isMine ? sentFg : mutedColor,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  message.replyTo!.content ?? '',
+                  style: TextStyle(
+                    fontFamily: AppTheme.fontFor(
+                      !Localizations.localeOf(
+                        context,
+                      ).languageCode.contains('en'),
+                    ),
+                    fontSize: 12,
+                    color: isMine ? sentFg.withValues(alpha: 0.85) : mutedColor,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
     );
   }
 
-  Widget _buildContent(BuildContext context, bool isDark, Color textColor, Color mutedColor) {
+  Widget _buildContent(
+    BuildContext context,
+    bool isDark,
+    Color textColor,
+    Color mutedColor,
+    Color sentFill,
+    Color sentFg,
+  ) {
     switch (message.messageType) {
       case MessageType.text:
-        return _buildTextContent(context, textColor);
+        return _buildTextContent(context, textColor, sentFg);
       case MessageType.photo:
         return _buildPhotoContent(context);
       case MessageType.voice:
-        return _buildVoiceContent(textColor, mutedColor);
+        return _buildVoiceContent(sentFill, sentFg);
     }
   }
 
-  Widget _buildTextContent(BuildContext context, Color textColor) {
+  Widget _buildTextContent(BuildContext context, Color textColor, Color sentFg) {
     final isPersian = !Localizations.localeOf(
       context,
     ).languageCode.contains('en');
@@ -179,7 +241,7 @@ class ChatMessageBubble extends StatelessWidget {
           style: TextStyle(
             fontFamily: AppTheme.fontFor(isPersian),
             fontSize: 15,
-            color: isMine ? Colors.white : textColor,
+            color: isMine ? sentFg : textColor,
             height: 1.3,
           ),
         ),
@@ -192,7 +254,7 @@ class ChatMessageBubble extends StatelessWidget {
                 fontFamily: AppTheme.fontFor(isPersian),
                 fontSize: 10,
                 color: isMine
-                    ? Colors.white.withValues(alpha: 0.6)
+                    ? sentFg.withValues(alpha: 0.7)
                     : textColor.withValues(alpha: 0.5),
                 fontStyle: FontStyle.italic,
               ),
@@ -204,7 +266,6 @@ class ChatMessageBubble extends StatelessWidget {
 
   Widget _buildPhotoContent(BuildContext context) {
     final url = mediaUrlForDisplay(message.mediaUrl);
-    // Scale photo to the bubble's max width; never exceeds 220 on phones.
     final maxW = MediaQuery.of(context).size.width * 0.78 - 28;
     final size = AppLayout.s(context, 220).clamp(0.0, maxW);
     final borderRadius = BorderRadius.circular(12);
@@ -246,19 +307,23 @@ class ChatMessageBubble extends StatelessWidget {
           );
   }
 
-  Widget _buildVoiceContent(Color textColor, Color mutedColor) {
+  Widget _buildVoiceContent(Color sentFill, Color sentFg) {
     return VoiceMessagePlayer(
       audioUrl: mediaUrlForDisplay(message.mediaUrl),
       isMine: isMine,
+      mineFill: sentFill,
+      mineForeground: sentFg,
     );
   }
 
   Widget _buildTimestampAndStatus(
-      BuildContext context, bool isDark, Color mutedColor, Color successColor) {
+    BuildContext context,
+    bool isDark,
+    Color mutedColor,
+    Color sentFg,
+  ) {
     final timeStr = DateFormat('HH:mm').format(message.sentAt);
-    final inlineColor = isMine
-        ? Colors.white.withValues(alpha: 0.75)
-        : mutedColor;
+    final inlineColor = isMine ? sentFg.withValues(alpha: 0.8) : mutedColor;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -284,8 +349,8 @@ class ChatMessageBubble extends StatelessWidget {
                     : Icons.done,
             size: 14,
             color: message.isRead
-                ? Colors.white
-                : Colors.white.withValues(alpha: 0.6),
+                ? sentFg.withValues(alpha: 0.95)
+                : sentFg.withValues(alpha: 0.6),
           ),
         ],
       ],
