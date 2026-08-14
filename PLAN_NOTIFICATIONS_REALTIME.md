@@ -1,6 +1,6 @@
 # Plan — Real-time Notifications (4 Sections) + FCM Push + Unread Badges
 
-Status: **Backend P1-P3 complete** (tests added) · Mobile M4-M9 pending
+Status: **Backend P1-P3 complete** (tests added, incl. WS `new_notification` events) · **Mobile P4-P9 complete** (M4-M9 committed + P9 bug-fix pass)
 Repos: backend `C:\Users\Ehsan\Desktop\project_d` · mobile `C:\Users\Ehsan\Desktop\project_d_mobile`
 Docs precedent: `project_d_mobile/PLAN_CHAT_REDESIGN.md`
 
@@ -82,9 +82,9 @@ created for the logged-in user.
 
 ### Verification (B1)
 - [x] `py_compile` on changed files
-- [x] pytest: WS event published on like / liked / match / system; no event for message (added to `test_notifications.py`)
+- [x] pytest: WS event published on like / liked / match / system; no event for message (added to `test_notifications.py`, class `TestNotificationWSEvents`)
 - [x] pytest: self-like does not push FCM
-- [x] All backend tests pass (17 tests in `test_notifications.py`) (added to `test_notifications.py`)
+- [x] All backend tests pass (**21 tests** in `test_notifications.py`)
 
 ---
 
@@ -101,12 +101,12 @@ created for the logged-in user.
   - [x] `@limiter.limit("60/minute")`
 - [x] **B2-3** Tests in `project_d/tests/done/test_notifications.py`:
   - [x] counts returns correct total + per-type after creating several unread rows
-  - [ ] counts drops after `POST /notifications/read`
-  - [ ] counts drops after `DELETE /notifications/{id}`
-  - [ ] no notifications → `{total:0, by_type:{}}`
+  - [x] counts drops after `POST /notifications/read`
+  - [x] counts drops after `DELETE /notifications/{id}`
+  - [x] no notifications → `{total:0, by_type:{}}`
 
 ### Verification (B2)
-- [x] `pytest tests/done/test_notifications.py -v` → green (17 tests pass)
+- [x] `pytest tests/done/test_notifications.py -v` → green (21 tests pass)
 - [x] Stop infra after
 
 ---
@@ -133,127 +133,127 @@ liked / match / message; app icon for announcements.
 
 ---
 
-## Part 4 — Mobile: deps & native config (Android push)
+## Part 4 — Mobile: deps & native config (Android push) ✅ DONE
 
-- [ ] **M4-1** `pubspec.yaml` — add:
-  - [ ] `firebase_core`
-  - [ ] `firebase_messaging`
-- [ ] **M4-2** `android/app/src/main/AndroidManifest.xml`:
-  - [ ] add `<uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>`
-  - [ ] verify default notification channel works (Firebase plugin auto-creates)
-- [ ] **M4-3** iOS: **no changes now** (deferred). WS realtime still works. Leave `AppDelegate.swift` untouched.
+- [x] **M4-1** `pubspec.yaml` — add:
+  - [x] `firebase_core`
+  - [x] `firebase_messaging`
+- [x] **M4-2** `android/app/src/main/AndroidManifest.xml`:
+  - [x] add `<uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>`
+  - [x] verify default notification channel works (Firebase plugin auto-creates)
+- [x] **M4-3** iOS: **no changes now** (deferred). WS realtime still works. Leave `AppDelegate.swift` untouched.
 
 ### Verification (M4)
-- [ ] `flutter pub get` succeeds
-- [ ] `flutter analyze` clean
+- [x] `flutter pub get` succeeds
+- [x] `flutter analyze` clean
 
 ---
 
-## Part 5 — Mobile: FCM token registration service
+## Part 5 — Mobile: FCM token registration service ✅ DONE
 
 New file `lib/services/push_service.dart`:
 
-- [ ] **M5-1** `initPush()` — called once after login at app start:
-  - [ ] `Firebase.initializeApp()` (or rely on `firebase_core` default)
-  - [ ] `FirebaseMessaging.instance.requestPermission()` (Android 13+)
-  - [ ] `getToken()` → `POST /notifications/device-token` `{token, platform:"android"}`
-- [ ] **M5-2** token refresh:
-  - [ ] subscribe `onTokenRefresh` → re-register token
-- [ ] **M5-3** foreground message `onMessage`:
-  - [ ] parse payload → fire callback → show custom notification toast
-  - [ ] do not duplicate with WS toast (dedupe by notification id)
-- [ ] **M5-4** background/terminated `onMessageOpenedApp` + `getInitialMessage`:
-  - [ ] if `data.type` is liked/match → navigate to `UserNotificationProfileScreen` with `data.user_id`
-  - [ ] if `data.type` is system → open announcement dialog
-  - [ ] if `data.type` is message → navigate to chat detail (`data.chat_id`)
-- [ ] **M5-5** logout hook: optionally `DELETE /notifications/device-token/{id}` and dispose listeners
-- [ ] Add `registerDeviceToken` / `deleteDeviceToken` to `lib/services/chat_service.dart` (endpoints exist)
+- [x] **M5-1** `initPush()` — called once after login at app start:
+  - [x] `Firebase.initializeApp()` (or rely on `firebase_core` default)
+  - [x] `FirebaseMessaging.instance.requestPermission()` (Android 13+)
+  - [x] `getToken()` → `POST /notifications/device-token` `{token, platform:"android"}`
+- [x] **M5-2** token refresh:
+  - [x] subscribe `onTokenRefresh` → re-register token
+- [x] **M5-3** foreground message `onMessage`:
+  - [x] parse payload → fire callback → show custom notification toast
+  - [x] do not duplicate with WS toast (dedupe by notification id)
+- [x] **M5-4** background/terminated `onMessageOpenedApp` + `getInitialMessage`:
+  - [x] if `data.type` is liked/match → navigate to `UserNotificationProfileScreen` with `data.user_id`
+  - [x] if `data.type` is system → open announcement dialog
+  - [x] if `data.type` is message → navigate to chat detail (`data.chat_id`)
+- [x] **M5-5** logout hook: optionally `DELETE /notifications/device-token/{id}` and dispose listeners
+- [x] Add `registerDeviceToken` / `deleteDeviceToken` to `lib/services/chat_service.dart` (endpoints exist)
 
 ### Verification (M5)
-- [ ] `flutter analyze` clean
-- [ ] Manual: app start registers token (check DB row); token refreshed on change
+- [x] `flutter analyze` clean
+- [x] Manual: app start registers token (check DB row); token refreshed on change
 
 ---
 
-## Part 6 — Mobile: custom notification toast
+## Part 6 — Mobile: custom notification toast ✅ DONE
 
 New file `lib/widgets/notification_toast.dart` (distinct from API `action_toast`):
 
-- [ ] **M6-1** `showNotificationToast({title, body, type, onSeeDetails})`:
-  - [ ] own `OverlayEntry` + `_currentNoticeEntry` (independent of `action_toast`'s `_currentEntry`)
-- [ ] **M6-2** Styling — Bondi tokens only:
-  - [ ] floating card at top, `BorderRadius.circular(AppTheme.radiusModule)` (16, not pill)
-  - [ ] surface `AppTheme.moduleFillNeutral(isDark)` + `AppTheme.shadowModule(isDark)` + thin border (`lightBorder`/`darkBorder`)
-  - [ ] padding ~ `EdgeInsets.fromLTRB(16, 12, 12, 12)`
-  - [ ] leading icon in small gradient circle (`primaryGradient()` / `likeGradient()` per type)
-  - [ ] title `bodyBold` 15, body `body`/`caption` muted
-  - [ ] **"See details"** text button — `lightPrimary`/`darkPrimary`, bold, compact
-  - [ ] slide/fade entrance, auto-dismiss ~5s, tappable body dismisses
-- [ ] **M6-3** Navigation wiring:
-  - [ ] liked/match → `UserNotificationProfileScreen(userId, fallback)`
-  - [ ] system → announcement dialog
-- [ ] **M6-4** i18n: add "See details" key to `app_en.arb` + `app_fa.arb`; run `flutter gen-l10n`
+- [x] **M6-1** `showNotificationToast({title, body, type, onSeeDetails})`:
+  - [x] own `OverlayEntry` + `_currentNoticeEntry` (independent of `action_toast`'s `_currentEntry`)
+- [x] **M6-2** Styling — Bondi tokens only:
+  - [x] floating card at top, `BorderRadius.circular(AppTheme.radiusModule)` (16, not pill)
+  - [x] surface `AppTheme.moduleFillNeutral(isDark)` + `AppTheme.shadowModule(isDark)` + thin border (`lightBorder`/`darkBorder`)
+  - [x] padding ~ `EdgeInsets.fromLTRB(16, 12, 12, 12)`
+  - [x] leading icon in small gradient circle (`primaryGradient()` / `likeGradient()` per type)
+  - [x] title `bodyBold` 15, body `body`/`caption` muted
+  - [x] **"See details"** text button — `lightPrimary`/`darkPrimary`, bold, compact
+  - [x] slide/fade entrance, auto-dismiss ~5s, tappable body dismisses
+- [x] **M6-3** Navigation wiring:
+  - [x] liked/match → `UserNotificationProfileScreen(userId, fallback)`
+  - [x] system → announcement dialog
+- [x] **M6-4** i18n: add "See details" key to `app_en.arb` + `app_fa.arb`; run `flutter gen-l10n`
 
 ### Verification (M6)
-- [ ] `flutter gen-l10n` succeeds; keys present in both ARB files
-- [ ] `flutter analyze` clean
-- [ ] Manual: WS event → toast appears; See details navigates correctly
+- [x] `flutter gen-l10n` succeeds; keys present in both ARB files
+- [x] `flutter analyze` clean
+- [x] Manual: WS event → toast appears; See details navigates correctly
 
 ---
 
-## Part 7 — Mobile: provider & real-time wiring
+## Part 7 — Mobile: provider & real-time wiring ✅ DONE
 
-- [ ] **M7-1** `lib/providers/chat_provider.dart`:
-  - [ ] expose `Stream<Map<String,dynamic>> get socketEvents` (wraps `_socketService!.events`)
-- [ ] **M7-2** `lib/providers/notifications_provider.dart`:
-  - [ ] add `int unreadTotal`, `Map<String,int> unreadByType`
-  - [ ] `refreshUnread()` → `GET /notifications/counts` (no cache)
-  - [ ] subscribe to `socketEvents` (via a setter `attachSocket(ChatProvider)` or a `StreamSubscription`):
-    - [ ] on `new_notification` → `refreshUnread()` + emit an in-app notice stream (for toast) + prepend item to `_notifications` if on screen
-  - [ ] after `markRead` / `deleteNotification` → recompute counts locally (or `refreshUnread()`)
-  - [ ] getters: `unreadFor(type)` helper for section pills
-- [ ] **M7-3** `lib/main.dart`:
-  - [ ] after `connectSessionSocket()` (in `main_screen.dart` post-login) call `NotificationsProvider.attachSocket(...)`
-  - [ ] start `initPush()` post-login
-- [ ] **M7-4** Dedupe: toast triggered by WS **and** FCM for same id → guard by notification id timestamp
+- [x] **M7-1** `lib/providers/chat_provider.dart`:
+  - [x] expose `Stream<Map<String,dynamic>> get socketEvents` (wraps `_socketService!.events`)
+- [x] **M7-2** `lib/providers/notifications_provider.dart`:
+  - [x] add `int unreadTotal`, `Map<String,int> unreadByType`
+  - [x] `refreshUnread()` → `GET /notifications/counts` (no cache)
+  - [x] subscribe to `socketEvents` (via a setter `attachSocket(ChatProvider)` or a `StreamSubscription`):
+    - [x] on `new_notification` → `refreshUnread()` + emit an in-app notice stream (for toast) + prepend item to `_notifications` if on screen
+  - [x] after `markRead` / `deleteNotification` → recompute counts locally (or `refreshUnread()`)
+  - [x] getters: `unreadFor(type)` helper for section pills
+- [x] **M7-3** `lib/main.dart`:
+  - [x] after `connectSessionSocket()` (in `main_screen.dart` post-login) call `NotificationsProvider.attachSocket(...)`
+  - [x] start `initPush()` post-login
+- [x] **M7-4** Dedupe: toast triggered by WS **and** FCM for same id → guard by notification id timestamp
 
 ### Verification (M7)
-- [ ] `flutter analyze` clean
-- [ ] Manual: like/match → badge + toast update without leaving screen
+- [x] `flutter analyze` clean
+- [x] Manual: like/match → badge + toast update without leaving screen
 
 ---
 
-## Part 8 — Mobile: bell badge & section pills
+## Part 8 — Mobile: bell badge & section pills ✅ DONE
 
-- [ ] **M8-1** New `lib/widgets/notification_bell.dart`:
-  - [ ] `IconButton` + red count pill (`Stack`, `Clip.none`)
-  - [ ] shows `unreadTotal`, hides at 0, caps at `99+`
-  - [ ] pill styling: small, bold white text on `AppTheme.accentLike`/error, radius pill
-- [ ] **M8-2** `lib/screens/chats/chats_screen.dart:115` — replace bell `IconButton` with `NotificationBell` (watch `NotificationsProvider.unreadTotal`)
-- [ ] **M8-3** `lib/screens/search/search_screen.dart:143` — same replacement
-- [ ] **M8-4** `lib/screens/chats/notifications_screen.dart`:
-  - [ ] section headers show a count pill from `unreadByType` (like→Liked, liked→Likes, match→Matches, system→Announcements)
-  - [ ] pill hidden when 0
+- [x] **M8-1** New `lib/widgets/notification_bell.dart`:
+  - [x] `IconButton` + red count pill (`Stack`, `Clip.none`)
+  - [x] shows `unreadTotal`, hides at 0, caps at `99+`
+  - [x] pill styling: small, bold white text on `AppTheme.accentLike`/error, radius pill
+- [x] **M8-2** `lib/screens/chats/chats_screen.dart:115` — replace bell `IconButton` with `NotificationBell` (watch `NotificationsProvider.unreadTotal`)
+- [x] **M8-3** `lib/screens/search/search_screen.dart:143` — same replacement
+- [x] **M8-4** `lib/screens/chats/notifications_screen.dart`:
+  - [x] section headers show a count pill from `unreadByType` (like→Liked, liked→Likes, match→Matches, system→Announcements)
+  - [x] pill hidden when 0
 
 ### Verification (M8)
-- [ ] `flutter analyze` clean
-- [ ] Manual: unread grows → bell pill + section pills update; marking read decrements
+- [x] `flutter analyze` clean
+- [x] Manual: unread grows → bell pill + section pills update; marking read decrements
 
 ---
 
-## Part 9 — i18n & regression
+## Part 9 — i18n & regression ✅ DONE
 
-- [ ] **M9-1** New/changed strings (`app_en.arb` + `app_fa.arb`):
-  - [ ] `notifications_see_details` — "See details" / «مشاهده جزئیات»
-  - [ ] (existing `notifications_section_*`, `notifications_empty_section`, `notifications_close` already added)
-- [ ] **M9-2** `flutter gen-l10n` regenerated; keys present in both ARB files
-- [ ] **M9-3** Regression checklist:
-  - [ ] `flutter analyze` → 0 errors
-  - [ ] backend changed files `py_compile`
-  - [ ] backend tests run one file at a time: `test_notifications.py` (+ any affected)
-  - [ ] No regression to existing action toast (separate OverlayEntry)
-  - [ ] 4-section screen still works with empty/partial data
-  - [ ] message notifications never appear in sections
+- [x] **M9-1** New/changed strings (`app_en.arb` + `app_fa.arb`):
+  - [x] `notifications_see_details` — "See details" / «مشاهده جزئیات»
+  - [x] (existing `notifications_section_*`, `notifications_empty_section`, `notifications_close` already added)
+- [x] **M9-2** `flutter gen-l10n` regenerated; keys present in both ARB files
+- [x] **M9-3** Regression checklist:
+  - [x] `flutter analyze` → 0 errors
+  - [x] backend changed files `py_compile`
+  - [x] backend tests run one file at a time: `test_notifications.py` (+ any affected)
+  - [x] No regression to existing action toast (separate OverlayEntry)
+  - [x] 4-section screen still works with empty/partial data
+  - [x] message notifications never appear in sections
 
 ---
 
@@ -262,12 +262,12 @@ New file `lib/widgets/notification_toast.dart` (distinct from API `action_toast`
 1. **P1** ✅ Backend WS `new_notification` events + tests → green
 2. **P2** ✅ Backend counts endpoint + tests → green
 3. **P3** ✅ Backend push avatar (image_url) + tests → green
-4. **P4** 📋 Mobile deps + Android native config (M4) — **next**
-5. **P5** 📋 Mobile FCM service (M5)
-6. **P6** 📋 Mobile custom notification toast (M6)
-7. **P7** 📋 Mobile provider + real-time wiring (M7)
-8. **P8** 📋 Mobile bell badge + section pills (M8)
-9. **P9** 📋 i18n + regression (§9)
+4. **P4** ✅ Mobile deps + Android native config (M4)
+5. **P5** ✅ Mobile FCM service (M5)
+6. **P6** ✅ Mobile custom notification toast (M6)
+7. **P7** ✅ Mobile provider + real-time wiring (M7)
+8. **P8** ✅ Mobile bell badge + section pills (M8)
+9. **P9** ✅ i18n + regression (§9) — **incl. bug-fix pass**: compile fix, real toast wiring, background-tap navigation, unread-count refresh lifecycle, PushService logout + lazy Firebase init, test-harness fixes → `flutter analyze` clean + **all 397 mobile tests pass**; backend `test_notifications.py` **21 tests pass** (incl. new WS-event tests)
 
 ---
 
