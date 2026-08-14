@@ -22,6 +22,7 @@ class PushService {
   bool _initialized = false;
 
   static const _tokenKey = 'fcm_token';
+  static const _tokenIdKey = 'fcm_token_id';
   static const _tokenSentKey = 'fcm_token_sent';
 
   Future<void> initPush({
@@ -97,10 +98,15 @@ class PushService {
         return;
       }
 
-      await ChatService.registerDeviceToken(token: token, platform: 'android');
+      final res =
+          await ChatService.registerDeviceToken(token: token, platform: 'android');
+      final tokenId = res.data is Map ? (res.data['id'] as String?) : null;
       await prefs.setString(_tokenKey, token);
+      if (tokenId != null && tokenId.isNotEmpty) {
+        await prefs.setString(_tokenIdKey, tokenId);
+      }
       await prefs.setBool(_tokenSentKey, true);
-      debugPrint('FCM token registered with backend');
+      debugPrint('FCM token registered with backend (device-token id: $tokenId)');
     } catch (e) {
       debugPrint('FCM token registration failed: $e');
       await prefs.setBool(_tokenSentKey, false);
@@ -183,11 +189,20 @@ class PushService {
   Future<void> deleteToken() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString(_tokenKey);
-      if (token != null) {
-        await ChatService.deleteDeviceToken(token);
+      // The backend deletes by the row UUID returned on registration, not by
+      // the FCM token string (which would 422 as an invalid UUID path param).
+      final tokenId = prefs.getString(_tokenIdKey);
+      if (tokenId != null && tokenId.isNotEmpty) {
+        try {
+          await ChatService.deleteDeviceToken(tokenId);
+        } catch (e) {
+          debugPrint('FCM delete device token error (continuing): $e');
+        }
+      } else {
+        debugPrint('FCM delete skipped: no device-token id stored');
       }
       await prefs.remove(_tokenKey);
+      await prefs.remove(_tokenIdKey);
       await prefs.remove(_tokenSentKey);
       await _messaging.deleteToken();
       _currentToken = null;

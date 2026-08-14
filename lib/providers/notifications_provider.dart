@@ -191,12 +191,14 @@ class NotificationsProvider extends ChangeNotifier {
     final title = data['title'] as String?;
     final body = data['body'] as String?;
     final isRead = data['is_read'] as bool? ?? false;
+
+    debugPrint('WS new_notification received: id=$notificationId type=$notifType title=$title');
+
+    if (notificationId == null || notifType == null) return;
     final createdAtStr = data['created_at'] as String?;
     final userId = data['user_id'] as String?;
     final matchId = data['match_id'] as String?;
     final chatId = data['chat_id'] as String?;
-
-    if (notificationId == null || notifType == null) return;
 
     // Check if already exists
     final exists = _notifications.any((n) => n.id == notificationId);
