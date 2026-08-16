@@ -43,4 +43,8 @@ class AppNotification {
       createdAt: createdAt,
     );
   }
+
+  String? get userName => data?['name'] as String?;
+
+  String? get avatarUrl => data?['avatar_url'] as String?;
 }

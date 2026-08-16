@@ -195,6 +195,8 @@ class NotificationsProvider extends ChangeNotifier {
     final userId = data['user_id'] as String?;
     final matchId = data['match_id'] as String?;
     final chatId = data['chat_id'] as String?;
+    final name = data['name'] as String?;
+    final avatarUrl = data['avatar_url'] as String?;
 
     if (notificationId == null || notifType == null) return;
 
@@ -214,7 +216,8 @@ class NotificationsProvider extends ChangeNotifier {
           'user_id': ?userId,
           'match_id': ?matchId,
           'chat_id': ?chatId,
-          'type': notifType,
+          'name': ?name,
+          'avatar_url': ?avatarUrl,
         },
       );
       _notifications.insert(0, notification);
@@ -231,7 +234,13 @@ class NotificationsProvider extends ChangeNotifier {
         type: notifType,
         title: title ?? '',
         body: body ?? '',
-        data: {'user_id': userId, 'match_id': matchId, 'chat_id': chatId},
+        data: {
+          'user_id': userId,
+          'match_id': matchId,
+          'chat_id': chatId,
+          'name': name,
+          'avatar_url': avatarUrl,
+        },
       );
     } else {
       // Update existing if needed

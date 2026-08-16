@@ -4,6 +4,8 @@ import 'package:dating_app/config/app_theme.dart';
 import 'package:dating_app/models/notification.dart';
 import 'package:dating_app/providers/notifications_provider.dart';
 import 'package:dating_app/utils/responsive.dart';
+import 'package:dating_app/utils/relative_time.dart';
+import 'package:dating_app/utils/cached_image.dart';
 import 'package:dating_app/generated/app_localizations.dart';
 import 'package:dating_app/screens/chats/user_notification_profile_screen.dart';
 import 'package:dating_app/widgets/notification_bell.dart';
@@ -30,14 +32,10 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     final isDark = context.isDarkMode;
     final bgColor = isDark ? AppTheme.darkBackground : AppTheme.lightBackground;
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
-    final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
     final mutedColor = isDark
         ? AppTheme.darkTextMuted
         : AppTheme.lightTextMuted;
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
-    final isPersian = !Localizations.localeOf(
-      context,
-    ).languageCode.contains('en');
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -45,13 +43,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         backgroundColor: bgColor,
         elevation: 0,
         centerTitle: true,
-        title: Text(
-          t.notifications_title,
-          style: (isPersian ? AppTheme.h2Fa : AppTheme.h2).copyWith(
-            fontSize: 20,
-            color: textColor,
-          ),
-        ),
       ),
       body: Consumer<NotificationsProvider>(
         builder: (context, provider, _) {
@@ -100,6 +91,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             );
           }
 
+          final matchItems = provider.notifications
+              .where((n) => n.type == 'match')
+              .toList();
           final sections = [
             _NotificationSection(
               title: t.notifications_section_liked,
@@ -114,12 +108,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               unreadCount: provider.unreadFor('liked'),
             ),
             _NotificationSection(
-              title: t.notifications_section_matches,
-              type: 'match',
-              items: provider.notifications.where((n) => n.type == 'match').toList(),
-              unreadCount: provider.unreadFor('match'),
-            ),
-            _NotificationSection(
               title: t.notifications_section_announcements,
               type: 'system',
               items: provider.notifications
@@ -128,6 +116,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               unreadCount: provider.unreadFor('system'),
             ),
           ];
+
+          final hasMatchStrip = matchItems.isNotEmpty;
 
           return RefreshIndicator(
             onRefresh: () =>
@@ -143,9 +133,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               child: ListView.builder(
                 physics: const AlwaysScrollableScrollPhysics(),
                 padding: const EdgeInsets.symmetric(vertical: 12),
-                itemCount: sections.length + (provider.hasMore ? 1 : 0),
+                itemCount:
+                    (hasMatchStrip ? 1 : 0) + sections.length + (provider.hasMore ? 1 : 0),
                 itemBuilder: (context, index) {
-                  if (index == sections.length) {
+                  if (hasMatchStrip && index == 0) {
+                    return _buildMatchStrip(matchItems);
+                  }
+                  final sectionIndex = hasMatchStrip ? index - 1 : index;
+                  if (sectionIndex == sections.length) {
                     return Center(
                       child: Padding(
                         padding: const EdgeInsets.all(16),
@@ -156,9 +151,102 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                       ),
                     );
                   }
-                  final section = sections[index];
+                  final section = sections[sectionIndex];
                   return _buildSection(context, section);
                 },
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildMatchStrip(List<AppNotification> matches) {
+    final isDark = context.isDarkMode;
+    final surfaceColor = isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
+    final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
+    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
+    final avatarRadius = AppLayout.s(context, 28);
+    final itemWidth = avatarRadius * 2 + 16;
+
+    return SizedBox(
+      height: 96 + (avatarRadius - 28),
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        itemCount: matches.length,
+        itemBuilder: (context, index) {
+          final item = matches[index];
+          return GestureDetector(
+            onTap: () => _handleTap(item),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [
+                          primaryColor,
+                          primaryColor.withValues(alpha: 0.5),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                    ),
+                    child: Container(
+                      padding: const EdgeInsets.all(2),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: surfaceColor,
+                      ),
+                      child: CircleAvatar(
+                        radius: avatarRadius,
+                        backgroundColor: borderColor,
+                        backgroundImage: item.avatarUrl != null &&
+                                item.avatarUrl!.isNotEmpty
+                            ? CachedImage.provider(
+                                item.avatarUrl!,
+                                diameter: AppLayout.s(context, 56),
+                              )
+                            : null,
+                        child: item.avatarUrl == null ||
+                                item.avatarUrl!.isEmpty
+                            ? Icon(
+                                Icons.person,
+                                size: avatarRadius,
+                                color: borderColor,
+                              )
+                            : null,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: itemWidth),
+                    child: Text(
+                      item.userName ?? _fallbackName(item),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(
+                        fontFamily: AppTheme.fontFor(
+                          !Localizations.localeOf(
+                            context,
+                          ).languageCode.contains('en'),
+                        ),
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                        color: isDark
+                            ? AppTheme.darkText
+                            : AppTheme.lightText,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           );
@@ -231,6 +319,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     final isPersian = !Localizations.localeOf(
       context,
     ).languageCode.contains('en');
+    final t = AppLocalizations.of(context)!;
+    final hasAvatar =
+        item.avatarUrl != null && item.avatarUrl!.isNotEmpty;
 
     return Dismissible(
       key: ValueKey(item.id),
@@ -259,11 +350,19 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 CircleAvatar(
                   radius: AppLayout.s(context, 22),
                   backgroundColor: borderColor,
-                  child: Icon(
-                    _iconFor(item.type),
-                    size: AppLayout.s(context, 22),
-                    color: _iconColorFor(item.type, isDark),
-                  ),
+                  backgroundImage: hasAvatar
+                      ? CachedImage.provider(
+                          item.avatarUrl!,
+                          diameter: AppLayout.s(context, 44),
+                        )
+                      : null,
+                  child: hasAvatar
+                      ? null
+                      : Icon(
+                          _iconFor(item.type),
+                          size: AppLayout.s(context, 22),
+                          color: _iconColorFor(item.type, isDark),
+                        ),
                 ),
                 if (!item.isRead)
                   Positioned(
@@ -289,7 +388,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               ],
             ),
             title: Text(
-              item.title,
+              _messageFor(item, t),
               style: (isPersian ? AppTheme.bodyBoldFa : AppTheme.bodyBold)
                   .copyWith(
                 fontSize: 15,
@@ -297,24 +396,27 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                 color: textColor,
               ),
             ),
-            subtitle: item.body != null && item.body!.isNotEmpty
-                ? Text(
-                    item.body!,
-                    style:
-                        (isPersian ? AppTheme.bodyFa : AppTheme.body).copyWith(
-                      fontSize: 13,
-                      color: mutedColor,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  )
-                : null,
             trailing: Icon(Icons.chevron_right, color: mutedColor),
             onTap: () => _handleTap(item),
           ),
         ),
       ),
     );
+  }
+
+  String _messageFor(AppNotification item, AppLocalizations t) {
+    final name = item.userName ?? _fallbackName(item);
+    final time = relativeTime(item.createdAt, t);
+    switch (item.type) {
+      case 'like':
+        return '$name liked you · $time';
+      case 'liked':
+        return 'You liked $name · $time';
+      case 'system':
+        return '${item.title} · $time';
+      default:
+        return '${item.title} · $time';
+    }
   }
 
   void _handleTap(AppNotification item) {
@@ -337,7 +439,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             id: userId,
             name: _fallbackName(item),
             age: 0,
-            mainPhotoUrl: null,
+            mainPhotoUrl: item.avatarUrl,
           ),
         ),
       ),
@@ -345,6 +447,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   String _fallbackName(AppNotification item) {
+    final name = item.userName;
+    if (name != null && name.isNotEmpty) return name;
     final body = item.body ?? '';
     var m = RegExp(r'^(.+?)\s*\(age \d+\)').firstMatch(body);
     if (m != null && m.group(1)!.trim().isNotEmpty) {
