@@ -8,7 +8,6 @@ import 'package:dating_app/utils/relative_time.dart';
 import 'package:dating_app/utils/cached_image.dart';
 import 'package:dating_app/generated/app_localizations.dart';
 import 'package:dating_app/screens/chats/user_notification_profile_screen.dart';
-import 'package:dating_app/widgets/notification_bell.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -17,13 +16,23 @@ class NotificationsScreen extends StatefulWidget {
   State<NotificationsScreen> createState() => _NotificationsScreenState();
 }
 
-class _NotificationsScreenState extends State<NotificationsScreen> {
+class _NotificationsScreenState extends State<NotificationsScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 3, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<NotificationsProvider>().loadNotifications();
     });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
   }
 
   @override
@@ -32,10 +41,6 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     final isDark = context.isDarkMode;
     final bgColor = isDark ? AppTheme.darkBackground : AppTheme.lightBackground;
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
-    final mutedColor = isDark
-        ? AppTheme.darkTextMuted
-        : AppTheme.lightTextMuted;
-    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
 
     return Scaffold(
       backgroundColor: bgColor,
@@ -46,115 +51,41 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       ),
       body: Consumer<NotificationsProvider>(
         builder: (context, provider, _) {
-          if (provider.isLoading && provider.notifications.isEmpty) {
-            return Center(
-              child: CircularProgressIndicator(color: primaryColor),
-            );
-          }
-
-          if (provider.notifications.isEmpty) {
-            return RefreshIndicator(
-              onRefresh: () =>
-                  context.read<NotificationsProvider>().loadNotifications(),
-              child: ListView.builder(
-                physics: const AlwaysScrollableScrollPhysics(),
-                itemCount: 1,
-                itemBuilder: (context, index) => SizedBox(
-                  height: MediaQuery.of(context).size.height * 0.6,
-                  child: Center(
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.notifications_none,
-                          size: 64,
-                          color: borderColor,
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          t.notifications_empty,
-                          style: TextStyle(
-                            fontFamily: AppTheme.fontFor(
-                              !Localizations.localeOf(
-                                context,
-                              ).languageCode.contains('en'),
-                            ),
-                            fontSize: 16,
-                            color: mutedColor,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            );
-          }
-
           final matchItems = provider.notifications
               .where((n) => n.type == 'match')
               .toList();
-          final sections = [
-            _NotificationSection(
-              title: t.notifications_section_liked,
-              type: 'like',
-              items: provider.notifications.where((n) => n.type == 'like').toList(),
-              unreadCount: provider.unreadFor('like'),
-            ),
-            _NotificationSection(
-              title: t.notifications_section_likes,
-              type: 'liked',
-              items: provider.notifications.where((n) => n.type == 'liked').toList(),
-              unreadCount: provider.unreadFor('liked'),
-            ),
-            _NotificationSection(
-              title: t.notifications_section_announcements,
-              type: 'system',
-              items: provider.notifications
-                  .where((n) => n.type == 'system')
-                  .toList(),
-              unreadCount: provider.unreadFor('system'),
-            ),
-          ];
-
-          final hasMatchStrip = matchItems.isNotEmpty;
-
-          return RefreshIndicator(
-            onRefresh: () =>
-                context.read<NotificationsProvider>().loadNotifications(),
-            child: NotificationListener<ScrollNotification>(
-              onNotification: (notification) {
-                if (notification.metrics.pixels >=
-                    notification.metrics.maxScrollExtent - 200) {
-                  context.read<NotificationsProvider>().loadMoreNotifications();
-                }
-                return false;
-              },
-              child: ListView.builder(
-                physics: const AlwaysScrollableScrollPhysics(),
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                itemCount:
-                    (hasMatchStrip ? 1 : 0) + sections.length + (provider.hasMore ? 1 : 0),
-                itemBuilder: (context, index) {
-                  if (hasMatchStrip && index == 0) {
-                    return _buildMatchStrip(matchItems);
-                  }
-                  final sectionIndex = hasMatchStrip ? index - 1 : index;
-                  if (sectionIndex == sections.length) {
-                    return Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          color: primaryColor,
-                        ),
+          return AppLayout.box(
+            context: context,
+            child: Column(
+              children: [
+                if (matchItems.isNotEmpty) _buildMatchStrip(matchItems),
+                _buildSegmentedTabs(t, isDark, primaryColor),
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      _buildTab(
+                        provider,
+                        types: const ['like'],
+                        sectionType: 'like',
+                        emptyText: t.notifications_empty_section,
                       ),
-                    );
-                  }
-                  final section = sections[sectionIndex];
-                  return _buildSection(context, section);
-                },
-              ),
+                      _buildTab(
+                        provider,
+                        types: const ['liked'],
+                        sectionType: 'liked',
+                        emptyText: t.notifications_empty_section,
+                      ),
+                      _buildTab(
+                        provider,
+                        types: const ['system'],
+                        sectionType: 'system',
+                        emptyText: t.notifications_empty_section,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           );
         },
@@ -167,21 +98,30 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     final surfaceColor = isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
-    final avatarRadius = AppLayout.s(context, 28);
-    final itemWidth = avatarRadius * 2 + 16;
+    final avatarOuterDiameter = AppLayout.s(context, 64);
+    final itemWidth = avatarOuterDiameter + AppLayout.s(context, 12);
+    final nameLineHeight = AppLayout.s(context, 20);
+    final verticalPad = AppLayout.s(context, 6);
+    final stripHeight =
+        avatarOuterDiameter + AppLayout.s(context, 4) + nameLineHeight + verticalPad * 2;
 
     return SizedBox(
-      height: 96 + (avatarRadius - 28),
+      height: stripHeight,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        padding: EdgeInsets.symmetric(
+          horizontal: AppLayout.s(context, 12),
+          vertical: verticalPad,
+        ),
         itemCount: matches.length,
         itemBuilder: (context, index) {
           final item = matches[index];
           return GestureDetector(
             onTap: () => _handleTap(item),
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6),
+              padding: EdgeInsets.symmetric(
+                horizontal: AppLayout.s(context, 6),
+              ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -205,27 +145,27 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                         color: surfaceColor,
                       ),
                       child: CircleAvatar(
-                        radius: avatarRadius,
+                        radius: (avatarOuterDiameter - 8) / 2,
                         backgroundColor: borderColor,
                         backgroundImage: item.avatarUrl != null &&
                                 item.avatarUrl!.isNotEmpty
                             ? CachedImage.provider(
                                 item.avatarUrl!,
-                                diameter: AppLayout.s(context, 56),
+                                diameter: avatarOuterDiameter - 8,
                               )
                             : null,
                         child: item.avatarUrl == null ||
                                 item.avatarUrl!.isEmpty
                             ? Icon(
                                 Icons.person,
-                                size: avatarRadius,
+                                size: AppLayout.s(context, 28),
                                 color: borderColor,
                               )
                             : null,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: AppLayout.s(context, 4)),
                   ConstrainedBox(
                     constraints: BoxConstraints(maxWidth: itemWidth),
                     child: Text(
@@ -238,7 +178,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                             context,
                           ).languageCode.contains('en'),
                         ),
-                        fontSize: 11,
+                        fontSize: AppLayout.s(context, 11),
                         fontWeight: FontWeight.w500,
                         color: isDark
                             ? AppTheme.darkText
@@ -255,61 +195,181 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     );
   }
 
-  Widget _buildSection(BuildContext context, _NotificationSection section) {
+  Widget _buildTab(
+    NotificationsProvider provider, {
+    required List<String> types,
+    required String sectionType,
+    required String emptyText,
+  }) {
     final isDark = context.isDarkMode;
+    final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
+    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
     final mutedColor = isDark
         ? AppTheme.darkTextMuted
         : AppTheme.lightTextMuted;
-    final isPersian = !Localizations.localeOf(
-      context,
-    ).languageCode.contains('en');
-    final t = AppLocalizations.of(context)!;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(
-            16,
-            12,
-            16,
-            4,
-          ),
-          child: Row(
-            children: [
-              Text(
-                section.title.toUpperCase(),
-                style: (isPersian ? AppTheme.overlineFa : AppTheme.overline)
-                    .copyWith(color: mutedColor),
-              ),
-              if (section.unreadCount > 0) ...[
-                const SizedBox(width: 8),
-                NotificationSectionPill(
-                  type: section.type,
-                  count: section.unreadCount,
+    if (provider.isLoading && provider.notifications.isEmpty) {
+      return Center(
+        child: CircularProgressIndicator(color: primaryColor),
+      );
+    }
+
+    final items = provider.notifications
+        .where((n) => types.contains(n.type))
+        .toList();
+
+    if (items.isEmpty) {
+      return RefreshIndicator(
+        onRefresh: () =>
+            context.read<NotificationsProvider>().loadNotifications(),
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          children: [
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.5,
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.notifications_none,
+                      size: AppLayout.s(context, 64),
+                      color: borderColor,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      emptyText,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontFamily: AppTheme.fontFor(
+                          !Localizations.localeOf(
+                            context,
+                          ).languageCode.contains('en'),
+                        ),
+                        fontSize: AppLayout.s(context, 16),
+                        color: mutedColor,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ],
-          ),
-        ),
-        if (section.items.isEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Text(
-              t.notifications_empty_section,
-              style: (isPersian ? AppTheme.bodyFa : AppTheme.body).copyWith(
-                fontSize: 13,
-                color: mutedColor,
               ),
             ),
-          )
-        else
-          for (final item in section.items) _buildItem(item),
-      ],
+          ],
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: () =>
+          context.read<NotificationsProvider>().loadNotifications(),
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (notification) {
+          if (notification.metrics.pixels >=
+              notification.metrics.maxScrollExtent - 200) {
+            context.read<NotificationsProvider>().loadMoreNotifications();
+          }
+          return false;
+        },
+        child: ListView.builder(
+          physics: const AlwaysScrollableScrollPhysics(),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          itemCount: items.length + (provider.hasMore ? 1 : 0),
+          itemBuilder: (context, index) {
+            if (index == items.length) {
+              return Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: primaryColor,
+                  ),
+                ),
+              );
+            }
+            return _buildItem(items[index], sectionType);
+          },
+        ),
+      ),
     );
   }
 
-  Widget _buildItem(AppNotification item) {
+  Widget _buildSegmentedTabs(
+    AppLocalizations t,
+    bool isDark,
+    Color primaryColor,
+  ) {
+    final isPersian = !Localizations.localeOf(
+      context,
+    ).languageCode.contains('en');
+    final mutedColor = isDark
+        ? AppTheme.darkTextMuted
+        : AppTheme.lightTextMuted;
+    final labels = [
+      t.notifications_section_liked,
+      t.notifications_section_likes,
+      t.notifications_section_system,
+    ];
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        AppLayout.s(context, 16),
+        AppLayout.s(context, 4),
+        AppLayout.s(context, 16),
+        AppLayout.s(context, 12),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(4),
+        decoration: BoxDecoration(
+          color: isDark ? AppTheme.darkSecondary : AppTheme.lightSecondary,
+          borderRadius: BorderRadius.circular(AppTheme.radiusChip),
+        ),
+        child: AnimatedBuilder(
+          animation: _tabController,
+          builder: (context, _) {
+            return Row(
+              children: List.generate(labels.length, (i) {
+                final selected = _tabController.index == i;
+                return Expanded(
+                  child: GestureDetector(
+                    onTap: () => _tabController.animateTo(i),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: EdgeInsets.symmetric(
+                        vertical: AppLayout.s(context, 10),
+                        horizontal: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: selected ? primaryColor : Colors.transparent,
+                        borderRadius: BorderRadius.circular(
+                          AppTheme.radiusChip - 4,
+                        ),
+                      ),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          labels[i],
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          style: (isPersian
+                                  ? AppTheme.bodyBoldFa
+                                  : AppTheme.bodyBold)
+                              .copyWith(
+                            fontSize: AppLayout.s(context, 14),
+                            color: selected ? Colors.white : mutedColor,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildItem(AppNotification item, String sectionType) {
     final isDark = context.isDarkMode;
     final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
     final mutedColor = isDark
@@ -364,34 +424,13 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                           color: _iconColorFor(item.type, isDark),
                         ),
                 ),
-                if (!item.isRead)
-                  Positioned(
-                    right: 0,
-                    bottom: 0,
-                    child: Container(
-                      width: AppLayout.s(context, 12),
-                      height: AppLayout.s(context, 12),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? AppTheme.darkSuccess
-                            : AppTheme.lightSuccess,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: isDark
-                              ? AppTheme.darkSurface
-                              : AppTheme.lightSurface,
-                          width: 2,
-                        ),
-                      ),
-                    ),
-                  ),
               ],
             ),
             title: Text(
               _messageFor(item, t),
               style: (isPersian ? AppTheme.bodyBoldFa : AppTheme.bodyBold)
                   .copyWith(
-                fontSize: 15,
+                fontSize: AppLayout.s(context, 15),
                 fontWeight: item.isRead ? FontWeight.w500 : FontWeight.w700,
                 color: textColor,
               ),
@@ -412,6 +451,8 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
         return '$name liked you · $time';
       case 'liked':
         return 'You liked $name · $time';
+      case 'match':
+        return 'You matched with $name · $time';
       case 'system':
         return '${item.title} · $time';
       default:
@@ -539,18 +580,4 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   Color _iconColorFor(String type, bool isDark) {
     return isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
   }
-}
-
-class _NotificationSection {
-  final String title;
-  final String type;
-  final List<AppNotification> items;
-  final int unreadCount;
-
-  const _NotificationSection({
-    required this.title,
-    required this.type,
-    required this.items,
-    required this.unreadCount,
-  });
 }

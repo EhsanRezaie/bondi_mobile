@@ -23,7 +23,7 @@ void main() {
 
   Map<String, dynamic> notif({
     String id = 'n-1',
-    String type = 'new_message',
+    String type = 'like',
     String title = 'New message',
     bool isRead = false,
   }) {

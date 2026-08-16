@@ -668,11 +668,11 @@ abstract class AppLocalizations {
   /// **'Matches'**
   String get notifications_section_matches;
 
-  /// No description provided for @notifications_section_announcements.
+  /// No description provided for @notifications_section_system.
   ///
   /// In en, this message translates to:
-  /// **'Announcements'**
-  String get notifications_section_announcements;
+  /// **'System'**
+  String get notifications_section_system;
 
   /// No description provided for @notifications_empty_section.
   ///

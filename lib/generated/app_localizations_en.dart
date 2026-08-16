@@ -306,7 +306,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notifications_section_matches => 'Matches';
 
   @override
-  String get notifications_section_announcements => 'Announcements';
+  String get notifications_section_system => 'System';
 
   @override
   String get notifications_empty_section => 'Nothing here yet';

@@ -141,9 +141,10 @@ class NotificationsProvider extends ChangeNotifier {
   }
 
   void _recomputeUnreadCounts() {
+    const displayTypes = {'like', 'liked', 'match', 'system'};
     final counts = <String, int>{'like': 0, 'liked': 0, 'match': 0, 'system': 0};
     for (final n in _notifications) {
-      if (!n.isRead) {
+      if (!n.isRead && displayTypes.contains(n.type)) {
         counts[n.type] = (counts[n.type] ?? 0) + 1;
       }
     }
@@ -156,7 +157,6 @@ class NotificationsProvider extends ChangeNotifier {
       final response = await ChatService.getNotificationCounts();
       if (response.statusCode == 200) {
         final data = response.data;
-        _unreadTotal = data['total'] ?? 0;
         final byType = data['by_type'] as Map<String, dynamic>? ?? {};
         _unreadByType = {
           'like': byType['like'] ?? 0,
@@ -164,6 +164,9 @@ class NotificationsProvider extends ChangeNotifier {
           'match': byType['match'] ?? 0,
           'system': byType['system'] ?? 0,
         };
+        // Only count the 4 types shown in this screen — message notifications
+        // are not displayed here and must not inflate the badge.
+        _unreadTotal = _unreadByType.values.fold(0, (a, b) => a + b);
         _safeNotify();
       }
     } catch (e) {

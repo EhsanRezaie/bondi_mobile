@@ -305,7 +305,7 @@ class AppLocalizationsFa extends AppLocalizations {
   String get notifications_section_matches => 'تطابق‌ها';
 
   @override
-  String get notifications_section_announcements => 'اعلامیه‌ها';
+  String get notifications_section_system => 'سیستم';
 
   @override
   String get notifications_empty_section => 'موردی وجود ندارد';

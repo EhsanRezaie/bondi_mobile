@@ -212,6 +212,13 @@ class _FakeNotificationsProvider extends NotificationsProvider {
           createdAt: DateTime.now(),
         ),
         AppNotification(
+          id: 'n0',
+          type: 'match',
+          title: 'New match!',
+          body: 'You matched with Sara',
+          createdAt: DateTime.now(),
+        ),
+        AppNotification(
           id: 'n2',
           type: 'message',
           title: 'New message from Mina',
