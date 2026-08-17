@@ -375,7 +375,7 @@ class ChatService {
         queryParams: {
           'limit': limit,
           'offset': offset,
-          if (type != null) 'type': type,
+          if (type != null) ...{'type': type},
         },
         cacheOptions: ApiService.noCache,
       );
