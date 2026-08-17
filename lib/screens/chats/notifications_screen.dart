@@ -96,14 +96,17 @@ class _NotificationsScreenState extends State<NotificationsScreen>
   Widget _buildMatchStrip(List<AppNotification> matches) {
     final isDark = context.isDarkMode;
     final surfaceColor = isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
-    final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
     final avatarOuterDiameter = AppLayout.s(context, 64);
     final itemWidth = avatarOuterDiameter + AppLayout.s(context, 12);
     final nameLineHeight = AppLayout.s(context, 20);
     final verticalPad = AppLayout.s(context, 6);
     final stripHeight =
-        avatarOuterDiameter + AppLayout.s(context, 4) + nameLineHeight + verticalPad * 2;
+        avatarOuterDiameter +
+        AppLayout.s(context, 4) +
+        nameLineHeight +
+        verticalPad * 2 +
+        AppLayout.s(context, 6);
 
     return SizedBox(
       height: stripHeight,
@@ -129,14 +132,23 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                     padding: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      gradient: LinearGradient(
-                        colors: [
-                          primaryColor,
-                          primaryColor.withValues(alpha: 0.5),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
+                      gradient: item.isRead
+                          ? LinearGradient(
+                              colors: [
+                                borderColor,
+                                borderColor.withValues(alpha: 0.5),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            )
+                          : LinearGradient(
+                              colors: [
+                                AppTheme.lightError,
+                                AppTheme.lightError.withValues(alpha: 0.5),
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
                     ),
                     child: Container(
                       padding: const EdgeInsets.all(2),
@@ -266,16 +278,25 @@ class _NotificationsScreenState extends State<NotificationsScreen>
         onNotification: (notification) {
           if (notification.metrics.pixels >=
               notification.metrics.maxScrollExtent - 200) {
-            context.read<NotificationsProvider>().loadMoreNotifications();
+            context
+                .read<NotificationsProvider>()
+                .loadMoreNotifications(sectionType);
           }
           return false;
         },
         child: ListView.builder(
           physics: const AlwaysScrollableScrollPhysics(),
           padding: const EdgeInsets.symmetric(vertical: 8),
-          itemCount: items.length + (provider.hasMore ? 1 : 0),
+          itemCount:
+              items.length + (provider.hasMoreFor(sectionType) ? 1 : 0),
           itemBuilder: (context, index) {
             if (index == items.length) {
+              // Only render a spinner while an API call is actually in
+              // flight — never a perpetual spinner just because more pages
+              // may exist.
+              if (!provider.isLoadingMoreFor(sectionType)) {
+                return const SizedBox.shrink();
+              }
               return Center(
                 child: Padding(
                   padding: const EdgeInsets.all(16),

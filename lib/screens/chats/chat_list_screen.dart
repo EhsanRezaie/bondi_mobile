@@ -8,6 +8,7 @@ import 'package:intl/intl.dart';
 class ChatListScreen extends StatelessWidget {
   final List<ChatCard> chats;
   final bool isLoading;
+  final bool isLoadingMore;
   final bool hasMore;
   final String emptyText;
   final Future<void> Function() onRefresh;
@@ -19,6 +20,7 @@ class ChatListScreen extends StatelessWidget {
     super.key,
     required this.chats,
     required this.isLoading,
+    required this.isLoadingMore,
     required this.hasMore,
     required this.emptyText,
     required this.onRefresh,
@@ -99,6 +101,11 @@ class ChatListScreen extends StatelessWidget {
           itemCount: chats.length + (hasMore ? 1 : 0),
           itemBuilder: (context, index) {
             if (index == chats.length) {
+              // Only show a spinner while a request is actually running —
+              // never a perpetual spinner just because more pages may exist.
+              if (!isLoadingMore) {
+                return const SizedBox.shrink();
+              }
               return Center(
                 child: Padding(
                   padding: const EdgeInsets.all(16),

@@ -13,13 +13,24 @@ class NotificationsProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Flat cache of all loaded notifications, used for the match strip,
+  /// unread counts and read/delete bookkeeping.
   List<AppNotification> _notifications = [];
-  int _offset = 0;
-  bool _hasMore = true;
   bool _isLoading = false;
   bool _isLoadingMore = false;
   String? _errorMessage;
-  static const _pageSize = 20;
+  static const _pageSize = 50;
+
+  /// Notification types that this screen displays (tabs + match strip).
+  static const _types = ['like', 'liked', 'match', 'system'];
+
+  /// Per-type pagination state. Each tab pages its own type from the API so a
+  /// tab never shows a "more" spinner for items that belong to another type.
+  final Map<String, int> _offsetByType = {for (final t in _types) t: 0};
+  final Map<String, bool> _hasMoreByType = {for (final t in _types) t: true};
+  final Map<String, bool> _isLoadingMoreByType = {
+    for (final t in _types) t: false,
+  };
 
   // Unread counts
   int _unreadTotal = 0;
@@ -34,11 +45,15 @@ class NotificationsProvider extends ChangeNotifier {
   bool _socketAttached = false;
 
   List<AppNotification> get notifications => _notifications;
-  bool get hasMore => _hasMore;
+  bool get hasMore => _hasMoreByType.values.any((v) => v);
   bool get isLoading => _isLoading;
   bool get isLoadingMore => _isLoadingMore;
   String? get errorMessage => _errorMessage;
   int get unreadCount => _unreadTotal;
+
+  bool hasMoreFor(String type) => _hasMoreByType[type] ?? false;
+
+  bool isLoadingMoreFor(String type) => _isLoadingMoreByType[type] ?? false;
 
   int unreadFor(String type) => _unreadByType[type] ?? 0;
 
@@ -47,27 +62,38 @@ class NotificationsProvider extends ChangeNotifier {
   Future<void> loadNotifications() async {
     _isLoading = true;
     _errorMessage = null;
-    _offset = 0;
-    _hasMore = true;
+    _notifications = [];
+    for (final t in _types) {
+      _offsetByType[t] = 0;
+      _hasMoreByType[t] = true;
+      _isLoadingMoreByType[t] = false;
+    }
     _safeNotify();
 
     try {
-      final response = await ChatService.getNotifications(
-        limit: _pageSize,
-        offset: 0,
-      );
-      if (response.statusCode == 200) {
-        final data = response.data;
-        final items =
-            (data['notifications'] ?? data['items'] ?? data ?? []) as List;
-        _notifications =
-            items.map((j) => AppNotification.fromJson(j)).toList();
-        _offset = _notifications.length;
-        _hasMore = data['next_offset'] != null;
-        _recomputeUnreadCounts();
-      } else {
+      final responses = await Future.wait([
+        for (final t in _types)
+          ChatService.getNotifications(type: t, limit: _pageSize, offset: 0),
+      ]);
+      var anyOk = false;
+      for (var i = 0; i < _types.length; i++) {
+        final response = responses[i];
+        if (response.statusCode == 200) {
+          anyOk = true;
+          final data = response.data;
+          final items =
+              (data['notifications'] ?? data['items'] ?? data ?? []) as List;
+          _notifications.addAll(
+            items.map((j) => AppNotification.fromJson(j)),
+          );
+          _offsetByType[_types[i]] = items.length;
+          _hasMoreByType[_types[i]] = data['next_offset'] != null;
+        }
+      }
+      if (!anyOk) {
         _errorMessage = 'Failed to load notifications';
       }
+      _recomputeUnreadCounts();
     } catch (e) {
       _errorMessage = e.toString();
     }
@@ -76,15 +102,19 @@ class NotificationsProvider extends ChangeNotifier {
     _safeNotify();
   }
 
-  Future<void> loadMoreNotifications() async {
-    if (_isLoadingMore || !_hasMore) return;
+  Future<void> loadMoreNotifications(String type) async {
+    if (!_types.contains(type)) return;
+    if (_isLoadingMoreByType[type] == true) return;
+    if (!_hasMoreByType[type]!) return;
+    _isLoadingMoreByType[type] = true;
     _isLoadingMore = true;
     _safeNotify();
 
     try {
       final response = await ChatService.getNotifications(
+        type: type,
         limit: _pageSize,
-        offset: _offset,
+        offset: _offsetByType[type] ?? 0,
       );
       if (response.statusCode == 200) {
         final data = response.data;
@@ -93,14 +123,15 @@ class NotificationsProvider extends ChangeNotifier {
         final newItems =
             items.map((j) => AppNotification.fromJson(j)).toList();
         _notifications.addAll(newItems);
-        _offset += newItems.length;
-        _hasMore = data['next_offset'] != null;
+        _offsetByType[type] = (_offsetByType[type] ?? 0) + newItems.length;
+        _hasMoreByType[type] = data['next_offset'] != null;
       }
     } catch (e) {
       // silent
     }
 
-    _isLoadingMore = false;
+    _isLoadingMoreByType[type] = false;
+    _isLoadingMore = _isLoadingMoreByType.values.any((v) => v);
     _safeNotify();
   }
 
@@ -224,7 +255,9 @@ class NotificationsProvider extends ChangeNotifier {
         },
       );
       _notifications.insert(0, notification);
-      _offset++;
+      if (_types.contains(notifType)) {
+        _offsetByType[notifType] = (_offsetByType[notifType] ?? 0) + 1;
+      }
       _recomputeUnreadCounts();
       _safeNotify();
       refreshUnreadCounts();

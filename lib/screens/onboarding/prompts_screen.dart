@@ -321,16 +321,21 @@ class _PromptsScreenState extends State<PromptsScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            'Selected: $selectedCount / 3',
-                            style: AppTheme.labelLarge.copyWith(
-                              color: selectedCount > 0
-                                  ? primaryColor
-                                  : textMutedColor,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16,
+                          Expanded(
+                            child: Text(
+                              'Selected: $selectedCount / 3',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTheme.labelLarge.copyWith(
+                                color: selectedCount > 0
+                                    ? primaryColor
+                                    : textMutedColor,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 16,
+                              ),
                             ),
                           ),
+                          const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 12,
@@ -549,11 +554,15 @@ class _PromptsScreenState extends State<PromptsScreen> {
                               color: onSurfaceColor,
                             ),
                             const SizedBox(width: 8),
-                            Text(
-                              'Back',
-                              style: AppTheme.button.copyWith(
-                                color: onSurfaceColor,
-                                fontSize: 16,
+                            Flexible(
+                              child: Text(
+                                'Back',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppTheme.button.copyWith(
+                                  color: onSurfaceColor,
+                                  fontSize: 16,
+                                ),
                               ),
                             ),
                           ],
@@ -577,11 +586,15 @@ class _PromptsScreenState extends State<PromptsScreen> {
                             : Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Text(
-                                    'Continue',
-                                    style: AppTheme.button.copyWith(
-                                      color: Colors.white,
-                                      fontSize: 16,
+                                  Flexible(
+                                    child: Text(
+                                      'Continue',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: AppTheme.button.copyWith(
+                                        color: Colors.white,
+                                        fontSize: 16,
+                                      ),
                                     ),
                                   ),
                                   const SizedBox(width: 8),

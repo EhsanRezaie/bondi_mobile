@@ -196,7 +196,7 @@ class _FakeNotificationsProvider extends NotificationsProvider {
   Future<void> loadNotifications() async {}
 
   @override
-  Future<void> loadMoreNotifications() async {}
+  Future<void> loadMoreNotifications(String type) async {}
 }
 
 Future<void> _pumpAt(

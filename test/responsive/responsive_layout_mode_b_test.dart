@@ -44,11 +44,18 @@ import '../helpers/fixtures.dart' as fixtures;
 
 /// The §7 ledger sizes (width x height).
 const kSizes = <(double, double, String)>[
+  (320, 568, '320x568'),
   (360, 640, '360x640'),
   (390, 844, '390x844'),
   (430, 932, '430x932'),
+  (600, 960, '600x960'),
   (768, 1024, '768x1024'),
+  (834, 1112, '834x1112'),
   (1024, 768, '1024x768'),
+  (1280, 800, '1280x800'),
+  (1536, 2048, '1536x2048'),
+  (1920, 1080, '1920x1080'),
+  (2560, 1440, '2560x1440'),
 ];
 
 class _FakeAuthProvider extends AuthProvider {
@@ -241,7 +248,7 @@ class _FakeNotificationsProvider extends NotificationsProvider {
   Future<void> loadNotifications() async {}
 
   @override
-  Future<void> loadMoreNotifications() async {}
+  Future<void> loadMoreNotifications(String type) async {}
 }
 
 Future<void> _pumpAt(
@@ -324,6 +331,7 @@ void main() {
               ),
             ],
             isLoading: false,
+            isLoadingMore: false,
             hasMore: false,
             emptyText: 'No chats yet',
             onRefresh: () async {},

@@ -95,7 +95,7 @@ class ChatProvider extends ChangeNotifier {
   bool _hasMoreIncoming = true;
   bool _hasMoreLikers = true;
   bool _hasMoreLiked = true;
-  static const _pageSize = 20;
+  static const _pageSize = 50;
 
   // ── Getters ──────────────────────────────────────────────────────
   List<Match> get matches => _matches;

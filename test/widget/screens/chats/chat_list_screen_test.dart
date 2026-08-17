@@ -20,6 +20,7 @@ void main() {
             child: ChatListScreen(
               chats: [c],
               isLoading: false,
+              isLoadingMore: false,
               hasMore: false,
               emptyText: 'No chats',
               onRefresh: () async {},
@@ -40,6 +41,7 @@ void main() {
             child: ChatListScreen(
               chats: [],
               isLoading: false,
+              isLoadingMore: false,
               hasMore: false,
               emptyText: 'No chats',
               onRefresh: _noop,
@@ -61,6 +63,7 @@ void main() {
             child: ChatListScreen(
               chats: const <ChatCard>[],
               isLoading: true,
+              isLoadingMore: false,
               hasMore: false,
               emptyText: 'No chats',
               onRefresh: () async {},
@@ -84,6 +87,7 @@ void main() {
             child: ChatListScreen(
               chats: [c],
               isLoading: false,
+              isLoadingMore: false,
               hasMore: false,
               emptyText: 'No chats',
               onRefresh: () async {},
@@ -109,6 +113,7 @@ void main() {
             child: ChatListScreen(
               chats: [c],
               isLoading: false,
+              isLoadingMore: false,
               hasMore: false,
               emptyText: 'No chats',
               onRefresh: () async {},

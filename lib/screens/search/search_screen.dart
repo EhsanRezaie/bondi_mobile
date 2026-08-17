@@ -328,6 +328,9 @@ class _SearchScreenState extends State<SearchScreen> with WidgetsBindingObserver
         itemCount: itemCount,
         itemBuilder: (context, index) {
           if (index == provider.users.length) {
+            if (!provider.isLoadingMore) {
+              return const SizedBox.shrink();
+            }
             return const Center(
               child: Padding(
                 padding: EdgeInsets.all(12),

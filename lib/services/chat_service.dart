@@ -367,11 +367,16 @@ class ChatService {
   static Future<Response> getNotifications({
     int limit = 20,
     int offset = 0,
+    String? type,
   }) async {
     try {
       return await ApiService.get(
         '/notifications',
-        queryParams: {'limit': limit, 'offset': offset},
+        queryParams: {
+          'limit': limit,
+          'offset': offset,
+          if (type != null) 'type': type,
+        },
         cacheOptions: ApiService.noCache,
       );
     } on DioException catch (e) {

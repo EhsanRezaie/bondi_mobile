@@ -35,7 +35,7 @@ class SearchProvider extends ChangeNotifier {
   String? _nextCursor;
   int _currentPage = 0;
   bool _hasMore = true;
-  static const int _pageSize = 9;
+  static const int _pageSize = 24;
 
   // ── Basic filters (quick bar) ──────────────────────────────────
   String? _genderFilter;

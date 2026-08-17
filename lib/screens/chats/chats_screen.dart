@@ -136,6 +136,8 @@ class _ChatsScreenState extends State<ChatsScreen>
                 ChatListScreen(
                   chats: context.watch<ChatProvider>().conversations,
                   isLoading: context.watch<ChatProvider>().isLoading,
+                  isLoadingMore:
+                      context.watch<ChatProvider>().isLoadingMore,
                   hasMore: context.watch<ChatProvider>().hasMoreConversations,
                   emptyText: t.chat_empty_chats,
                   onRefresh: () =>
@@ -148,6 +150,8 @@ class _ChatsScreenState extends State<ChatsScreen>
                 ChatListScreen(
                   chats: context.watch<ChatProvider>().pendingChats,
                   isLoading: context.watch<ChatProvider>().isLoading,
+                  isLoadingMore:
+                      context.watch<ChatProvider>().isLoadingMore,
                   hasMore: context.watch<ChatProvider>().hasMorePending,
                   emptyText: t.chat_empty_pending,
                   onRefresh: () =>
@@ -160,6 +164,8 @@ class _ChatsScreenState extends State<ChatsScreen>
                 ChatListScreen(
                   chats: context.watch<ChatProvider>().incomingChats,
                   isLoading: context.watch<ChatProvider>().isLoading,
+                  isLoadingMore:
+                      context.watch<ChatProvider>().isLoadingMore,
                   hasMore: context.watch<ChatProvider>().hasMoreIncoming,
                   emptyText: t.chat_empty_incoming,
                   onRefresh: () =>

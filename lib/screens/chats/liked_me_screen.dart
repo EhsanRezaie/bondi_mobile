@@ -89,6 +89,9 @@ class _LikedMeScreenState extends State<LikedMeScreen> {
           itemCount: provider.likers.length + (provider.hasMoreLikers ? 1 : 0),
           itemBuilder: (context, index) {
             if (index == provider.likers.length) {
+              if (!provider.isLoadingMore) {
+                return const SizedBox.shrink();
+              }
               return Center(
                 child: Padding(
                   padding: const EdgeInsets.all(16),
