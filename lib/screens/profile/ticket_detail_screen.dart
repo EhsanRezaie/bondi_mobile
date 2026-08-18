@@ -6,6 +6,7 @@ import 'package:dating_app/models/ticket.dart';
 import 'package:dating_app/providers/ticket_provider.dart';
 import 'package:dating_app/utils/relative_time.dart';
 import 'package:dating_app/widgets/action_toast.dart';
+import 'package:intl/intl.dart';
 
 class TicketDetailScreen extends StatefulWidget {
   final String ticketId;
@@ -106,33 +107,45 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
             return _buildError(t, isDark, onSurfaceColor);
           }
 
-          return Column(
-            children: [
-              Expanded(
-                child: ListView(
-                  controller: _scrollController,
-                  physics: const BouncingScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-                  children: [
-                    _buildStatusBanner(ticket, t, isDark),
-                    if (ticket.isClosed) ...[
-                      const SizedBox(height: 8),
-                      _buildClosedNote(t, isDark),
-                    ],
-                    const SizedBox(height: 16),
-                    _buildHeader(ticket, t, isDark, onSurfaceColor),
-                    const SizedBox(height: 16),
-                    if (ticket.messages.isEmpty)
-                      _buildNoMessages(t, isDark)
-                    else
-                      ...ticket.messages.map(
-                        (m) => _buildBubble(context, m, t, isDark),
-                      ),
-                  ],
-                ),
+          return Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  AppTheme.primaryGradientStart.withValues(alpha: 0.04),
+                  Colors.transparent,
+                ],
               ),
-              _buildComposer(context, provider, t, isDark),
-            ],
+            ),
+            child: Column(
+              children: [
+                Expanded(
+                  child: ListView(
+                    controller: _scrollController,
+                    physics: const BouncingScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+                    children: [
+                      _buildStatusBanner(ticket, t, isDark),
+                      if (ticket.isClosed) ...[
+                        const SizedBox(height: 8),
+                        _buildClosedNote(t, isDark),
+                      ],
+                      const SizedBox(height: 16),
+                      _buildHeader(ticket, t, isDark, onSurfaceColor),
+                      const SizedBox(height: 16),
+                      if (ticket.messages.isEmpty)
+                        _buildNoMessages(t, isDark)
+                      else
+                        ...ticket.messages.map(
+                          (m) => _buildBubble(context, m, t, isDark),
+                        ),
+                    ],
+                  ),
+                ),
+                _buildComposer(context, provider, t, isDark),
+              ],
+            ),
           );
         },
       ),
@@ -379,7 +392,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
             ),
             const SizedBox(height: 2),
             Text(
-              relativeTime(message.createdAt, t),
+              DateFormat('HH:mm').format(message.createdAt),
               style: TextStyle(
                 fontFamily: AppTheme.fontFor(isPersian),
                 fontSize: 10,

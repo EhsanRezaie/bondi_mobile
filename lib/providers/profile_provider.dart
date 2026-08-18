@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:dating_app/models/photo.dart';
 import 'package:dating_app/models/profile_stats.dart';
+import 'package:dating_app/services/chat_service.dart';
 import 'package:dating_app/services/photo_service.dart';
 
 class ProfileProvider extends ChangeNotifier {
@@ -66,16 +67,19 @@ class ProfileProvider extends ChangeNotifier {
   // Load stats
   Future<void> loadStats() async {
     try {
-      // TODO: Replace with actual API call when available
-      _stats = ProfileStats(
-        likesSent: 0,
-        matches: 0,
-        messages: 0,
-        likesRemainingToday: 10,
-      );
+      final response = await ChatService.getSwipeStats();
+      if (response.statusCode == 200) {
+        final data = response.data as Map<String, dynamic>;
+        _stats = ProfileStats(
+          likesSent: data['total_likes_sent'] ?? 0,
+          matches: data['total_matches'] ?? 0,
+          messages: data['total_messages'] ?? 0,
+          likesRemainingToday: data['daily_likes_remaining'] ?? 0,
+        );
+      }
       _safeNotify();
     } catch (e) {
-      // Handle error
+      debugPrint('❌ Failed to load stats: $e');
     }
   }
 

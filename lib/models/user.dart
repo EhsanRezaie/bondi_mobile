@@ -81,6 +81,7 @@ class User {
   final bool isVerified;
   final bool isActive;
   final bool isProfileComplete;
+  final int profileCompletion;
   final DateTime createdAt;
   final DateTime? lastSeenAt;
   final bool hideLastSeen;
@@ -123,6 +124,7 @@ class User {
     this.isVerified = false,
     this.isActive = true,
     this.isProfileComplete = false,
+    this.profileCompletion = 0,
     required this.createdAt,
     this.lastSeenAt,
     this.hideLastSeen = false,
@@ -179,6 +181,7 @@ class User {
       isVerified: json['is_verified'] ?? false,
       isActive: json['is_active'] ?? true,
       isProfileComplete: json['is_profile_complete'] ?? false,
+      profileCompletion: (json['profile_completion'] as num?)?.toInt() ?? 0,
       createdAt: DateTime.parse(json['created_at']),
       lastSeenAt: json['last_seen_at'] != null 
           ? DateTime.parse(json['last_seen_at']) 
@@ -226,6 +229,7 @@ class User {
       'is_verified': isVerified,
       'is_active': isActive,
       'is_profile_complete': isProfileComplete,
+      'profile_completion': profileCompletion,
       'created_at': createdAt.toIso8601String(),
       'last_seen_at': lastSeenAt?.toIso8601String(),
       'hide_last_seen': hideLastSeen,

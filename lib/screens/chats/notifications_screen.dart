@@ -26,6 +26,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     _tabController = TabController(length: 3, vsync: this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<NotificationsProvider>().loadNotifications();
+      context.read<NotificationsProvider>().refreshUnreadCounts();
     });
   }
 
@@ -59,7 +60,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
             child: Column(
               children: [
                 if (matchItems.isNotEmpty) _buildMatchStrip(matchItems),
-                _buildSegmentedTabs(t, isDark, primaryColor),
+                _buildSegmentedTabs(t, isDark, primaryColor, provider),
                 Expanded(
                   child: TabBarView(
                     controller: _tabController,
@@ -318,6 +319,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
     AppLocalizations t,
     bool isDark,
     Color primaryColor,
+    NotificationsProvider provider,
   ) {
     final isPersian = !Localizations.localeOf(
       context,
@@ -329,6 +331,11 @@ class _NotificationsScreenState extends State<NotificationsScreen>
       t.notifications_section_liked,
       t.notifications_section_likes,
       t.notifications_section_system,
+    ];
+    final counts = [
+      provider.unreadFor('like'),
+      provider.unreadFor('liked'),
+      provider.unreadFor('system'),
     ];
     return Padding(
       padding: EdgeInsets.fromLTRB(
@@ -364,20 +371,12 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                           AppTheme.radiusChip - 4,
                         ),
                       ),
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          labels[i],
-                          textAlign: TextAlign.center,
-                          maxLines: 1,
-                          style: (isPersian
-                                  ? AppTheme.bodyBoldFa
-                                  : AppTheme.bodyBold)
-                              .copyWith(
-                            fontSize: AppLayout.s(context, 14),
-                            color: selected ? Colors.white : mutedColor,
-                          ),
-                        ),
+                      child: _buildTabLabel(
+                        label: labels[i],
+                        count: counts[i],
+                        isPersian: isPersian,
+                        selected: selected,
+                        mutedColor: mutedColor,
                       ),
                     ),
                   ),
@@ -387,6 +386,62 @@ class _NotificationsScreenState extends State<NotificationsScreen>
           },
         ),
       ),
+    );
+  }
+
+  Widget _buildTabLabel({
+    required String label,
+    required int count,
+    required bool isPersian,
+    required bool selected,
+    required Color mutedColor,
+  }) {
+    return Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.center,
+      children: [
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            label,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            style: (isPersian
+                    ? AppTheme.bodyBoldFa
+                    : AppTheme.bodyBold)
+                .copyWith(
+              fontSize: AppLayout.s(context, 14),
+              color: selected ? Colors.white : mutedColor,
+            ),
+          ),
+        ),
+        if (count > 0)
+          Positioned(
+            top: -8,
+            right: -8,
+            child: Container(
+              constraints: const BoxConstraints(
+                minWidth: 18,
+                minHeight: 18,
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+              decoration: BoxDecoration(
+                color: AppTheme.lightError,
+                borderRadius: BorderRadius.circular(9),
+              ),
+              child: Center(
+                child: Text(
+                  count > 99 ? '99+' : '$count',
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
     );
   }
 
@@ -427,6 +482,7 @@ class _NotificationsScreenState extends State<NotificationsScreen>
               vertical: 8,
             ),
             leading: Stack(
+              clipBehavior: Clip.none,
               children: [
                 CircleAvatar(
                   radius: AppLayout.s(context, 22),
@@ -445,6 +501,25 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                           color: _iconColorFor(item.type, isDark),
                         ),
                 ),
+                if (!item.isRead)
+                  Positioned(
+                    top: 0,
+                    right: 0,
+                    child: Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: AppTheme.lightError,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isDark
+                              ? AppTheme.darkSurface
+                              : AppTheme.lightSurface,
+                          width: 1.5,
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ),
             title: Text(

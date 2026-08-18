@@ -32,6 +32,7 @@ class DiscoverProfile {
   final String? lastSeenAt;
   final bool isOnline;
   final String? currentUserAction;
+  final DateTime? createdAt;
 
   DiscoverProfile({
     required this.id,
@@ -67,6 +68,7 @@ class DiscoverProfile {
     this.lastSeenAt,
     this.isOnline = false,
     this.currentUserAction,
+    this.createdAt,
   });
 
   String get displayPhotoUrl {
@@ -115,6 +117,9 @@ class DiscoverProfile {
       lastSeenAt: json['last_seen_at'],
       isOnline: json['is_online'] ?? false,
       currentUserAction: json['current_user_action'],
+      createdAt: json['created_at'] != null
+          ? DateTime.tryParse(json['created_at'].toString())
+          : null,
     );
   }
 

@@ -350,39 +350,6 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                           color: Colors.white,
                         ),
                       ),
-                      if (profile.isPremium) ...[
-                        const SizedBox(width: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 3,
-                          ),
-                          decoration: BoxDecoration(
-                            gradient: AppTheme.likeGradient(isDark: isDark),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const Icon(
-                                Icons.workspace_premium,
-                                size: 12,
-                                color: Colors.white,
-                              ),
-                              const SizedBox(width: 3),
-                              Text(
-                                t.discover_premium,
-                                style: TextStyle(
-                                  fontFamily: font,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
                     ],
                   ),
                   const SizedBox(height: 4),

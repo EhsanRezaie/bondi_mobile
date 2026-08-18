@@ -293,19 +293,24 @@ class _MainScreenState extends State<MainScreen> {
         index: _currentIndex,
         children: _screens,
       ),
-      bottomNavigationBar: _GradientNavBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-          if (index == 2) {
-            final chatProvider =
-                Provider.of<ChatProvider>(context, listen: false);
-            chatProvider.loadConversations();
-            chatProvider.loadPendingIncoming();
-            chatProvider.refreshLimits();
-          }
+      bottomNavigationBar: Consumer2<ChatProvider, NotificationsProvider>(
+        builder: (context, chatProvider, notifProvider, _) {
+          final showChatDot =
+              chatProvider.totalUnread > 0 || notifProvider.unreadCount > 0;
+          return _GradientNavBar(
+            currentIndex: _currentIndex,
+            showChatDot: showChatDot,
+            onTap: (index) {
+              setState(() {
+                _currentIndex = index;
+              });
+              if (index == 2) {
+                chatProvider.loadConversations();
+                chatProvider.loadPendingIncoming();
+                chatProvider.refreshLimits();
+              }
+            },
+          );
         },
       ),
     );
@@ -317,10 +322,12 @@ class _MainScreenState extends State<MainScreen> {
 /// opacity (inactive) / 100% + small dot (active). No card/pill shell.
 class _GradientNavBar extends StatelessWidget {
   final int currentIndex;
+  final bool showChatDot;
   final ValueChanged<int> onTap;
 
   const _GradientNavBar({
     required this.currentIndex,
+    this.showChatDot = false,
     required this.onTap,
   });
 
@@ -364,6 +371,7 @@ class _GradientNavBar extends StatelessWidget {
                     label: _labels[i],
                     icon: selected ? _activeIcons[i] : _icons[i],
                     selected: selected,
+                    showDot: i == 2 && showChatDot,
                     onTap: () => onTap(i),
                   );
                 }),
@@ -380,12 +388,14 @@ class _NavItem extends StatelessWidget {
   final String label;
   final IconData icon;
   final bool selected;
+  final bool showDot;
   final VoidCallback onTap;
 
   const _NavItem({
     required this.label,
     required this.icon,
     required this.selected,
+    this.showDot = false,
     required this.onTap,
   });
 
@@ -401,7 +411,28 @@ class _NavItem extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, color: selected ? active : inactive, size: 22),
+            Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Icon(icon, color: selected ? active : inactive, size: 22),
+                if (showDot)
+                  Positioned(
+                    top: -2,
+                    right: -3,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: AppTheme.lightError,
+                        shape: BoxShape.circle,
+                        border: Border.fromBorderSide(
+                          BorderSide(color: Colors.white, width: 1.5),
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
             const SizedBox(height: 1),
             Text(
               label,

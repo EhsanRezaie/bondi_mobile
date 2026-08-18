@@ -285,6 +285,12 @@ class UserCardState extends State<UserCard>
     return (1.0 - dist.clamp(0.0, 0.5));
   }
 
+  bool get _isNewHere {
+    final createdAt = widget.profile.createdAt;
+    if (createdAt == null) return false;
+    return DateTime.now().difference(createdAt).inDays < 7;
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = context.isDarkMode;
@@ -636,10 +642,48 @@ class UserCardState extends State<UserCard>
             bottom: false,
             child: Padding(
               padding: EdgeInsets.only(top: AppLayout.s(context, 64)),
-              child: OnlineRing(
-                isOnline: profile.isOnline,
-                size: AppLayout.s(context, 14),
-                borderWidth: AppLayout.s(context, 2),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  OnlineRing(
+                    isOnline: profile.isOnline,
+                    size: AppLayout.s(context, 14),
+                    borderWidth: AppLayout.s(context, 2),
+                  ),
+                  if (_isNewHere) ...[
+                    SizedBox(height: AppLayout.s(context, 8)),
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppLayout.s(context, 8),
+                        vertical: AppLayout.s(context, 3),
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppTheme.accentLike,
+                        borderRadius: BorderRadius.circular(
+                          AppLayout.s(context, 10),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.25),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
+                          ),
+                        ],
+                      ),
+                      child: Text(
+                        'New Here',
+                        style: TextStyle(
+                          fontFamily: font,
+                          fontSize: AppLayout.s(context, 10),
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
               ),
             ),
           ),

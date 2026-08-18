@@ -31,55 +31,77 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: Text(
-          t.settings_logout,
-          style: TextStyle(
-            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
-            fontWeight: FontWeight.w700,
-            color: isDark ? AppTheme.darkText : AppTheme.lightText,
-          ),
-        ),
-        content: Text(
-          t.settings_logout_confirm,
-          style: TextStyle(
-            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
-            color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: Text(
-              t.cancel,
+      builder: (ctx) {
+        var loggingOut = false;
+        return StatefulBuilder(
+          builder: (context, setDialogState) => AlertDialog(
+            backgroundColor: isDark ? AppTheme.darkSurface : Colors.white,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: Text(
+              t.settings_logout,
+              style: TextStyle(
+                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                fontWeight: FontWeight.w700,
+                color: isDark ? AppTheme.darkText : AppTheme.lightText,
+              ),
+            ),
+            content: Text(
+              t.settings_logout_confirm,
               style: TextStyle(
                 fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
                 color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
               ),
             ),
-          ),
-          TextButton(
-            onPressed: () async {
-              Navigator.pop(ctx);
-              final authProvider = Provider.of<AuthProvider>(context, listen: false);
-              await authProvider.logout();
-              if (context.mounted) {
-                Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (_) => const LoginScreen()), (route) => false);
-              }
-            },
-            child: Text(
-              t.settings_logout,
-              style: TextStyle(
-                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
-                fontWeight: FontWeight.w600,
-                color: isDark ? AppTheme.darkError : AppTheme.lightError,
+            actions: [
+              TextButton(
+                onPressed: loggingOut
+                    ? null
+                    : () => Navigator.pop(ctx),
+                child: Text(
+                  t.cancel,
+                  style: TextStyle(
+                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                    color: isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted,
+                  ),
+                ),
               ),
-            ),
+              TextButton(
+                onPressed: loggingOut
+                    ? null
+                    : () async {
+                        setDialogState(() => loggingOut = true);
+                        final authProvider = Provider.of<AuthProvider>(context, listen: false);
+                        await authProvider.logout();
+                        if (ctx.mounted) {
+                          Navigator.of(ctx).pop();
+                          Navigator.of(ctx).pushAndRemoveUntil(
+                            MaterialPageRoute(builder: (_) => const LoginScreen()),
+                            (route) => false,
+                          );
+                        }
+                      },
+                child: loggingOut
+                    ? SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: isDark ? AppTheme.darkError : AppTheme.lightError,
+                        ),
+                      )
+                    : Text(
+                        t.settings_logout,
+                        style: TextStyle(
+                          fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? AppTheme.darkError : AppTheme.lightError,
+                        ),
+                      ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 

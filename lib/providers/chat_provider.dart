@@ -102,6 +102,20 @@ class ChatProvider extends ChangeNotifier {
   List<ChatCard> get conversations => _conversations;
   List<ChatCard> get pendingChats => _pendingChats;
   List<ChatCard> get incomingChats => _incomingChats;
+
+  int get totalUnread {
+    var total = 0;
+    for (final card in _conversations) {
+      total += card.unreadCount;
+    }
+    for (final card in _pendingChats) {
+      total += card.unreadCount;
+    }
+    for (final card in _incomingChats) {
+      total += card.unreadCount;
+    }
+    return total;
+  }
   List<SwipeUser> get likedUsers => _likedUsers;
   List<SwipeUser> get likers => _likers;
   List<Message> get messages => _messages;

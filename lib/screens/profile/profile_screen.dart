@@ -148,6 +148,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             primaryColor,
                             onSurfaceColor,
                             textMutedColor,
+                            isDark,
                           );
                         },
                       );
@@ -204,6 +205,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     Color primaryColor,
     Color onSurfaceColor,
     Color textMutedColor,
+    bool isDark,
   ) {
     final t = AppLocalizations.of(context)!;
     final isPersian = !Localizations.localeOf(
@@ -214,60 +216,77 @@ class _ProfileScreenState extends State<ProfileScreen> {
       children: [
         Stack(
           children: [
-            Container(
-              width: avatarSize,
-              height: avatarSize,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: AppTheme.primaryGradient(),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.primaryGradientStart.withValues(alpha: 0.3),
-                    blurRadius: 16,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+            SizedBox(
+              width: avatarSize + 12,
+              height: avatarSize + 12,
+              child: CircularProgressIndicator(
+                value: ((user?.profileCompletion ?? 0) / 100).clamp(0.0, 1.0),
+                strokeWidth: 4,
+                strokeCap: StrokeCap.round,
+                backgroundColor: isDark
+                    ? AppTheme.darkBorder
+                    : AppTheme.lightBorder,
+                color: AppTheme.lightPrimary,
               ),
-              padding: const EdgeInsets.all(3),
-              child: ClipOval(
+            ),
+            Positioned.fill(
+              child: Center(
                 child: Container(
-                  color: Colors.white,
+                  width: avatarSize,
+                  height: avatarSize,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: AppTheme.primaryGradient(),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.primaryGradientStart.withValues(alpha: 0.3),
+                        blurRadius: 16,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  padding: const EdgeInsets.all(3),
                   child: ClipOval(
-                    child: mainPhoto != null && mainPhoto.url.isNotEmpty
-                        ? LayoutBuilder(
-                            builder: (context, constraints) {
-                              final double normX = mainPhoto.cropOffsetX;
-                              final double normY = mainPhoto.cropOffsetY;
-                              return Transform.translate(
-                                 offset: Offset(
-                                   normX * avatarSize,
-                                   normY * avatarSize,
-                                 ),
-                                 child: CachedImage.widget(
-                                   mainPhoto.displayUrl,
-                                   width: avatarSize,
-                                   height: avatarSize,
-                                   fit: BoxFit.cover,
-                                   errorWidget: Container(
-                                     color: Colors.grey.shade200,
-                                     child: const Icon(
-                                       Icons.person,
-                                       color: Colors.grey,
-                                       size: 50,
+                    child: Container(
+                      color: Colors.white,
+                      child: ClipOval(
+                        child: mainPhoto != null && mainPhoto.url.isNotEmpty
+                            ? LayoutBuilder(
+                                builder: (context, constraints) {
+                                  final double normX = mainPhoto.cropOffsetX;
+                                  final double normY = mainPhoto.cropOffsetY;
+                                  return Transform.translate(
+                                     offset: Offset(
+                                       normX * avatarSize,
+                                       normY * avatarSize,
                                      ),
-                                   ),
-                                 ),
-                               );
-                            },
-                          )
-                        : Container(
-                            color: Colors.grey.shade200,
-                            child: const Icon(
-                              Icons.person,
-                              color: Colors.grey,
-                              size: 50,
-                            ),
-                          ),
+                                     child: CachedImage.widget(
+                                       mainPhoto.displayUrl,
+                                       width: avatarSize,
+                                       height: avatarSize,
+                                       fit: BoxFit.cover,
+                                       errorWidget: Container(
+                                         color: Colors.grey.shade200,
+                                         child: const Icon(
+                                           Icons.person,
+                                           color: Colors.grey,
+                                           size: 50,
+                                         ),
+                                       ),
+                                     ),
+                                   );
+                                },
+                              )
+                            : Container(
+                                color: Colors.grey.shade200,
+                                child: const Icon(
+                                  Icons.person,
+                                  color: Colors.grey,
+                                  size: 50,
+                                ),
+                              ),
+                      ),
+                    ),
                   ),
                 ),
               ),
