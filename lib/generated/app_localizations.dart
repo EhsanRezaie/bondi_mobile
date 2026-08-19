@@ -1838,6 +1838,48 @@ abstract class AppLocalizations {
   /// **'Face verification coming soon!'**
   String get face_verification_coming_soon;
 
+  /// No description provided for @verify_selfie_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify Picture'**
+  String get verify_selfie_title;
+
+  /// No description provided for @verify_selfie_subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Take a clear selfie to confirm it\'s really you.'**
+  String get verify_selfie_subtitle;
+
+  /// No description provided for @verify_selfie_instructions.
+  ///
+  /// In en, this message translates to:
+  /// **'Use good lighting, look directly at the camera, and keep your eyes open.'**
+  String get verify_selfie_instructions;
+
+  /// No description provided for @verify_selfie_take_selfie.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to take a selfie'**
+  String get verify_selfie_take_selfie;
+
+  /// No description provided for @verify_selfie_retake.
+  ///
+  /// In en, this message translates to:
+  /// **'Retake'**
+  String get verify_selfie_retake;
+
+  /// No description provided for @verify_selfie_submit.
+  ///
+  /// In en, this message translates to:
+  /// **'Verify'**
+  String get verify_selfie_submit;
+
+  /// No description provided for @verify_selfie_pick_first.
+  ///
+  /// In en, this message translates to:
+  /// **'Please take a selfie first'**
+  String get verify_selfie_pick_first;
+
   /// No description provided for @photo_rejected_reason.
   ///
   /// In en, this message translates to:

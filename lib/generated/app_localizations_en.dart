@@ -943,6 +943,29 @@ class AppLocalizationsEn extends AppLocalizations {
   String get face_verification_coming_soon => 'Face verification coming soon!';
 
   @override
+  String get verify_selfie_title => 'Verify Picture';
+
+  @override
+  String get verify_selfie_subtitle =>
+      'Take a clear selfie to confirm it\'s really you.';
+
+  @override
+  String get verify_selfie_instructions =>
+      'Use good lighting, look directly at the camera, and keep your eyes open.';
+
+  @override
+  String get verify_selfie_take_selfie => 'Tap to take a selfie';
+
+  @override
+  String get verify_selfie_retake => 'Retake';
+
+  @override
+  String get verify_selfie_submit => 'Verify';
+
+  @override
+  String get verify_selfie_pick_first => 'Please take a selfie first';
+
+  @override
   String photo_rejected_reason(String reason) {
     return 'Reason: $reason';
   }

@@ -17,6 +17,7 @@ import 'package:dating_app/screens/profile/edit_prompts_screen.dart';
 import 'package:dating_app/screens/profile/edit_photos_screen.dart';
 import 'package:dating_app/screens/profile/settings_screen.dart';
 import 'package:dating_app/screens/profile/tickets_screen.dart';
+import 'package:dating_app/screens/profile/verify_selfie_screen.dart';
 import 'package:dating_app/generated/app_localizations.dart';
 import 'package:dating_app/widgets/action_toast.dart';
 
@@ -615,7 +616,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     Color textMutedColor,
     bool isDark,
   ) {
-    final t = AppLocalizations.of(context)!;
     // Check if main photo is face verified
     final bool isFaceVerified = mainPhoto?.faceVerified ?? false;
 
@@ -653,8 +653,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 isDark: isDark,
                 onTap: () {
                   if (!isFaceVerified) {
-                    // TODO: Navigate to face verification screen
-                    showActionToast(context, t.face_verification_coming_soon);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const VerifySelfieScreen(),
+                      ),
+                    ).then((verified) {
+                      if (verified == true && mounted) {
+                        _onRefresh();
+                      }
+                    });
                   }
                 },
                 showChevron: !isFaceVerified,

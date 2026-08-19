@@ -367,6 +367,13 @@
   "prompts_updated_success": "پرامپت‌ها با موفقیت به‌روزرسانی شدند!",
   "upload_profile_picture_first": "لطفاً ابتدا عکس پروفایل آپلود کنید",
   "face_verification_coming_soon": "تأیید چهره به زودی اضافه می‌شود!",
+  "verify_selfie_title": "تأیید عکس",
+  "verify_selfie_subtitle": "یک سلفی واضح بگیرید تا تأیید شود واقعاً شما هستید.",
+  "verify_selfie_instructions": "از نور مناسب استفاده کنید، مستقیم به دوربین نگاه کنید و چشم‌ها باز باشد.",
+  "verify_selfie_take_selfie": "برای گرفتن سلفی لمس کنید",
+  "verify_selfie_retake": "گرفتن دوباره",
+  "verify_selfie_submit": "تأیید",
+  "verify_selfie_pick_first": "لطفاً ابتدا سلفی بگیرید",
   "photo_rejected_reason": "دلیل: {reason}",
   "@photo_crop_error": {
     "placeholders": {

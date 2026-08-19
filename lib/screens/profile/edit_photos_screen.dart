@@ -234,14 +234,18 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
 
       for (var item in _items) {
         if (item.isNew && item.localFile != null) {
-          final result = await PhotoService.uploadPhoto(item.localFile!);
+          final (result, uploadError) = await PhotoService.uploadPhoto(item.localFile!);
           if (result == null) {
             if (!mounted) return;
             setState(() {
-              _errorMessage = 'Failed to upload a photo';
+              _errorMessage = uploadError ?? 'Failed to upload a photo';
               _isSaving = false;
             });
-            showActionToast(context, t.error_something_wrong, isError: true);
+            showActionToast(
+              context,
+              uploadError ?? t.error_something_wrong,
+              isError: true,
+            );
             return;
           }
           uploadedItems.add(

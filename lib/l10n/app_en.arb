@@ -367,6 +367,13 @@
   "prompts_updated_success": "Prompts updated successfully!",
   "upload_profile_picture_first": "Please upload a profile picture first",
   "face_verification_coming_soon": "Face verification coming soon!",
+  "verify_selfie_title": "Verify Picture",
+  "verify_selfie_subtitle": "Take a clear selfie to confirm it's really you.",
+  "verify_selfie_instructions": "Use good lighting, look directly at the camera, and keep your eyes open.",
+  "verify_selfie_take_selfie": "Tap to take a selfie",
+  "verify_selfie_retake": "Retake",
+  "verify_selfie_submit": "Verify",
+  "verify_selfie_pick_first": "Please take a selfie first",
   "photo_rejected_reason": "Reason: {reason}",
   "@photo_crop_error": {
     "placeholders": {

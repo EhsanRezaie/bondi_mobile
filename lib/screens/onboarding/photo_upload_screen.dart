@@ -158,7 +158,7 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
       for (var i = 0; i < _photos.length; i++) {
         final photo = _photos[i];
 
-        final result = await PhotoService.uploadPhoto(photo.file);
+        final (result, uploadError) = await PhotoService.uploadPhoto(photo.file);
         if (result != null) {
           photo.url = result.url;
           photo.serverId = result.id;
@@ -170,7 +170,7 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
           }
         } else {
           setState(() {
-            _errorMessage = 'Failed to upload photo ${i + 1}';
+            _errorMessage = uploadError ?? 'Failed to upload photo ${i + 1}';
             _isUploading = false;
           });
           return;

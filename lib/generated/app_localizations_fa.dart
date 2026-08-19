@@ -947,6 +947,29 @@ class AppLocalizationsFa extends AppLocalizations {
       'تأیید چهره به زودی اضافه می‌شود!';
 
   @override
+  String get verify_selfie_title => 'تأیید عکس';
+
+  @override
+  String get verify_selfie_subtitle =>
+      'یک سلفی واضح بگیرید تا تأیید شود واقعاً شما هستید.';
+
+  @override
+  String get verify_selfie_instructions =>
+      'از نور مناسب استفاده کنید، مستقیم به دوربین نگاه کنید و چشم‌ها باز باشد.';
+
+  @override
+  String get verify_selfie_take_selfie => 'برای گرفتن سلفی لمس کنید';
+
+  @override
+  String get verify_selfie_retake => 'گرفتن دوباره';
+
+  @override
+  String get verify_selfie_submit => 'تأیید';
+
+  @override
+  String get verify_selfie_pick_first => 'لطفاً ابتدا سلفی بگیرید';
+
+  @override
   String photo_rejected_reason(String reason) {
     return 'دلیل: $reason';
   }

@@ -8,7 +8,10 @@ import 'package:dating_app/models/photo.dart';
 class PhotoService {
   static final Dio _dio = ApiService.dio;
 
-  static Future<PhotoUploadResponse?> uploadPhoto(File file) async {
+  /// Upload a profile photo.
+  /// Returns (response, errorMessage) — errorMessage surfaces backend
+  /// rejection reasons (e.g. "Photo rejected: No face detected in the photo").
+  static Future<(PhotoUploadResponse?, String?)> uploadPhoto(File file) async {
     try {
       final formData = FormData.fromMap({
         'file': await MultipartFile.fromFile(
@@ -27,11 +30,62 @@ class PhotoService {
         ),
       );
 
-      return PhotoUploadResponse.fromJson(response.data);
+      return (PhotoUploadResponse.fromJson(response.data), null);
+    } on DioException catch (e) {
+      debugPrint('❌ Upload photo error: $e');
+      final detail = _extractDetail(e);
+      return (null, detail);
     } catch (e) {
       debugPrint('❌ Upload photo error: $e');
-      return null;
+      return (null, 'Failed to upload photo');
     }
+  }
+
+  /// Verify identity with a clear frontal selfie.
+  /// Returns (verified, message, similarity) — message surfaces backend
+  /// rejection reasons (no face, mismatch, lighting, etc.).
+  static Future<({bool verified, String message, double? similarity})> verifyWithSelfie(
+    File file,
+  ) async {
+    try {
+      final formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(
+          file.path,
+          filename: 'selfie_${DateTime.now().millisecondsSinceEpoch}.jpg',
+        ),
+      });
+
+      final response = await _dio.post(
+        '/users/me/verify',
+        data: formData,
+        options: Options(
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        ),
+      );
+
+      final data = response.data as Map<String, dynamic>;
+      return (
+        verified: (data['verified'] ?? false) as bool,
+        message: (data['message'] ?? 'Profile verified successfully!') as String,
+        similarity: (data['similarity_score'] as num?)?.toDouble(),
+      );
+    } on DioException catch (e) {
+      debugPrint('❌ Verify selfie error: $e');
+      return (verified: false, message: _extractDetail(e), similarity: null);
+    } catch (e) {
+      debugPrint('❌ Verify selfie error: $e');
+      return (verified: false, message: 'Verification failed', similarity: null);
+    }
+  }
+
+  static String _extractDetail(DioException e) {
+    final data = e.response?.data;
+    if (data is Map && data['detail'] != null) {
+      return data['detail'].toString();
+    }
+    return 'Something went wrong';
   }
 
   static Future<List<PhotoResponse>> getMyPhotos() async {
@@ -90,7 +144,7 @@ class PhotoService {
     int uploaded = 0;
 
     for (final file in files) {
-      final result = await uploadPhoto(file);
+      final (result, _) = await uploadPhoto(file);
       if (result != null) {
         results.add(result);
       }
