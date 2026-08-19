@@ -617,6 +617,18 @@ class AppLocalizationsFa extends AppLocalizations {
   String get search_filter_children => 'فرزند';
 
   @override
+  String get search_filter_here_for => 'به دنبال چه هستید';
+
+  @override
+  String get search_filter_pets => 'حیوان خانگی';
+
+  @override
+  String get search_filter_workout => 'دفعات ورزش';
+
+  @override
+  String get search_filter_zodiac => 'علامت طالع بینی';
+
+  @override
   String get search_filter_living => 'وضعیت محل سکونت';
 
   @override

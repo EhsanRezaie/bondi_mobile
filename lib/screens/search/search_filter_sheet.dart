@@ -35,6 +35,10 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
   String? _politicalOrientation;
   String? _childrenStatus;
   String? _livingSituation;
+  String? _hereFor;
+  String? _pets;
+  String? _workoutFrequency;
+  String? _zodiacSign;
   String? _religion;
   String? _ethnicity;
   bool? _hasPhotos;
@@ -83,6 +87,10 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
     _politicalOrientation = provider.politicalOrientation;
     _childrenStatus = provider.childrenStatus;
     _livingSituation = provider.livingSituation;
+    _hereFor = provider.hereFor;
+    _pets = provider.pets;
+    _workoutFrequency = provider.workoutFrequency;
+    _zodiacSign = provider.zodiacSign;
     _religion = provider.religion;
     _ethnicity = provider.ethnicity;
     _hasPhotos = provider.hasPhotos;
@@ -323,6 +331,10 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
       politicalOrientation: _politicalOrientation,
       childrenStatus: _childrenStatus,
       livingSituation: _livingSituation,
+      hereFor: _hereFor,
+      pets: _pets,
+      workoutFrequency: _workoutFrequency,
+      zodiacSign: _zodiacSign,
       country: _selectedCountry?.name,
       province: _selectedProvince?.name,
       city: _selectedCity?.name,
@@ -652,9 +664,45 @@ class _SearchFilterSheetState extends State<SearchFilterSheet> {
         Text(t.search_filter_children, style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), fontSize: 13, color: mutedColor)),
         const SizedBox(height: 8),
         _buildChipRow(
-          options: ['have', 'dont_have', 'want', 'dont_want'],
+          options: ['have_children', 'want_children', 'dont_want_children', 'open_to_children'],
           selected: _childrenStatus,
           onTap: (v) => setState(() => _childrenStatus = v),
+          isDark: isDark, primaryColor: primaryColor, textColor: textColor,
+        ),
+        const SizedBox(height: 12),
+        Text(t.search_filter_here_for, style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), fontSize: 13, color: mutedColor)),
+        const SizedBox(height: 8),
+        _buildChipRow(
+          options: ['long_term_relationship', 'casual_dating', 'marriage', 'new_friends', 'not_sure_yet'],
+          selected: _hereFor,
+          onTap: (v) => setState(() => _hereFor = v),
+          isDark: isDark, primaryColor: primaryColor, textColor: textColor,
+        ),
+        const SizedBox(height: 12),
+        Text(t.search_filter_pets, style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), fontSize: 13, color: mutedColor)),
+        const SizedBox(height: 8),
+        _buildChipRow(
+          options: ['dog', 'cat', 'both', 'other_pet', 'no_pets', 'loves_pets'],
+          selected: _pets,
+          onTap: (v) => setState(() => _pets = v),
+          isDark: isDark, primaryColor: primaryColor, textColor: textColor,
+        ),
+        const SizedBox(height: 12),
+        Text(t.search_filter_workout, style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), fontSize: 13, color: mutedColor)),
+        const SizedBox(height: 8),
+        _buildChipRow(
+          options: ['never', 'occasionally', 'regularly', 'daily'],
+          selected: _workoutFrequency,
+          onTap: (v) => setState(() => _workoutFrequency = v),
+          isDark: isDark, primaryColor: primaryColor, textColor: textColor,
+        ),
+        const SizedBox(height: 12),
+        Text(t.search_filter_zodiac, style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), fontSize: 13, color: mutedColor)),
+        const SizedBox(height: 8),
+        _buildChipRow(
+          options: ['aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo', 'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces'],
+          selected: _zodiacSign,
+          onTap: (v) => setState(() => _zodiacSign = v),
           isDark: isDark, primaryColor: primaryColor, textColor: textColor,
         ),
         const SizedBox(height: 12),

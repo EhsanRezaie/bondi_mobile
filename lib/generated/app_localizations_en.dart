@@ -615,6 +615,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get search_filter_children => 'Children';
 
   @override
+  String get search_filter_here_for => 'Looking For';
+
+  @override
+  String get search_filter_pets => 'Pets';
+
+  @override
+  String get search_filter_workout => 'Workout Frequency';
+
+  @override
+  String get search_filter_zodiac => 'Zodiac Sign';
+
+  @override
   String get search_filter_living => 'Living Situation';
 
   @override

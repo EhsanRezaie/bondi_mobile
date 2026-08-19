@@ -27,6 +27,10 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
   String? _childrenStatus;
   String? _smoking;
   String? _drinking;
+  String? _hereFor;
+  String? _pets;
+  String? _workoutFrequency;
+  String? _zodiacSign;
   String? _education;
   String? _politicalOrientation;
   String? _religion;
@@ -88,13 +92,66 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
   ];
 
   // ============================================================
-  // CHILDREN STATUS - Matches backend: have, dont_have, want, dont_want
+  // CHILDREN STATUS - Matches backend: have_children, want_children,
+  // dont_want_children, open_to_children
   // ============================================================
   final List<String> _childrenOptions = [
-    'Have children',
-    'Don\'t have children',
-    'Want children',
-    'Don\'t want children',
+    'Have Children',
+    'Want Children',
+    'Don\'t Want Children',
+    'Open to Children',
+  ];
+
+  // ============================================================
+  // HERE FOR - Matches backend: long_term_relationship, casual_dating,
+  // marriage, new_friends, not_sure_yet
+  // ============================================================
+  final List<String> _hereForOptions = [
+    'Long-term Relationship',
+    'Casual Dating',
+    'Marriage',
+    'New Friends',
+    'Not Sure Yet',
+  ];
+
+  // ============================================================
+  // PETS - Matches backend: dog, cat, both, other_pet, no_pets, loves_pets
+  // ============================================================
+  final List<String> _petsOptions = [
+    'Dog',
+    'Cat',
+    'Both',
+    'Other Pet',
+    'No Pets',
+    'Loves Pets',
+  ];
+
+  // ============================================================
+  // WORKOUT FREQUENCY - Matches backend: never, occasionally, regularly, daily
+  // ============================================================
+  final List<String> _workoutOptions = [
+    'Never',
+    'Occasionally',
+    'Regularly',
+    'Daily',
+  ];
+
+  // ============================================================
+  // ZODIAC SIGN - Matches backend: 12 signs
+  // ============================================================
+  final List<String> _zodiacOptions = [
+    'Aries',
+    'Taurus',
+    'Gemini',
+    'Cancer',
+    'Leo',
+    'Virgo',
+    'Libra',
+    'Scorpio',
+    'Sagittarius',
+    'Capricorn',
+    'Aquarius',
+    'Pisces',
   ];
 
   // ============================================================
@@ -188,13 +245,25 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
       _livingSituation = _capitalize(onboarding.livingSituation!);
     }
     if (onboarding.childrenStatus != null) {
-      _childrenStatus = _capitalize(onboarding.childrenStatus!);
+      _childrenStatus = _childrenDisplay(onboarding.childrenStatus!);
     }
     if (onboarding.smoking != null) {
       _smoking = _capitalize(onboarding.smoking!);
     }
     if (onboarding.drinking != null) {
       _drinking = _capitalize(onboarding.drinking!);
+    }
+    if (onboarding.hereFor != null) {
+      _hereFor = _hereForDisplay(onboarding.hereFor!);
+    }
+    if (onboarding.pets != null) {
+      _pets = _petsDisplay(onboarding.pets!);
+    }
+    if (onboarding.workoutFrequency != null) {
+      _workoutFrequency = _workoutDisplay(onboarding.workoutFrequency!);
+    }
+    if (onboarding.zodiacSign != null) {
+      _zodiacSign = _zodiacDisplay(onboarding.zodiacSign!);
     }
     if (onboarding.education != null) {
       _education = _capitalize(onboarding.education!);
@@ -221,6 +290,103 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
     return str[0].toUpperCase() + str.substring(1);
   }
 
+  String _childrenDisplay(String v) {
+    switch (v) {
+      case 'have_children':
+        return 'Have Children';
+      case 'want_children':
+        return 'Want Children';
+      case 'dont_want_children':
+        return 'Don\'t Want Children';
+      case 'open_to_children':
+        return 'Open to Children';
+      default:
+        return _capitalize(v);
+    }
+  }
+
+  String _hereForDisplay(String v) {
+    switch (v) {
+      case 'long_term_relationship':
+        return 'Long-term Relationship';
+      case 'casual_dating':
+        return 'Casual Dating';
+      case 'marriage':
+        return 'Marriage';
+      case 'new_friends':
+        return 'New Friends';
+      case 'not_sure_yet':
+        return 'Not Sure Yet';
+      default:
+        return _capitalize(v);
+    }
+  }
+
+  String _petsDisplay(String v) {
+    switch (v) {
+      case 'dog':
+        return 'Dog';
+      case 'cat':
+        return 'Cat';
+      case 'both':
+        return 'Both';
+      case 'other_pet':
+        return 'Other Pet';
+      case 'no_pets':
+        return 'No Pets';
+      case 'loves_pets':
+        return 'Loves Pets';
+      default:
+        return _capitalize(v);
+    }
+  }
+
+  String _workoutDisplay(String v) {
+    switch (v) {
+      case 'never':
+        return 'Never';
+      case 'occasionally':
+        return 'Occasionally';
+      case 'regularly':
+        return 'Regularly';
+      case 'daily':
+        return 'Daily';
+      default:
+        return _capitalize(v);
+    }
+  }
+
+  String _zodiacDisplay(String v) {
+    switch (v) {
+      case 'aries':
+        return 'Aries';
+      case 'taurus':
+        return 'Taurus';
+      case 'gemini':
+        return 'Gemini';
+      case 'cancer':
+        return 'Cancer';
+      case 'leo':
+        return 'Leo';
+      case 'virgo':
+        return 'Virgo';
+      case 'libra':
+        return 'Libra';
+      case 'scorpio':
+        return 'Scorpio';
+      case 'sagittarius':
+        return 'Sagittarius';
+      case 'capricorn':
+        return 'Capricorn';
+      case 'aquarius':
+        return 'Aquarius';
+      case 'pisces':
+        return 'Pisces';
+      default:
+        return _capitalize(v);
+    }
+  }
+
   String _getBackendValue(String displayValue) {
     // Body Type
     if (displayValue == 'Slim') return 'slim';
@@ -243,10 +409,42 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
     if (displayValue == 'With Partner') return 'with_partner';
 
     // Children Status
-    if (displayValue == 'Have children') return 'have';
-    if (displayValue == 'Don\'t have children') return 'dont_have';
-    if (displayValue == 'Want children') return 'want';
-    if (displayValue == 'Don\'t want children') return 'dont_want';
+    if (displayValue == 'Have Children') return 'have_children';
+    if (displayValue == 'Want Children') return 'want_children';
+    if (displayValue == 'Don\'t Want Children') return 'dont_want_children';
+    if (displayValue == 'Open to Children') return 'open_to_children';
+
+    // Here For
+    if (displayValue == 'Long-term Relationship') return 'long_term_relationship';
+    if (displayValue == 'Casual Dating') return 'casual_dating';
+    if (displayValue == 'Marriage') return 'marriage';
+    if (displayValue == 'New Friends') return 'new_friends';
+    if (displayValue == 'Not Sure Yet') return 'not_sure_yet';
+
+    // Pets
+    if (displayValue == 'Dog') return 'dog';
+    if (displayValue == 'Cat') return 'cat';
+    if (displayValue == 'Both') return 'both';
+    if (displayValue == 'Other Pet') return 'other_pet';
+    if (displayValue == 'No Pets') return 'no_pets';
+    if (displayValue == 'Loves Pets') return 'loves_pets';
+
+    // Workout Frequency (Never/Occasionally/Regularly fall through to smoking)
+    if (displayValue == 'Daily') return 'daily';
+
+    // Zodiac Sign
+    if (displayValue == 'Aries') return 'aries';
+    if (displayValue == 'Taurus') return 'taurus';
+    if (displayValue == 'Gemini') return 'gemini';
+    if (displayValue == 'Cancer') return 'cancer';
+    if (displayValue == 'Leo') return 'leo';
+    if (displayValue == 'Virgo') return 'virgo';
+    if (displayValue == 'Libra') return 'libra';
+    if (displayValue == 'Scorpio') return 'scorpio';
+    if (displayValue == 'Sagittarius') return 'sagittarius';
+    if (displayValue == 'Capricorn') return 'capricorn';
+    if (displayValue == 'Aquarius') return 'aquarius';
+    if (displayValue == 'Pisces') return 'pisces';
 
     // Smoking
     if (displayValue == 'Never') return 'never';
@@ -313,6 +511,14 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
           : null,
       smoking: _smoking != null ? _getBackendValue(_smoking!) : null,
       drinking: _drinking != null ? _getBackendValue(_drinking!) : null,
+      hereFor: _hereFor != null ? _getBackendValue(_hereFor!) : null,
+      pets: _pets != null ? _getBackendValue(_pets!) : null,
+      workoutFrequency: _workoutFrequency != null
+          ? _getBackendValue(_workoutFrequency!)
+          : null,
+      zodiacSign: _zodiacSign != null
+          ? _getBackendValue(_zodiacSign!)
+          : null,
       education: _education != null ? _getBackendValue(_education!) : null,
       workplace: _workplaceController.text.trim().isNotEmpty
           ? _workplaceController.text.trim()
@@ -623,6 +829,54 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                                   value,
                                   (v) => _drinking = v,
                                   _drinking,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              // HERE FOR
+                              _buildChipSection(
+                                label: '🎯 I\'m Here For',
+                                options: _hereForOptions,
+                                selected: _hereFor,
+                                onTap: (value) => _selectChip(
+                                  value,
+                                  (v) => _hereFor = v,
+                                  _hereFor,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              // PETS
+                              _buildChipSection(
+                                label: '🐾 Pets',
+                                options: _petsOptions,
+                                selected: _pets,
+                                onTap: (value) => _selectChip(
+                                  value,
+                                  (v) => _pets = v,
+                                  _pets,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              // WORKOUT FREQUENCY
+                              _buildChipSection(
+                                label: '🏃 Workout Frequency',
+                                options: _workoutOptions,
+                                selected: _workoutFrequency,
+                                onTap: (value) => _selectChip(
+                                  value,
+                                  (v) => _workoutFrequency = v,
+                                  _workoutFrequency,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              // ZODIAC SIGN
+                              _buildChipSection(
+                                label: '♈ Zodiac Sign',
+                                options: _zodiacOptions,
+                                selected: _zodiacSign,
+                                onTap: (value) => _selectChip(
+                                  value,
+                                  (v) => _zodiacSign = v,
+                                  _zodiacSign,
                                 ),
                               ),
                               const SizedBox(height: 24),

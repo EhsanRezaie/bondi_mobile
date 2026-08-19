@@ -1256,6 +1256,30 @@ abstract class AppLocalizations {
   /// **'Children'**
   String get search_filter_children;
 
+  /// No description provided for @search_filter_here_for.
+  ///
+  /// In en, this message translates to:
+  /// **'Looking For'**
+  String get search_filter_here_for;
+
+  /// No description provided for @search_filter_pets.
+  ///
+  /// In en, this message translates to:
+  /// **'Pets'**
+  String get search_filter_pets;
+
+  /// No description provided for @search_filter_workout.
+  ///
+  /// In en, this message translates to:
+  /// **'Workout Frequency'**
+  String get search_filter_workout;
+
+  /// No description provided for @search_filter_zodiac.
+  ///
+  /// In en, this message translates to:
+  /// **'Zodiac Sign'**
+  String get search_filter_zodiac;
+
   /// No description provided for @search_filter_living.
   ///
   /// In en, this message translates to:

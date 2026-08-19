@@ -592,6 +592,38 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                   textColor,
                   borderColor,
                 ),
+              if (profile.hereFor != null)
+                _buildValueChip(
+                  '🎯',
+                  _formatHereFor(profile.hereFor!),
+                  isDark,
+                  textColor,
+                  borderColor,
+                ),
+              if (profile.pets != null)
+                _buildValueChip(
+                  '🐾',
+                  _formatPets(profile.pets!),
+                  isDark,
+                  textColor,
+                  borderColor,
+                ),
+              if (profile.workoutFrequency != null)
+                _buildValueChip(
+                  '🏃',
+                  _formatWorkout(profile.workoutFrequency!),
+                  isDark,
+                  textColor,
+                  borderColor,
+                ),
+              if (profile.zodiacSign != null)
+                _buildValueChip(
+                  '♈',
+                  _formatZodiac(profile.zodiacSign!),
+                  isDark,
+                  textColor,
+                  borderColor,
+                ),
             ],
           ),
           _buildChipSection(
@@ -1474,14 +1506,96 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
 
   String _formatChildren(String value) {
     switch (value.toLowerCase()) {
-      case 'have':
-        return 'Have children';
-      case 'dont_have':
-        return "Don't have children";
-      case 'want':
-        return 'Want children';
-      case 'dont_want':
-        return "Don't want children";
+      case 'have_children':
+        return 'Have Children';
+      case 'want_children':
+        return 'Want Children';
+      case 'dont_want_children':
+        return "Don't Want Children";
+      case 'open_to_children':
+        return 'Open to Children';
+      default:
+        return _capitalize(value);
+    }
+  }
+
+  String _formatHereFor(String value) {
+    switch (value.toLowerCase()) {
+      case 'long_term_relationship':
+        return 'Long-term Relationship';
+      case 'casual_dating':
+        return 'Casual Dating';
+      case 'marriage':
+        return 'Marriage';
+      case 'new_friends':
+        return 'New Friends';
+      case 'not_sure_yet':
+        return 'Not Sure Yet';
+      default:
+        return _capitalize(value);
+    }
+  }
+
+  String _formatPets(String value) {
+    switch (value.toLowerCase()) {
+      case 'dog':
+        return 'Dog';
+      case 'cat':
+        return 'Cat';
+      case 'both':
+        return 'Both';
+      case 'other_pet':
+        return 'Other Pet';
+      case 'no_pets':
+        return 'No Pets';
+      case 'loves_pets':
+        return 'Loves Pets';
+      default:
+        return _capitalize(value);
+    }
+  }
+
+  String _formatWorkout(String value) {
+    switch (value.toLowerCase()) {
+      case 'never':
+        return 'Never';
+      case 'occasionally':
+        return 'Occasionally';
+      case 'regularly':
+        return 'Regularly';
+      case 'daily':
+        return 'Daily';
+      default:
+        return _capitalize(value);
+    }
+  }
+
+  String _formatZodiac(String value) {
+    switch (value.toLowerCase()) {
+      case 'aries':
+        return 'Aries';
+      case 'taurus':
+        return 'Taurus';
+      case 'gemini':
+        return 'Gemini';
+      case 'cancer':
+        return 'Cancer';
+      case 'leo':
+        return 'Leo';
+      case 'virgo':
+        return 'Virgo';
+      case 'libra':
+        return 'Libra';
+      case 'scorpio':
+        return 'Scorpio';
+      case 'sagittarius':
+        return 'Sagittarius';
+      case 'capricorn':
+        return 'Capricorn';
+      case 'aquarius':
+        return 'Aquarius';
+      case 'pisces':
+        return 'Pisces';
       default:
         return _capitalize(value);
     }

@@ -64,6 +64,10 @@ class User {
   final String? childrenStatus;
   final String? smoking;
   final String? drinking;
+  final String? hereFor;
+  final String? pets;
+  final String? workoutFrequency;
+  final String? zodiacSign;
   final String? education;
   final String? workplace;
   final String? religion;
@@ -107,6 +111,10 @@ class User {
     this.childrenStatus,
     this.smoking,
     this.drinking,
+    this.hereFor,
+    this.pets,
+    this.workoutFrequency,
+    this.zodiacSign,
     this.education,
     this.workplace,
     this.religion,
@@ -162,6 +170,10 @@ class User {
       childrenStatus: json['children_status'],
       smoking: json['smoking'],
       drinking: json['drinking'],
+      hereFor: json['here_for'],
+      pets: json['pets'],
+      workoutFrequency: json['workout_frequency'],
+      zodiacSign: json['zodiac_sign'],
       education: json['education'],
       workplace: json['workplace'],
       religion: json['religion'],
@@ -212,6 +224,10 @@ class User {
       'children_status': childrenStatus,
       'smoking': smoking,
       'drinking': drinking,
+      'here_for': hereFor,
+      'pets': pets,
+      'workout_frequency': workoutFrequency,
+      'zodiac_sign': zodiacSign,
       'education': education,
       'workplace': workplace,
       'religion': religion,

@@ -13,6 +13,10 @@ class DiscoverProfile {
   final String? childrenStatus;
   final String? smoking;
   final String? drinking;
+  final String? hereFor;
+  final String? pets;
+  final String? workoutFrequency;
+  final String? zodiacSign;
   final String? education;
   final String? workplace;
   final String? religion;
@@ -49,6 +53,10 @@ class DiscoverProfile {
     this.childrenStatus,
     this.smoking,
     this.drinking,
+    this.hereFor,
+    this.pets,
+    this.workoutFrequency,
+    this.zodiacSign,
     this.education,
     this.workplace,
     this.religion,
@@ -98,6 +106,10 @@ class DiscoverProfile {
       childrenStatus: json['children_status'],
       smoking: json['smoking'],
       drinking: json['drinking'],
+      hereFor: json['here_for'],
+      pets: json['pets'],
+      workoutFrequency: json['workout_frequency'],
+      zodiacSign: json['zodiac_sign'],
       education: json['education'],
       workplace: json['workplace'],
       religion: json['religion'],
@@ -138,6 +150,10 @@ class DiscoverProfile {
     String? childrenStatus,
     String? smoking,
     String? drinking,
+    String? hereFor,
+    String? pets,
+    String? workoutFrequency,
+    String? zodiacSign,
     String? education,
     String? workplace,
     String? religion,
@@ -173,6 +189,10 @@ class DiscoverProfile {
       childrenStatus: childrenStatus ?? this.childrenStatus,
       smoking: smoking ?? this.smoking,
       drinking: drinking ?? this.drinking,
+      hereFor: hereFor ?? this.hereFor,
+      pets: pets ?? this.pets,
+      workoutFrequency: workoutFrequency ?? this.workoutFrequency,
+      zodiacSign: zodiacSign ?? this.zodiacSign,
       education: education ?? this.education,
       workplace: workplace ?? this.workplace,
       religion: religion ?? this.religion,

@@ -58,6 +58,10 @@ class SearchProvider extends ChangeNotifier {
   String? _politicalOrientation;
   String? _childrenStatus;
   String? _livingSituation;
+  String? _hereFor;
+  String? _pets;
+  String? _workoutFrequency;
+  String? _zodiacSign;
   String? _country;
   String? _province;
   String? _city;
@@ -95,6 +99,10 @@ class SearchProvider extends ChangeNotifier {
   static const _keyPolitical = '${_prefix}political';
   static const _keyChildren = '${_prefix}children';
   static const _keyLiving = '${_prefix}living';
+  static const _keyHereFor = '${_prefix}here_for';
+  static const _keyPets = '${_prefix}pets';
+  static const _keyWorkout = '${_prefix}workout';
+  static const _keyZodiac = '${_prefix}zodiac';
   static const _keyCountry = '${_prefix}country';
   static const _keyProvince = '${_prefix}province';
   static const _keyCity = '${_prefix}city';
@@ -136,6 +144,10 @@ class SearchProvider extends ChangeNotifier {
   String? get politicalOrientation => _politicalOrientation;
   String? get childrenStatus => _childrenStatus;
   String? get livingSituation => _livingSituation;
+  String? get hereFor => _hereFor;
+  String? get pets => _pets;
+  String? get workoutFrequency => _workoutFrequency;
+  String? get zodiacSign => _zodiacSign;
   String? get country => _country;
   String? get province => _province;
   String? get city => _city;
@@ -170,6 +182,10 @@ class SearchProvider extends ChangeNotifier {
       _politicalOrientation != null ||
       _childrenStatus != null ||
       _livingSituation != null ||
+      _hereFor != null ||
+      _pets != null ||
+      _workoutFrequency != null ||
+      _zodiacSign != null ||
       _country != null ||
       _province != null ||
       _city != null ||
@@ -195,6 +211,10 @@ class SearchProvider extends ChangeNotifier {
     if (_politicalOrientation != null) count++;
     if (_childrenStatus != null) count++;
     if (_livingSituation != null) count++;
+    if (_hereFor != null) count++;
+    if (_pets != null) count++;
+    if (_workoutFrequency != null) count++;
+    if (_zodiacSign != null) count++;
     if (_country != null) count++;
     if (_province != null) count++;
     if (_city != null) count++;
@@ -239,6 +259,10 @@ class SearchProvider extends ChangeNotifier {
     final political = prefs.getString(_keyPolitical);
     final children = prefs.getString(_keyChildren);
     final living = prefs.getString(_keyLiving);
+    final hereFor = prefs.getString(_keyHereFor);
+    final pets = prefs.getString(_keyPets);
+    final workout = prefs.getString(_keyWorkout);
+    final zodiac = prefs.getString(_keyZodiac);
     final country = prefs.getString(_keyCountry);
     final province = prefs.getString(_keyProvince);
     final city = prefs.getString(_keyCity);
@@ -267,6 +291,10 @@ class SearchProvider extends ChangeNotifier {
     _politicalOrientation = political == 'null' ? null : political;
     _childrenStatus = children == 'null' ? null : children;
     _livingSituation = living == 'null' ? null : living;
+    _hereFor = hereFor == 'null' ? null : hereFor;
+    _pets = pets == 'null' ? null : pets;
+    _workoutFrequency = workout == 'null' ? null : workout;
+    _zodiacSign = zodiac == 'null' ? null : zodiac;
     _country = country == 'null' ? null : country;
     _province = province == 'null' ? null : province;
     _city = city == 'null' ? null : city;
@@ -302,6 +330,10 @@ class SearchProvider extends ChangeNotifier {
     await prefs.setString(_keyPolitical, _politicalOrientation ?? 'null');
     await prefs.setString(_keyChildren, _childrenStatus ?? 'null');
     await prefs.setString(_keyLiving, _livingSituation ?? 'null');
+    await prefs.setString(_keyHereFor, _hereFor ?? 'null');
+    await prefs.setString(_keyPets, _pets ?? 'null');
+    await prefs.setString(_keyWorkout, _workoutFrequency ?? 'null');
+    await prefs.setString(_keyZodiac, _zodiacSign ?? 'null');
     await prefs.setString(_keyCountry, _country ?? 'null');
     await prefs.setString(_keyProvince, _province ?? 'null');
     await prefs.setString(_keyCity, _city ?? 'null');
@@ -348,6 +380,10 @@ class SearchProvider extends ChangeNotifier {
         politicalOrientation: _politicalOrientation,
         childrenStatus: _childrenStatus,
         livingSituation: _livingSituation,
+        hereFor: _hereFor,
+        pets: _pets,
+        workoutFrequency: _workoutFrequency,
+        zodiacSign: _zodiacSign,
         country: _country,
         province: _province,
         city: _city,
@@ -419,6 +455,10 @@ class SearchProvider extends ChangeNotifier {
           politicalOrientation: _politicalOrientation,
           childrenStatus: _childrenStatus,
           livingSituation: _livingSituation,
+          hereFor: _hereFor,
+          pets: _pets,
+          workoutFrequency: _workoutFrequency,
+          zodiacSign: _zodiacSign,
           country: _country,
           province: _province,
           city: _city,
@@ -568,6 +608,10 @@ Future<Map<String, dynamic>?> likeUser(DiscoverProfile profile) async {
     String? politicalOrientation,
     String? childrenStatus,
     String? livingSituation,
+    String? hereFor,
+    String? pets,
+    String? workoutFrequency,
+    String? zodiacSign,
     String? country,
     String? province,
     String? city,
@@ -596,6 +640,10 @@ Future<Map<String, dynamic>?> likeUser(DiscoverProfile profile) async {
     _politicalOrientation = politicalOrientation;
     _childrenStatus = childrenStatus;
     _livingSituation = livingSituation;
+    _hereFor = hereFor;
+    _pets = pets;
+    _workoutFrequency = workoutFrequency;
+    _zodiacSign = zodiacSign;
     _country = country;
     _province = province;
     _city = city;
@@ -630,6 +678,10 @@ Future<Map<String, dynamic>?> likeUser(DiscoverProfile profile) async {
     _politicalOrientation = null;
     _childrenStatus = null;
     _livingSituation = null;
+    _hereFor = null;
+    _pets = null;
+    _workoutFrequency = null;
+    _zodiacSign = null;
     _country = null;
     _province = null;
     _city = null;

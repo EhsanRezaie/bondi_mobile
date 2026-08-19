@@ -24,6 +24,10 @@ class OnboardingProvider extends ChangeNotifier {
   String? _childrenStatus;
   String? _smoking;
   String? _drinking;
+  String? _hereFor;
+  String? _pets;
+  String? _workoutFrequency;
+  String? _zodiacSign;
   String? _education;
   String? _workplace;
   String? _religion;
@@ -65,6 +69,10 @@ class OnboardingProvider extends ChangeNotifier {
   String? get childrenStatus => _childrenStatus;
   String? get smoking => _smoking;
   String? get drinking => _drinking;
+  String? get hereFor => _hereFor;
+  String? get pets => _pets;
+  String? get workoutFrequency => _workoutFrequency;
+  String? get zodiacSign => _zodiacSign;
   String? get education => _education;
   String? get workplace => _workplace;
   String? get religion => _religion;
@@ -131,6 +139,10 @@ class OnboardingProvider extends ChangeNotifier {
     String? childrenStatus,
     String? smoking,
     String? drinking,
+    String? hereFor,
+    String? pets,
+    String? workoutFrequency,
+    String? zodiacSign,
     String? education,
     String? workplace,
     String? religion,
@@ -146,6 +158,10 @@ class OnboardingProvider extends ChangeNotifier {
     _childrenStatus = childrenStatus;
     _smoking = smoking;
     _drinking = drinking;
+    _hereFor = hereFor;
+    _pets = pets;
+    _workoutFrequency = workoutFrequency;
+    _zodiacSign = zodiacSign;
     _education = education;
     _workplace = workplace;
     _religion = religion;
@@ -244,6 +260,11 @@ class OnboardingProvider extends ChangeNotifier {
         'children_status': _childrenStatus,
       if (_smoking != null && _smoking!.isNotEmpty) 'smoking': _smoking,
       if (_drinking != null && _drinking!.isNotEmpty) 'drinking': _drinking,
+      if (_hereFor != null && _hereFor!.isNotEmpty) 'here_for': _hereFor,
+      if (_pets != null && _pets!.isNotEmpty) 'pets': _pets,
+      if (_workoutFrequency != null && _workoutFrequency!.isNotEmpty)
+        'workout_frequency': _workoutFrequency,
+      if (_zodiacSign != null && _zodiacSign!.isNotEmpty) 'zodiac_sign': _zodiacSign,
       if (_education != null && _education!.isNotEmpty) 'education': _education,
       if (_workplace != null && _workplace!.isNotEmpty) 'workplace': _workplace,
       if (_religion != null && _religion!.isNotEmpty) 'religion': _religion,
@@ -294,6 +315,10 @@ class OnboardingProvider extends ChangeNotifier {
     _childrenStatus = null;
     _smoking = null;
     _drinking = null;
+    _hereFor = null;
+    _pets = null;
+    _workoutFrequency = null;
+    _zodiacSign = null;
     _education = null;
     _workplace = null;
     _religion = null;

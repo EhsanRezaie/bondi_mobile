@@ -19,6 +19,10 @@ class SearchService {
     String? politicalOrientation,
     String? childrenStatus,
     String? livingSituation,
+    String? hereFor,
+    String? pets,
+    String? workoutFrequency,
+    String? zodiacSign,
     String? country,
     String? province,
     String? city,
@@ -61,6 +65,10 @@ class SearchService {
       if (politicalOrientation != null) params['political_orientation'] = politicalOrientation;
       if (childrenStatus != null) params['children_status'] = childrenStatus;
       if (livingSituation != null) params['living_situation'] = livingSituation;
+      if (hereFor != null) params['here_for'] = hereFor;
+      if (pets != null) params['pets'] = pets;
+      if (workoutFrequency != null) params['workout_frequency'] = workoutFrequency;
+      if (zodiacSign != null) params['zodiac_sign'] = zodiacSign;
       if (country != null) params['country'] = country;
       if (province != null) params['province'] = province;
       if (city != null) params['city'] = city;
