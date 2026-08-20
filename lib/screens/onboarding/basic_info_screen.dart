@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../config/app_theme.dart';
+import '../../generated/app_localizations.dart';
+import '../../providers/auth_provider.dart';
 import '../../providers/onboarding_provider.dart';
 import '../../services/location_service.dart';
 import '../../models/location.dart';
@@ -14,12 +16,23 @@ class BasicInfoScreen extends StatefulWidget {
   State<BasicInfoScreen> createState() => _BasicInfoScreenState();
 }
 
-class _BasicInfoScreenState extends State<BasicInfoScreen> {
+class _BasicInfoScreenState extends State<BasicInfoScreen>
+    with WidgetsBindingObserver {
   final _formKey = GlobalKey<FormState>();
 
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _birthDateController = TextEditingController();
   final TextEditingController _bioController = TextEditingController();
+  final TextEditingController _referralController = TextEditingController();
+
+  final ScrollController _scrollController = ScrollController();
+
+  // Focus nodes so fields near the bottom can be shifted above the keyboard.
+  final FocusNode _nameFocusNode = FocusNode();
+  final FocusNode _bioFocusNode = FocusNode();
+  final FocusNode _referralFocusNode = FocusNode();
+
+  double _lastViewInset = 0;
 
   // Search controllers
   final SearchController _countrySearchController = SearchController();
@@ -52,6 +65,10 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _nameFocusNode.addListener(_onFieldFocusChanged);
+    _bioFocusNode.addListener(_onFieldFocusChanged);
+    _referralFocusNode.addListener(_onFieldFocusChanged);
     _loadSavedData();
     _loadCountries();
   }
@@ -481,6 +498,23 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
     }
 
     if (!mounted) return;
+
+    final referral = _referralController.text.trim();
+    if (referral.isNotEmpty) {
+      final authProvider = context.read<AuthProvider>();
+      final t = AppLocalizations.of(context)!;
+      final claimed = await authProvider.claimReferral(referral, context);
+      if (!mounted) return;
+      if (!claimed) {
+        setState(() {
+          _errorMessage =
+              authProvider.errorMessage ?? t.verify_referral_invalid;
+        });
+        return;
+      }
+    }
+
+    if (!mounted) return;
     final onboarding = Provider.of<OnboardingProvider>(context, listen: false);
 
     onboarding.setPersonalInfo(
@@ -531,7 +565,9 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
           child: Text(
             labelText,
             style: TextStyle(
-              fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+              fontFamily: AppTheme.fontFor(
+                !Localizations.localeOf(context).languageCode.contains('en'),
+              ),
               fontSize: 14,
               fontWeight: FontWeight.w600,
               color: isEnabled
@@ -544,8 +580,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
         ),
         SearchAnchor(
           searchController: searchController,
-          isFullScreen: false,
-          viewConstraints: const BoxConstraints(maxHeight: 300),
+          isFullScreen: true,
           builder: (context, searchController) {
             return SearchBar(
               controller: searchController,
@@ -618,7 +653,11 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
               },
               textStyle: WidgetStatePropertyAll(
                 TextStyle(
-                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                  fontFamily: AppTheme.fontFor(
+                    !Localizations.localeOf(
+                      context,
+                    ).languageCode.contains('en'),
+                  ),
                   fontSize: 15,
                   color: isEnabled
                       ? Theme.of(context).colorScheme.onSurface
@@ -629,7 +668,11 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
               ),
               hintStyle: WidgetStatePropertyAll(
                 TextStyle(
-                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                  fontFamily: AppTheme.fontFor(
+                    !Localizations.localeOf(
+                      context,
+                    ).languageCode.contains('en'),
+                  ),
                   fontSize: 15,
                   color: isEnabled
                       ? Theme.of(
@@ -648,7 +691,14 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                 ListTile(
                   title: Text(
                     'Please select a country first',
-                    style: TextStyle(fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')), color: Colors.grey),
+                    style: TextStyle(
+                      fontFamily: AppTheme.fontFor(
+                        !Localizations.localeOf(
+                          context,
+                        ).languageCode.contains('en'),
+                      ),
+                      color: Colors.grey,
+                    ),
                   ),
                 ),
               ];
@@ -669,7 +719,11 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                   title: Text(
                     'No results found',
                     style: TextStyle(
-                      fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                      fontFamily: AppTheme.fontFor(
+                        !Localizations.localeOf(
+                          context,
+                        ).languageCode.contains('en'),
+                      ),
                       color: Theme.of(
                         context,
                       ).colorScheme.onSurface.withValues(alpha: 0.5),
@@ -689,8 +743,14 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                   title: Text(
                     displayName(item),
                     style: TextStyle(
-                      fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
-                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                      fontFamily: AppTheme.fontFor(
+                        !Localizations.localeOf(
+                          context,
+                        ).languageCode.contains('en'),
+                      ),
+                      fontWeight: isSelected
+                          ? FontWeight.w600
+                          : FontWeight.w400,
                       color: Theme.of(context).colorScheme.onSurface,
                     ),
                   ),
@@ -713,13 +773,63 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _nameFocusNode.removeListener(_onFieldFocusChanged);
+    _bioFocusNode.removeListener(_onFieldFocusChanged);
+    _referralFocusNode.removeListener(_onFieldFocusChanged);
+    _nameFocusNode.dispose();
+    _bioFocusNode.dispose();
+    _referralFocusNode.dispose();
+    _scrollController.dispose();
     _nameController.dispose();
     _birthDateController.dispose();
     _bioController.dispose();
+    _referralController.dispose();
     _countrySearchController.dispose();
     _provinceSearchController.dispose();
     _citySearchController.dispose();
     super.dispose();
+  }
+
+  // ============================================================================
+  // Shift content above the keyboard
+  // ============================================================================
+
+  @override
+  void didChangeMetrics() {
+    if (!mounted) return;
+    final double inset = MediaQuery.viewInsetsOf(context).bottom;
+    if (inset == _lastViewInset) return;
+    _lastViewInset = inset;
+    if (inset > 0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) _ensureFocusedWidgetVisible();
+      });
+    }
+  }
+
+  FocusNode? get _focusedFieldNode {
+    if (_nameFocusNode.hasFocus) return _nameFocusNode;
+    if (_bioFocusNode.hasFocus) return _bioFocusNode;
+    if (_referralFocusNode.hasFocus) return _referralFocusNode;
+    return null;
+  }
+
+  void _onFieldFocusChanged() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _ensureFocusedWidgetVisible();
+    });
+  }
+
+  void _ensureFocusedWidgetVisible() {
+    final FocusNode? focusNode = _focusedFieldNode;
+    if (focusNode == null || focusNode.context == null) return;
+    Scrollable.ensureVisible(
+      focusNode.context!,
+      alignment: 0.4,
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOut,
+    );
   }
 
   // ============================================================================
@@ -728,6 +838,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final t = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
     final isDark = context.isDarkMode;
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
@@ -743,6 +854,7 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
     final bool isCityEnabled = _selectedProvince != null;
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: bgColor,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -766,8 +878,8 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
                         color: index == 0
                             ? primaryColor
                             : isDark
-                                ? AppTheme.darkSecondary
-                                : AppTheme.lightSecondary,
+                            ? AppTheme.darkSecondary
+                            : AppTheme.lightSecondary,
                         borderRadius: BorderRadius.circular(2),
                       ),
                     ),
@@ -778,7 +890,11 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
               Text(
                 'Basic Info',
                 style: TextStyle(
-                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                  fontFamily: AppTheme.fontFor(
+                    !Localizations.localeOf(
+                      context,
+                    ).languageCode.contains('en'),
+                  ),
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                   color: onSurfaceColor,
@@ -796,367 +912,442 @@ class _BasicInfoScreenState extends State<BasicInfoScreen> {
         child: SafeArea(
           child: AppLayout.box(
             context: context,
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return CustomScrollView(
-                  slivers: [
-                    SliverPadding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24.0,
-                        vertical: 16.0,
-                      ),
-                      sliver: SliverToBoxAdapter(
-                        child: Form(
-                          key: _formKey,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Tell us about yourself',
-                                style: AppTheme.headlineMedium.copyWith(
-                                  color: onSurfaceColor,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'This information will be shown on your profile',
-                                style: AppTheme.bodyLarge.copyWith(
-                                  color: textMutedColor,
-                                ),
-                              ),
-                              const SizedBox(height: 28),
-                              if (_errorMessage != null) ...[
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 14,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: errorColor.withValues(alpha: 0.08),
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(
-                                      color: errorColor.withValues(alpha: 0.2),
-                                    ),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.error_outline,
-                                        color: errorColor,
-                                        size: 20,
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Text(
-                                          _errorMessage!,
-                                          style: TextStyle(
-                                            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
-                                            fontSize: 14,
-                                            color: errorColor,
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+            child: Column(
+              children: [
+                Expanded(
+                  child: CustomScrollView(
+                    controller: _scrollController,
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
+                    slivers: [
+                      SliverPadding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24.0,
+                          vertical: 16.0,
+                        ),
+                        sliver: SliverToBoxAdapter(
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Tell us about yourself',
+                                  style: AppTheme.headlineMedium.copyWith(
+                                    color: onSurfaceColor,
+                                    fontWeight: FontWeight.w800,
                                   ),
                                 ),
-                                const SizedBox(height: 20),
-                              ],
-                              TextFormField(
-                                controller: _nameController,
-                                textInputAction: TextInputAction.next,
-                                style: AppTheme.bodyLarge.copyWith(
-                                  color: onSurfaceColor,
-                                ),
-                                decoration: InputDecoration(
-                                  labelText: 'Full Name',
-                                  hintText: 'Enter your full name',
-                                  prefixIcon: Icon(
-                                    Icons.person_outline,
+                                const SizedBox(height: 8),
+                                Text(
+                                  'This information will be shown on your profile',
+                                  style: AppTheme.bodyLarge.copyWith(
                                     color: textMutedColor,
-                                    size: 22,
                                   ),
                                 ),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please enter your name';
-                                  }
-                                  if (value.length < 2) {
-                                    return 'Name must be at least 2 characters';
-                                  }
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(height: 20),
-                              TextFormField(
-                                controller: _birthDateController,
-                                readOnly: true,
-                                onTap: _selectBirthDate,
-                                style: AppTheme.bodyLarge.copyWith(
-                                  color: onSurfaceColor,
-                                ),
-                                decoration: InputDecoration(
-                                  labelText: 'Date of Birth',
-                                  hintText: 'Select your birth date',
-                                  prefixIcon: Icon(
-                                    Icons.cake_outlined,
-                                    color: textMutedColor,
-                                    size: 22,
-                                  ),
-                                ),
-                                validator: (value) {
-                                  if (value == null || value.isEmpty) {
-                                    return 'Please select your birth date';
-                                  }
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(height: 24),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 4.0),
-                                    child: Text(
-                                      'Gender',
-                                      style: TextStyle(
-                                        fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                        color: onSurfaceColor,
+                                const SizedBox(height: 28),
+                                if (_errorMessage != null) ...[
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 14,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: errorColor.withValues(alpha: 0.08),
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color: errorColor.withValues(
+                                          alpha: 0.2,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: _GenderOption(
-                                          label: 'Male',
-                                          icon: Icons.male,
-                                          isSelected: _selectedGender == 'male',
-                                          onTap: () {
-                                            setState(() {
-                                              _selectedGender = 'male';
-                                              _errorMessage = null;
-                                            });
-                                          },
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.error_outline,
+                                          color: errorColor,
+                                          size: 20,
                                         ),
-                                      ),
-                                      const SizedBox(width: 16),
-                                      Expanded(
-                                        child: _GenderOption(
-                                          label: 'Female',
-                                          icon: Icons.female,
-                                          isSelected:
-                                              _selectedGender == 'female',
-                                          onTap: () {
-                                            setState(() {
-                                              _selectedGender = 'female';
-                                              _errorMessage = null;
-                                            });
-                                          },
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 24),
-                              TextFormField(
-                                controller: _bioController,
-                                maxLines: 3,
-                                maxLength: 500,
-                                style: AppTheme.bodyLarge.copyWith(
-                                  color: onSurfaceColor,
-                                ),
-                                decoration: InputDecoration(
-                                  labelText: 'Bio (optional)',
-                                  hintText:
-                                      'Tell others a bit about yourself...',
-                                  alignLabelWithHint: true,
-                                  prefixIcon: Padding(
-                                    padding: const EdgeInsets.only(
-                                      bottom: 40.0,
-                                    ),
-                                    child: Icon(
-                                      Icons.notes,
-                                      color: textMutedColor,
-                                      size: 22,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              // Location section with searchable dropdowns
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.only(
-                                          left: 4.0,
-                                        ),
-                                        child: Text(
-                                          'Location',
-                                          style: TextStyle(
-                                            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
-                                            color: onSurfaceColor,
-                                          ),
-                                        ),
-                                      ),
-                                      const Spacer(),
-                                      TextButton.icon(
-                                        onPressed: _isLoadingLocation
-                                            ? null
-                                            : _getCurrentLocation,
-                                        style: TextButton.styleFrom(
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 12,
-                                            vertical: 6,
-                                          ),
-                                          backgroundColor: primaryColor
-                                              .withValues(alpha: 0.06),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(
-                                              20,
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Text(
+                                            _errorMessage!,
+                                            style: TextStyle(
+                                              fontFamily: AppTheme.fontFor(
+                                                !Localizations.localeOf(
+                                                  context,
+                                                ).languageCode.contains('en'),
+                                              ),
+                                              fontSize: 14,
+                                              color: errorColor,
+                                              fontWeight: FontWeight.w500,
                                             ),
                                           ),
                                         ),
-                                        icon: _isLoadingLocation
-                                            ? SizedBox(
-                                                height: 14,
-                                                width: 14,
-                                                child:
-                                                    CircularProgressIndicator(
-                                                      strokeWidth: 2,
-                                                      color: primaryColor,
-                                                    ),
-                                              )
-                                            : Icon(
-                                                Icons.my_location,
-                                                color: primaryColor,
-                                                size: 14,
-                                              ),
-                                        label: Text(
-                                          _isLoadingLocation
-                                              ? 'Locating...'
-                                              : 'GPS',
-                                          style: TextStyle(
-                                            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w700,
-                                            color: primaryColor,
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+                                ],
+                                TextFormField(
+                                  controller: _nameController,
+                                  focusNode: _nameFocusNode,
+                                  textInputAction: TextInputAction.next,
+                                  style: AppTheme.bodyLarge.copyWith(
+                                    color: onSurfaceColor,
+                                  ),
+                                  decoration: InputDecoration(
+                                    labelText: 'Full Name',
+                                    hintText: 'Enter your full name',
+                                    prefixIcon: Icon(
+                                      Icons.person_outline,
+                                      color: textMutedColor,
+                                      size: 22,
+                                    ),
+                                  ),
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please enter your name';
+                                    }
+                                    if (value.length < 2) {
+                                      return 'Name must be at least 2 characters';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                const SizedBox(height: 20),
+                                TextFormField(
+                                  controller: _birthDateController,
+                                  readOnly: true,
+                                  onTap: _selectBirthDate,
+                                  style: AppTheme.bodyLarge.copyWith(
+                                    color: onSurfaceColor,
+                                  ),
+                                  decoration: InputDecoration(
+                                    labelText: 'Date of Birth',
+                                    hintText: 'Select your birth date',
+                                    prefixIcon: Icon(
+                                      Icons.cake_outlined,
+                                      color: textMutedColor,
+                                      size: 22,
+                                    ),
+                                  ),
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please select your birth date';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                const SizedBox(height: 24),
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 4.0),
+                                      child: Text(
+                                        'Gender',
+                                        style: TextStyle(
+                                          fontFamily: AppTheme.fontFor(
+                                            !Localizations.localeOf(
+                                              context,
+                                            ).languageCode.contains('en'),
                                           ),
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          color: onSurfaceColor,
                                         ),
                                       ),
-                                    ],
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Row(
+                                      children: [
+                                        Expanded(
+                                          child: _GenderOption(
+                                            label: 'Male',
+                                            icon: Icons.male,
+                                            isSelected:
+                                                _selectedGender == 'male',
+                                            onTap: () {
+                                              setState(() {
+                                                _selectedGender = 'male';
+                                                _errorMessage = null;
+                                              });
+                                            },
+                                          ),
+                                        ),
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          child: _GenderOption(
+                                            label: 'Female',
+                                            icon: Icons.female,
+                                            isSelected:
+                                                _selectedGender == 'female',
+                                            onTap: () {
+                                              setState(() {
+                                                _selectedGender = 'female';
+                                                _errorMessage = null;
+                                              });
+                                            },
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 24),
+                                TextFormField(
+                                  controller: _bioController,
+                                  focusNode: _bioFocusNode,
+                                  maxLines: 3,
+                                  maxLength: 500,
+                                  style: AppTheme.bodyLarge.copyWith(
+                                    color: onSurfaceColor,
                                   ),
-                                  const SizedBox(height: 12),
-                                  // Country Searchable Dropdown (always enabled)
-                                  _buildSearchableDropdown<CountryResponse>(
-                                    items: _countries,
-                                    selectedItem: _selectedCountry,
-                                    hintText: 'Search for a country...',
-                                    labelText: 'Country',
-                                    displayName: (country) => country.name,
-                                    onSelected: _onCountryChanged,
-                                    isLoading: _isLoadingCountries,
-                                    searchController: _countrySearchController,
-                                    leadingIcon: Icon(
-                                      Icons.public,
+                                  decoration: InputDecoration(
+                                    labelText: 'Bio (optional)',
+                                    hintText:
+                                        'Tell others a bit about yourself...',
+                                    alignLabelWithHint: true,
+                                    prefixIcon: Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 40.0,
+                                      ),
+                                      child: Icon(
+                                        Icons.notes,
+                                        color: textMutedColor,
+                                        size: 22,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                // Referral code (new users only)
+                                TextFormField(
+                                  controller: _referralController,
+                                  focusNode: _referralFocusNode,
+                                  textInputAction: TextInputAction.next,
+                                  style: AppTheme.bodyLarge.copyWith(
+                                    color: onSurfaceColor,
+                                  ),
+                                  decoration: InputDecoration(
+                                    labelText: t.verify_referral_hint,
+                                    hintText: 'BONDI2026',
+                                    prefixIcon: Icon(
+                                      Icons.card_giftcard_outlined,
                                       color: textMutedColor,
                                       size: 22,
                                     ),
-                                    isEnabled: true,
                                   ),
-                                  const SizedBox(height: 16),
-                                  // State/Province Searchable Dropdown (enabled only if country selected)
-                                  _buildSearchableDropdown<ProvinceResponse>(
-                                    items: _provinces,
-                                    selectedItem: _selectedProvince,
-                                    hintText: isProvinceEnabled
-                                        ? 'Search for a state/province...'
-                                        : 'Select a country first',
-                                    labelText: 'State/Province',
-                                    displayName: (province) => province.name,
-                                    onSelected: _onProvinceChanged,
-                                    isLoading: _isLoadingProvinces,
-                                    searchController: _provinceSearchController,
-                                    leadingIcon: Icon(
-                                      Icons.map_outlined,
-                                      color: textMutedColor,
-                                      size: 22,
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return null;
+                                    }
+                                    final v = value.trim();
+                                    if (v.length != 8 ||
+                                        !RegExp(
+                                          r'^[A-Za-z0-9]+$',
+                                        ).hasMatch(v)) {
+                                      return t.verify_referral_invalid;
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  t.verify_referral_bonus,
+                                  style: TextStyle(
+                                    fontFamily: AppTheme.fontFor(
+                                      !Localizations.localeOf(
+                                        context,
+                                      ).languageCode.contains('en'),
                                     ),
-                                    isEnabled: isProvinceEnabled,
+                                    fontSize: 12,
+                                    color: textMutedColor,
                                   ),
-                                  const SizedBox(height: 16),
-                                  // City Searchable Dropdown (enabled only if province selected)
-                                  _buildSearchableDropdown<CityResponse>(
-                                    items: _cities,
-                                    selectedItem: _selectedCity,
-                                    hintText: isCityEnabled
-                                        ? 'Search for a city...'
-                                        : 'Select a state/province first',
-                                    labelText: 'City',
-                                    displayName: (city) => city.name,
-                                    onSelected: _onCityChanged,
-                                    isLoading: _isLoadingCities,
-                                    searchController: _citySearchController,
-                                    leadingIcon: Icon(
-                                      Icons.location_city_outlined,
-                                      color: textMutedColor,
-                                      size: 22,
+                                ),
+                                const SizedBox(height: 24),
+                                // Location section with searchable dropdowns
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Padding(
+                                          padding: const EdgeInsets.only(
+                                            left: 4.0,
+                                          ),
+                                          child: Text(
+                                            'Location',
+                                            style: TextStyle(
+                                              fontFamily: AppTheme.fontFor(
+                                                !Localizations.localeOf(
+                                                  context,
+                                                ).languageCode.contains('en'),
+                                              ),
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.w600,
+                                              color: onSurfaceColor,
+                                            ),
+                                          ),
+                                        ),
+                                        const Spacer(),
+                                        TextButton.icon(
+                                          onPressed: _isLoadingLocation
+                                              ? null
+                                              : _getCurrentLocation,
+                                          style: TextButton.styleFrom(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 12,
+                                              vertical: 6,
+                                            ),
+                                            backgroundColor: primaryColor
+                                                .withValues(alpha: 0.06),
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                            ),
+                                          ),
+                                          icon: _isLoadingLocation
+                                              ? SizedBox(
+                                                  height: 14,
+                                                  width: 14,
+                                                  child:
+                                                      CircularProgressIndicator(
+                                                        strokeWidth: 2,
+                                                        color: primaryColor,
+                                                      ),
+                                                )
+                                              : Icon(
+                                                  Icons.my_location,
+                                                  color: primaryColor,
+                                                  size: 14,
+                                                ),
+                                          label: Text(
+                                            _isLoadingLocation
+                                                ? 'Locating...'
+                                                : 'GPS',
+                                            style: TextStyle(
+                                              fontFamily: AppTheme.fontFor(
+                                                !Localizations.localeOf(
+                                                  context,
+                                                ).languageCode.contains('en'),
+                                              ),
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w700,
+                                              color: primaryColor,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    isEnabled: isCityEnabled,
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 40),
-                            ],
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      t.location_manual_hint,
+                                      style: TextStyle(
+                                        fontFamily: AppTheme.fontFor(
+                                          !Localizations.localeOf(
+                                            context,
+                                          ).languageCode.contains('en'),
+                                        ),
+                                        fontSize: 12,
+                                        color: textMutedColor,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    // Country Searchable Dropdown (always enabled)
+                                    _buildSearchableDropdown<CountryResponse>(
+                                      items: _countries,
+                                      selectedItem: _selectedCountry,
+                                      hintText: 'Search for a country...',
+                                      labelText: 'Country',
+                                      displayName: (country) => country.name,
+                                      onSelected: _onCountryChanged,
+                                      isLoading: _isLoadingCountries,
+                                      searchController:
+                                          _countrySearchController,
+                                      leadingIcon: Icon(
+                                        Icons.public,
+                                        color: textMutedColor,
+                                        size: 22,
+                                      ),
+                                      isEnabled: true,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    // State/Province Searchable Dropdown (enabled only if country selected)
+                                    _buildSearchableDropdown<ProvinceResponse>(
+                                      items: _provinces,
+                                      selectedItem: _selectedProvince,
+                                      hintText: isProvinceEnabled
+                                          ? 'Search for a state/province...'
+                                          : 'Select a country first',
+                                      labelText: 'State/Province',
+                                      displayName: (province) => province.name,
+                                      onSelected: _onProvinceChanged,
+                                      isLoading: _isLoadingProvinces,
+                                      searchController:
+                                          _provinceSearchController,
+                                      leadingIcon: Icon(
+                                        Icons.map_outlined,
+                                        color: textMutedColor,
+                                        size: 22,
+                                      ),
+                                      isEnabled: isProvinceEnabled,
+                                    ),
+                                    const SizedBox(height: 16),
+                                    // City Searchable Dropdown (enabled only if province selected)
+                                    _buildSearchableDropdown<CityResponse>(
+                                      items: _cities,
+                                      selectedItem: _selectedCity,
+                                      hintText: isCityEnabled
+                                          ? 'Search for a city...'
+                                          : 'Select a state/province first',
+                                      labelText: 'City',
+                                      displayName: (city) => city.name,
+                                      onSelected: _onCityChanged,
+                                      isLoading: _isLoadingCities,
+                                      searchController: _citySearchController,
+                                      leadingIcon: Icon(
+                                        Icons.location_city_outlined,
+                                        color: textMutedColor,
+                                        size: 22,
+                                      ),
+                                      isEnabled: isCityEnabled,
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 40),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: Container(
-                        alignment: Alignment.bottomCenter,
-                        padding: const EdgeInsets.only(
-                          left: 24.0,
-                          right: 24.0,
-                          bottom: 24.0,
-                        ),
-                        child: SizedBox(
-                          width: double.infinity,
-                          child: AppTheme.gradientButton(
-                            onPressed: _isLoading ? null : _handleNext,
-                            child: _isLoading
-                                ? const SizedBox(
-                                    height: 24,
-                                    width: 24,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: Colors.white,
-                                    ),
-                                  )
-                                : Text(
-                                    'Continue',
-                                    style: AppTheme.button.copyWith(
-                                      color: Colors.white,
-                                    ),
-                                  ),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(24.0, 12.0, 24.0, 16.0),
+                  child: AppTheme.gradientButton(
+                    onPressed: _isLoading ? null : _handleNext,
+                    child: _isLoading
+                        ? const SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : Text(
+                            'Continue',
+                            style: AppTheme.button.copyWith(
+                              color: Colors.white,
+                            ),
                           ),
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              },
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -1225,7 +1416,9 @@ class _GenderOption extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                fontFamily: AppTheme.fontFor(
+                  !Localizations.localeOf(context).languageCode.contains('en'),
+                ),
                 fontSize: 15,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 color: isSelected ? primaryColor : onSurfaceColor,
