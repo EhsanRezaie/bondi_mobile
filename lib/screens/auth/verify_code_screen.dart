@@ -15,11 +15,7 @@ class VerifyCodeScreen extends StatefulWidget {
   final String phone;
   final String? referralCode;
 
-  const VerifyCodeScreen({
-    super.key,
-    required this.phone,
-    this.referralCode,
-  });
+  const VerifyCodeScreen({super.key, required this.phone, this.referralCode});
 
   @override
   State<VerifyCodeScreen> createState() => _VerifyCodeScreenState();
@@ -122,10 +118,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     _setLoading(true);
 
-    final success = await authProvider.verifyCode(
-      code: code,
-      context: context,
-    );
+    final success = await authProvider.verifyCode(code: code, context: context);
 
     _setLoading(false);
 
@@ -135,9 +128,15 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
           context,
           listen: false,
         );
+        final user = authProvider.user;
+        if (user != null) {
+          await onboardingProvider.attachUser(user.id);
+        }
+        if (!mounted) return;
         onboardingProvider.setPhone(widget.phone);
 
         if (authProvider.isNewUser) {
+          onboardingProvider.setStepIndex(0);
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (_) => const BasicInfoScreen()),
@@ -280,7 +279,11 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                               child: Text(
                                 _errorMessage!,
                                 style: TextStyle(
-                                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                                  fontFamily: AppTheme.fontFor(
+                                    !Localizations.localeOf(
+                                      context,
+                                    ).languageCode.contains('en'),
+                                  ),
                                   fontSize: 14,
                                   color: errorColor,
                                 ),
@@ -310,7 +313,11 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                                   FilteringTextInputFormatter.digitsOnly,
                                 ],
                                 style: TextStyle(
-                                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                                  fontFamily: AppTheme.fontFor(
+                                    !Localizations.localeOf(
+                                      context,
+                                    ).languageCode.contains('en'),
+                                  ),
                                   fontSize: AppLayout.s(context, 20),
                                   fontWeight: FontWeight.w600,
                                   color: onSurfaceColor,
@@ -321,7 +328,11 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                                   counterText: '',
                                   hintText: '—',
                                   hintStyle: TextStyle(
-                                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                                    fontFamily: AppTheme.fontFor(
+                                      !Localizations.localeOf(
+                                        context,
+                                      ).languageCode.contains('en'),
+                                    ),
                                     fontSize: AppLayout.s(context, 20),
                                     fontWeight: FontWeight.w600,
                                     color: textMutedColor.withValues(
@@ -368,9 +379,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                               : primaryColor,
                           disabledForegroundColor: textMutedColor,
                           side: BorderSide(
-                            color: _isTimerRunning
-                                ? borderColor
-                                : primaryColor,
+                            color: _isTimerRunning ? borderColor : primaryColor,
                             width: 1.5,
                           ),
                           shape: RoundedRectangleBorder(
@@ -382,7 +391,11 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                               ? '${t.verify_resend} (${_formatTime(_resendTimerSeconds)})'
                               : t.verify_resend,
                           style: TextStyle(
-                            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                            fontFamily: AppTheme.fontFor(
+                              !Localizations.localeOf(
+                                context,
+                              ).languageCode.contains('en'),
+                            ),
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),

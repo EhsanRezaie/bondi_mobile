@@ -9,6 +9,7 @@ import '../../providers/onboarding_provider.dart';
 import '../../services/photo_service.dart';
 import '../../models/photo.dart';
 import '../../utils/responsive.dart';
+import '../../widgets/selfie_capture_view.dart';
 import '../main_screen.dart';
 import '../profile/create_ticket_screen.dart';
 
@@ -37,6 +38,24 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
   void initState() {
     super.initState();
     _loadSavedPhotos();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final onboarding = Provider.of<OnboardingProvider>(
+        context,
+        listen: false,
+      );
+      onboarding.setStepIndex(4);
+      if (onboarding.selfieStage) {
+        setState(() => _isSelfieStage = true);
+      }
+    });
+  }
+
+  void _syncPhotosToProvider() {
+    Provider.of<OnboardingProvider>(
+      context,
+      listen: false,
+    ).setPhotos(_photos.map((p) => p.file.path).toList());
   }
 
   void _loadSavedPhotos() {
@@ -105,6 +124,7 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
           _photos.add(newPhoto);
           _errorMessage = null;
         });
+        _syncPhotosToProvider();
       }
     } catch (e) {
       setState(() {
@@ -123,6 +143,7 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
       }
       _errorMessage = null;
     });
+    _syncPhotosToProvider();
   }
 
   Future<void> _retakePhoto(int index) async {
@@ -158,6 +179,7 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
         );
         _errorMessage = null;
       });
+      _syncPhotosToProvider();
     } catch (e) {
       setState(() {
         _errorMessage = 'Failed to pick image';
@@ -177,6 +199,7 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
       }
       _photos[0].isMain = true;
     });
+    _syncPhotosToProvider();
   }
 
   bool get _canProceed {
@@ -246,11 +269,13 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
         return;
       }
 
-      // Save photo URLs to provider
-      onboarding.setPhotos(uploadedUrls);
+      // Keep the local photo paths in the provider so the grid can be restored
+      // if the app is reopened mid-flow.
+      _syncPhotosToProvider();
 
       // All photos uploaded & accepted — move to the required selfie step.
       if (mounted) {
+        onboarding.setSelfieStage(true);
         setState(() {
           _isSelfieStage = true;
           _mismatchedPhotoIds = [];
@@ -266,28 +291,20 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
   }
 
   Future<void> _pickSelfie() async {
-    try {
-      final XFile? image = await _picker.pickImage(
-        source: ImageSource.camera,
-        maxWidth: 1200,
-        maxHeight: 1200,
-        imageQuality: 85,
-        preferredCameraDevice: CameraDevice.front,
-      );
-      if (image == null) return;
-      final file = File(image.path);
-      final validationError = PhotoService.validateImage(file);
-      if (validationError != null) {
-        setState(() => _errorMessage = validationError);
-        return;
-      }
-      setState(() {
-        _selfieFile = file;
-        _errorMessage = null;
-      });
-    } catch (e) {
-      setState(() => _errorMessage = 'Failed to take selfie');
+    final file = await Navigator.push<File>(
+      context,
+      MaterialPageRoute(builder: (_) => const SelfieCaptureView()),
+    );
+    if (file == null || !mounted) return;
+    final validationError = PhotoService.validateImage(file);
+    if (validationError != null) {
+      setState(() => _errorMessage = validationError);
+      return;
     }
+    setState(() {
+      _selfieFile = file;
+      _errorMessage = null;
+    });
   }
 
   Future<void> _verifySelfie() async {
@@ -309,6 +326,10 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
       for (final photo in _photos) {
         photo.needsSelfieMatch = false;
       }
+      Provider.of<OnboardingProvider>(
+        context,
+        listen: false,
+      ).markFlowComplete();
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const MainScreen()),
@@ -335,6 +356,10 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
   }
 
   void _backToPhotos() {
+    Provider.of<OnboardingProvider>(
+      context,
+      listen: false,
+    ).setSelfieStage(false);
     setState(() {
       _isSelfieStage = false;
       _errorMessage = null;

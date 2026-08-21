@@ -10,18 +10,24 @@ import 'package:dating_app/providers/language_provider.dart';
 import 'package:dating_app/providers/chat_provider.dart';
 import 'package:dating_app/providers/notifications_provider.dart';
 import 'package:dating_app/screens/main_screen.dart';
+import 'package:dating_app/models/user.dart';
 import '../../../helpers/test_helpers.dart';
 import '../../../helpers/mock_api.dart';
 
 class FakeAuthProvider extends AuthProvider {
   final bool isAuthenticatedFlag;
   final bool isServerHealthyFlag;
+  final User? userValue;
 
   FakeAuthProvider({
     bool isAuthenticated = false,
     bool isServerHealthy = true,
+    this.userValue,
   })  : isAuthenticatedFlag = isAuthenticated,
         isServerHealthyFlag = isServerHealthy;
+
+  @override
+  User? get user => userValue;
 
   @override
   bool get isAuthenticated => isAuthenticatedFlag;
@@ -95,7 +101,13 @@ void main() {
         ..onGet('/discover', body: {'profiles': []})
         ..onGet('/rewards/my-limits', body: {'remaining_likes': 5})
         ..onGet('/interests', body: [])
-        ..onGet('/users/me/photos', body: [])
+        ..onGet('/users/me/photos', body: [
+          {'id': 'p1', 'status': 'approved'},
+          {'id': 'p2', 'status': 'approved'},
+          {'id': 'p3', 'status': 'approved'},
+        ])
+        ..onGet('/swipes/stats', body: {'likes_remaining_today': 5})
+        ..onGet('/notifications/counts', body: {'unread': 0})
         ..install();
 
       await tester.pumpWidget(
@@ -103,7 +115,14 @@ void main() {
           const SplashScreen(),
           providers: [
             ChangeNotifierProvider<AuthProvider>(
-              create: (_) => FakeAuthProvider(isAuthenticated: true),
+              create: (_) => FakeAuthProvider(
+                isAuthenticated: true,
+                userValue: User.fromJson({
+                  'id': 'test-user',
+                  'created_at': '2024-01-01T00:00:00Z',
+                  'is_profile_complete': true,
+                }),
+              ),
             ),
             ChangeNotifierProvider(create: (_) => OnboardingProvider()),
             ChangeNotifierProvider(create: (_) => SettingsProvider()),
@@ -118,6 +137,7 @@ void main() {
       for (var i = 0; i < 12; i++) {
         await tester.pump(const Duration(milliseconds: 200));
       }
+      await tester.pumpAndSettle();
 
       expect(find.byType(MainScreen), findsOneWidget);
       expect(find.byType(SplashScreen), findsNothing);

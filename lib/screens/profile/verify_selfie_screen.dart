@@ -2,7 +2,6 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:image_picker/image_picker.dart';
 
 import '../../config/app_theme.dart';
 import '../../generated/app_localizations.dart';
@@ -10,6 +9,7 @@ import '../../models/photo.dart';
 import '../../services/photo_service.dart';
 import '../../utils/responsive.dart';
 import '../../widgets/action_toast.dart';
+import '../../widgets/selfie_capture_view.dart';
 
 class VerifySelfieScreen extends StatefulWidget {
   const VerifySelfieScreen({super.key});
@@ -19,7 +19,6 @@ class VerifySelfieScreen extends StatefulWidget {
 }
 
 class _VerifySelfieScreenState extends State<VerifySelfieScreen> {
-  final ImagePicker _picker = ImagePicker();
   File? _selfieFile;
   bool _isVerifying = false;
   bool _isLoadingStatus = true;
@@ -49,34 +48,19 @@ class _VerifySelfieScreenState extends State<VerifySelfieScreen> {
   }
 
   Future<void> _pickSelfie() async {
-    final t = AppLocalizations.of(context)!;
-    try {
-      final XFile? image = await _picker.pickImage(
-        source: ImageSource.camera,
-        maxWidth: 1200,
-        maxHeight: 1200,
-        imageQuality: 85,
-        preferredCameraDevice: CameraDevice.front,
-      );
-
-      if (image != null) {
-        final file = File(image.path);
-        final validationError = PhotoService.validateImage(file);
-        if (validationError != null) {
-          if (mounted) {
-            showActionToast(context, validationError, isError: true);
-          }
-          return;
-        }
-        setState(() {
-          _selfieFile = file;
-        });
-      }
-    } catch (e) {
-      if (mounted) {
-        showActionToast(context, t.error_something_wrong, isError: true);
-      }
+    final file = await Navigator.push<File>(
+      context,
+      MaterialPageRoute(builder: (_) => const SelfieCaptureView()),
+    );
+    if (file == null || !mounted) return;
+    final validationError = PhotoService.validateImage(file);
+    if (validationError != null) {
+      showActionToast(context, validationError, isError: true);
+      return;
     }
+    setState(() {
+      _selfieFile = file;
+    });
   }
 
   Future<void> _verify() async {
@@ -161,9 +145,7 @@ class _VerifySelfieScreenState extends State<VerifySelfieScreen> {
                         const SizedBox(
                           width: 16,
                           height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                          ),
+                          child: CircularProgressIndicator(strokeWidth: 2),
                         ),
                         const SizedBox(width: 8),
                         Text(
@@ -339,7 +321,10 @@ class _VerifySelfieScreenState extends State<VerifySelfieScreen> {
                               color: Colors.white,
                             ),
                           )
-                        : Text(t.verify_selfie_submit, style: AppTheme.buttonText),
+                        : Text(
+                            t.verify_selfie_submit,
+                            style: AppTheme.buttonText,
+                          ),
                   ),
                 ),
                 const SizedBox(height: 24),

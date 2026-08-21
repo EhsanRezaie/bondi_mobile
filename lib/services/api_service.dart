@@ -20,12 +20,14 @@ class ApiService {
       _cacheStore = HiveCacheStore('${dir.path}/dio_cache');
     }
 
-    _dio = Dio(BaseOptions(
-      baseUrl: AppConstants.apiBaseUrl,
-      connectTimeout: const Duration(seconds: AppConstants.connectTimeout),
-      receiveTimeout: const Duration(seconds: AppConstants.receiveTimeout),
-      headers: {'Content-Type': 'application/json'},
-    ));
+    _dio = Dio(
+      BaseOptions(
+        baseUrl: AppConstants.apiBaseUrl,
+        connectTimeout: const Duration(seconds: AppConstants.connectTimeout),
+        receiveTimeout: const Duration(seconds: AppConstants.receiveTimeout),
+        headers: {'Content-Type': 'application/json'},
+      ),
+    );
 
     _dio.interceptors.add(
       InterceptorsWrapper(
@@ -44,8 +46,9 @@ class ApiService {
           // Never try to refresh tokens while the refresh call itself is being
           // rejected — otherwise a revoked/expired refresh token causes an
           // infinite refresh loop and the app hangs on a blank splash.
-          final isRefreshCall =
-              error.requestOptions.path.contains('/auth/refresh');
+          final isRefreshCall = error.requestOptions.path.contains(
+            '/auth/refresh',
+          );
 
           final refreshToken = await _secureStorage.read(key: 'refresh_token');
 
@@ -55,21 +58,32 @@ class ApiService {
           }
 
           try {
-            final response = await _dio.post(
-              '${AppConstants.apiBaseUrl}/auth/refresh',
-              data: {'refresh_token': refreshToken},
-            );
-            if (response.statusCode == 200) {
-              final newAccessToken = response.data['access_token'];
-              final newRefreshToken = response.data['refresh_token'];
-              await _secureStorage.write(key: 'access_token', value: newAccessToken);
-              await _secureStorage.write(key: 'refresh_token', value: newRefreshToken);
-
-              error.requestOptions.headers['Authorization'] = 'Bearer $newAccessToken';
-              return handler.resolve(await _dio.fetch(error.requestOptions));
+            // Single-flight: concurrent 401s share one refresh call and all
+            // retry with the freshly issued token.
+            final pending = _refreshing;
+            if (pending == null) {
+              final future = _performRefresh(refreshToken);
+              _refreshing = future;
+              try {
+                await future;
+              } finally {
+                _refreshing = null;
+              }
+            } else {
+              await pending;
             }
-            await _secureStorage.deleteAll();
-            return handler.next(error);
+
+            final newAccessToken = await _secureStorage.read(
+              key: 'access_token',
+            );
+            if (newAccessToken == null) {
+              await _secureStorage.deleteAll();
+              return handler.next(error);
+            }
+
+            error.requestOptions.headers['Authorization'] =
+                'Bearer $newAccessToken';
+            return handler.resolve(await _dio.fetch(error.requestOptions));
           } catch (e) {
             await _secureStorage.deleteAll();
             return handler.next(error);
@@ -78,22 +92,42 @@ class ApiService {
       ),
     );
 
-    _dio.interceptors.add(DioCacheInterceptor(
-      options: CacheOptions(
-        store: _cacheStore,
-        policy: CachePolicy.request,
-        hitCacheOnErrorExcept: [401, 403],
-        maxStale: const Duration(minutes: 5),
+    _dio.interceptors.add(
+      DioCacheInterceptor(
+        options: CacheOptions(
+          store: _cacheStore,
+          policy: CachePolicy.request,
+          hitCacheOnErrorExcept: [401, 403],
+          maxStale: const Duration(minutes: 5),
+        ),
       ),
-    ));
+    );
 
-    _dio.interceptors.add(LogInterceptor(
-      requestBody: true,
-      responseBody: true,
-    ));
+    _dio.interceptors.add(
+      LogInterceptor(requestBody: true, responseBody: true),
+    );
   }
 
   static Dio get dio => _dio;
+
+  // Single-flight refresh: only one /auth/refresh runs at a time so concurrent
+  // 401s never reuse the same (single-use) refresh token — which the backend's
+  // rotation theft detection would treat as theft and wipe the session.
+  static Future<Response>? _refreshing;
+
+  static Future<Response> _performRefresh(String refreshToken) async {
+    final response = await _dio.post(
+      '${AppConstants.apiBaseUrl}/auth/refresh',
+      data: {'refresh_token': refreshToken},
+    );
+    if (response.statusCode == 200) {
+      final newAccessToken = response.data['access_token'];
+      final newRefreshToken = response.data['refresh_token'];
+      await _secureStorage.write(key: 'access_token', value: newAccessToken);
+      await _secureStorage.write(key: 'refresh_token', value: newRefreshToken);
+    }
+    return response;
+  }
 
   // Test seam: replace the transport with a mocked Dio. Does not touch
   // flutter_secure_storage, path_provider or the real cache store.
@@ -134,7 +168,11 @@ class ApiService {
     _dio.options.headers.remove('Authorization');
   }
 
-  static Future<Response> get(String path, {Map<String, dynamic>? queryParams, CacheOptions? cacheOptions}) async {
+  static Future<Response> get(
+    String path, {
+    Map<String, dynamic>? queryParams,
+    CacheOptions? cacheOptions,
+  }) async {
     return await _dio.get(
       path,
       queryParameters: queryParams,
@@ -142,7 +180,11 @@ class ApiService {
     );
   }
 
-  static Future<Response> post(String path, {dynamic data, Map<String, dynamic>? queryParams}) async {
+  static Future<Response> post(
+    String path, {
+    dynamic data,
+    Map<String, dynamic>? queryParams,
+  }) async {
     return await _dio.post(path, data: data, queryParameters: queryParams);
   }
 
@@ -164,11 +206,13 @@ class ApiService {
 
   // Health check with baseUrl without /api/v1
   static Future<Response> healthCheck() async {
-    final healthDio = Dio(BaseOptions(
-      baseUrl: AppConstants.apiBaseUrl.replaceAll('/api/v1', ''),
-      connectTimeout: const Duration(seconds: AppConstants.connectTimeout),
-      receiveTimeout: const Duration(seconds: AppConstants.receiveTimeout),
-    ));
+    final healthDio = Dio(
+      BaseOptions(
+        baseUrl: AppConstants.apiBaseUrl.replaceAll('/api/v1', ''),
+        connectTimeout: const Duration(seconds: AppConstants.connectTimeout),
+        receiveTimeout: const Duration(seconds: AppConstants.receiveTimeout),
+      ),
+    );
     return await healthDio.get('/health');
   }
 }

@@ -113,6 +113,7 @@ class _InterestsScreenState extends State<InterestsScreen> {
 
     final onboarding = Provider.of<OnboardingProvider>(context, listen: false);
     onboarding.setInterests(_selectedInterests);
+    onboarding.setStepIndex(3);
 
     Navigator.push(
       context,
@@ -173,7 +174,11 @@ class _InterestsScreenState extends State<InterestsScreen> {
               Text(
                 'Interests',
                 style: TextStyle(
-                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                  fontFamily: AppTheme.fontFor(
+                    !Localizations.localeOf(
+                      context,
+                    ).languageCode.contains('en'),
+                  ),
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                   color: onSurfaceColor,
@@ -246,7 +251,11 @@ class _InterestsScreenState extends State<InterestsScreen> {
                                       child: Text(
                                         _errorMessage!,
                                         style: TextStyle(
-                                          fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                                          fontFamily: AppTheme.fontFor(
+                                            !Localizations.localeOf(
+                                              context,
+                                            ).languageCode.contains('en'),
+                                          ),
                                           fontSize: 14,
                                           color: errorColor,
                                           fontWeight: FontWeight.w500,
@@ -289,7 +298,11 @@ class _InterestsScreenState extends State<InterestsScreen> {
                                 Text(
                                   'Selected: $selectedCount',
                                   style: TextStyle(
-                                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                                    fontFamily: AppTheme.fontFor(
+                                      !Localizations.localeOf(
+                                        context,
+                                      ).languageCode.contains('en'),
+                                    ),
                                     fontSize: 13,
                                     fontWeight: FontWeight.w500,
                                     color: isEnough
@@ -302,7 +315,11 @@ class _InterestsScreenState extends State<InterestsScreen> {
                                       ? '✅ Great!'
                                       : '$remaining more needed',
                                   style: TextStyle(
-                                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                                    fontFamily: AppTheme.fontFor(
+                                      !Localizations.localeOf(
+                                        context,
+                                      ).languageCode.contains('en'),
+                                    ),
                                     fontSize: 13,
                                     fontWeight: FontWeight.w500,
                                     color: isEnough
@@ -495,7 +512,11 @@ class _InterestsScreenState extends State<InterestsScreen> {
                       child: Text(
                         '$selectedInCategory',
                         style: TextStyle(
-                          fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                          fontFamily: AppTheme.fontFor(
+                            !Localizations.localeOf(
+                              context,
+                            ).languageCode.contains('en'),
+                          ),
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
                           color: primaryColor,
@@ -557,7 +578,11 @@ class _InterestsScreenState extends State<InterestsScreen> {
                           Text(
                             _formatInterestName(interest.name),
                             style: TextStyle(
-                              fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                              fontFamily: AppTheme.fontFor(
+                                !Localizations.localeOf(
+                                  context,
+                                ).languageCode.contains('en'),
+                              ),
                               fontSize: 14,
                               fontWeight: isSelected
                                   ? FontWeight.w600

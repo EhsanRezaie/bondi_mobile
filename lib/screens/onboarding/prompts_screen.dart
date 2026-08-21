@@ -193,6 +193,7 @@ class _PromptsScreenState extends State<PromptsScreen> {
     setState(() => _isSubmitting = false);
 
     if (success && mounted) {
+      Provider.of<OnboardingProvider>(context, listen: false).setStepIndex(4);
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const PhotoUploadScreen()),
@@ -265,7 +266,11 @@ class _PromptsScreenState extends State<PromptsScreen> {
               Text(
                 'Your Prompts',
                 style: TextStyle(
-                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                  fontFamily: AppTheme.fontFor(
+                    !Localizations.localeOf(
+                      context,
+                    ).languageCode.contains('en'),
+                  ),
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                   color: onSurfaceColor,
@@ -350,7 +355,11 @@ class _PromptsScreenState extends State<PromptsScreen> {
                             child: Text(
                               '$selectedCount',
                               style: TextStyle(
-                                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                                fontFamily: AppTheme.fontFor(
+                                  !Localizations.localeOf(
+                                    context,
+                                  ).languageCode.contains('en'),
+                                ),
                                 fontSize: 14,
                                 fontWeight: FontWeight.w600,
                                 color: Colors.white,
@@ -387,7 +396,11 @@ class _PromptsScreenState extends State<PromptsScreen> {
                               child: Text(
                                 _errorMessage!,
                                 style: TextStyle(
-                                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                                  fontFamily: AppTheme.fontFor(
+                                    !Localizations.localeOf(
+                                      context,
+                                    ).languageCode.contains('en'),
+                                  ),
                                   fontSize: 14,
                                   color: errorColor,
                                   fontWeight: FontWeight.w500,
@@ -479,7 +492,11 @@ class _PromptsScreenState extends State<PromptsScreen> {
                                             child: Text(
                                               '$selectedInCategory',
                                               style: TextStyle(
-                                                fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                                                fontFamily: AppTheme.fontFor(
+                                                  !Localizations.localeOf(
+                                                    context,
+                                                  ).languageCode.contains('en'),
+                                                ),
                                                 fontSize: 13,
                                                 fontWeight: FontWeight.w600,
                                                 color: primaryColor,
@@ -723,7 +740,11 @@ class _PromptsScreenState extends State<PromptsScreen> {
                   contentPadding: const EdgeInsets.all(12),
                   isDense: true,
                   errorStyle: TextStyle(
-                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                    fontFamily: AppTheme.fontFor(
+                      !Localizations.localeOf(
+                        context,
+                      ).languageCode.contains('en'),
+                    ),
                     fontSize: 12,
                     color: errorColor,
                   ),
@@ -740,7 +761,11 @@ class _PromptsScreenState extends State<PromptsScreen> {
                   child: Text(
                     'Please write an answer',
                     style: TextStyle(
-                      fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                      fontFamily: AppTheme.fontFor(
+                        !Localizations.localeOf(
+                          context,
+                        ).languageCode.contains('en'),
+                      ),
                       fontSize: 12,
                       color: errorColor,
                       fontWeight: FontWeight.w500,

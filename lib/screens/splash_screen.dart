@@ -5,9 +5,15 @@ import 'package:provider/provider.dart';
 import 'package:dating_app/generated/app_localizations.dart';
 import '../config/app_theme.dart';
 import '../providers/auth_provider.dart';
+import '../providers/onboarding_provider.dart';
 import '../providers/settings_provider.dart';
 import 'login_screen.dart';
 import 'main_screen.dart';
+import 'onboarding/basic_info_screen.dart';
+import 'onboarding/interests_screen.dart';
+import 'onboarding/photo_upload_screen.dart';
+import 'onboarding/profile_details_screen.dart';
+import 'onboarding/prompts_screen.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -84,15 +90,52 @@ class _SplashScreenState extends State<SplashScreen>
     if (!mounted) return;
 
     if (isAuthenticated) {
+      final user = authProvider.user;
+      final onboarding = Provider.of<OnboardingProvider>(
+        context,
+        listen: false,
+      );
+      if (user != null) {
+        await onboarding.attachUser(user.id);
+      }
+      if (!mounted) return;
+
+      Widget home;
+      if (onboarding.flowComplete) {
+        home = const MainScreen();
+      } else if (onboarding.hasSavedState) {
+        home = _resumeScreen(onboarding.stepIndex, onboarding.selfieStage);
+      } else if ((user?.isProfileComplete ?? false)) {
+        home = const MainScreen();
+      } else {
+        home = const BasicInfoScreen();
+      }
+
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const MainScreen()),
+        MaterialPageRoute(builder: (_) => home),
       );
     } else {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const LoginScreen()),
       );
+    }
+  }
+
+  Widget _resumeScreen(int step, bool selfieStage) {
+    if (step >= 4 || selfieStage) return const PhotoUploadScreen();
+    switch (step) {
+      case 0:
+        return const BasicInfoScreen();
+      case 1:
+        return const ProfileDetailsScreen();
+      case 2:
+        return const InterestsScreen();
+      case 3:
+        return const PromptsScreen();
+      default:
+        return const BasicInfoScreen();
     }
   }
 
@@ -233,12 +276,10 @@ class _SplashScreenState extends State<SplashScreen>
                 const SizedBox(height: 12),
                 Text(
                   '$displayPercent%',
-                  style: (isPersian
-                          ? AppTheme.bodyBoldFa
-                          : AppTheme.bodyBold)
+                  style: (isPersian ? AppTheme.bodyBoldFa : AppTheme.bodyBold)
                       .copyWith(
-                    color: AppTheme.textOnPhoto.withValues(alpha: 0.9),
-                  ),
+                        color: AppTheme.textOnPhoto.withValues(alpha: 0.9),
+                      ),
                 ),
               ],
             );

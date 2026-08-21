@@ -415,7 +415,9 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
     if (displayValue == 'Open to Children') return 'open_to_children';
 
     // Here For
-    if (displayValue == 'Long-term Relationship') return 'long_term_relationship';
+    if (displayValue == 'Long-term Relationship') {
+      return 'long_term_relationship';
+    }
     if (displayValue == 'Casual Dating') return 'casual_dating';
     if (displayValue == 'Marriage') return 'marriage';
     if (displayValue == 'New Friends') return 'new_friends';
@@ -516,9 +518,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
       workoutFrequency: _workoutFrequency != null
           ? _getBackendValue(_workoutFrequency!)
           : null,
-      zodiacSign: _zodiacSign != null
-          ? _getBackendValue(_zodiacSign!)
-          : null,
+      zodiacSign: _zodiacSign != null ? _getBackendValue(_zodiacSign!) : null,
       education: _education != null ? _getBackendValue(_education!) : null,
       workplace: _workplaceController.text.trim().isNotEmpty
           ? _workplaceController.text.trim()
@@ -530,6 +530,8 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
           : null,
       languages: _selectedLanguages.isNotEmpty ? _selectedLanguages : null,
     );
+
+    Provider.of<OnboardingProvider>(context, listen: false).setStepIndex(2);
 
     Navigator.push(
       context,
@@ -591,7 +593,11 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
               Text(
                 'Profile Details',
                 style: TextStyle(
-                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                  fontFamily: AppTheme.fontFor(
+                    !Localizations.localeOf(
+                      context,
+                    ).languageCode.contains('en'),
+                  ),
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
                   color: onSurfaceColor,
@@ -664,7 +670,11 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                                         child: Text(
                                           _errorMessage!,
                                           style: TextStyle(
-                                            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                                            fontFamily: AppTheme.fontFor(
+                                              !Localizations.localeOf(
+                                                context,
+                                              ).languageCode.contains('en'),
+                                            ),
                                             fontSize: 14,
                                             color: errorColor,
                                             fontWeight: FontWeight.w500,
@@ -687,7 +697,11 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                                       Text(
                                         '📏 Height',
                                         style: TextStyle(
-                                          fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                                          fontFamily: AppTheme.fontFor(
+                                            !Localizations.localeOf(
+                                              context,
+                                            ).languageCode.contains('en'),
+                                          ),
                                           fontSize: 15,
                                           fontWeight: FontWeight.w600,
                                           color: onSurfaceColor,
@@ -708,7 +722,8 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                                     divisions: 80,
                                     activeColor: primaryColor,
                                     inactiveColor: isDark
-                                        ? AppTheme.darkSecondary : AppTheme.lightSecondary,
+                                        ? AppTheme.darkSecondary
+                                        : AppTheme.lightSecondary,
                                     onChanged: (value) {
                                       setState(() {
                                         _height = value;
@@ -729,7 +744,11 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                                       Text(
                                         '🏋️ Weight',
                                         style: TextStyle(
-                                          fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                                          fontFamily: AppTheme.fontFor(
+                                            !Localizations.localeOf(
+                                              context,
+                                            ).languageCode.contains('en'),
+                                          ),
                                           fontSize: 15,
                                           fontWeight: FontWeight.w600,
                                           color: onSurfaceColor,
@@ -750,7 +769,8 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                                     divisions: 100,
                                     activeColor: primaryColor,
                                     inactiveColor: isDark
-                                        ? AppTheme.darkSecondary : AppTheme.lightSecondary,
+                                        ? AppTheme.darkSecondary
+                                        : AppTheme.lightSecondary,
                                     onChanged: (value) {
                                       setState(() {
                                         _weight = value;
@@ -849,11 +869,8 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                                 label: '🐾 Pets',
                                 options: _petsOptions,
                                 selected: _pets,
-                                onTap: (value) => _selectChip(
-                                  value,
-                                  (v) => _pets = v,
-                                  _pets,
-                                ),
+                                onTap: (value) =>
+                                    _selectChip(value, (v) => _pets = v, _pets),
                               ),
                               const SizedBox(height: 24),
                               // WORKOUT FREQUENCY
@@ -937,7 +954,11 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                                     child: Text(
                                       '🗣️ Languages (Multi-select)',
                                       style: TextStyle(
-                                        fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                                        fontFamily: AppTheme.fontFor(
+                                          !Localizations.localeOf(
+                                            context,
+                                          ).languageCode.contains('en'),
+                                        ),
                                         fontSize: 14,
                                         fontWeight: FontWeight.w600,
                                         color: onSurfaceColor,
@@ -980,7 +1001,11 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                                           child: Text(
                                             language,
                                             style: TextStyle(
-                                              fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                                              fontFamily: AppTheme.fontFor(
+                                                !Localizations.localeOf(
+                                                  context,
+                                                ).languageCode.contains('en'),
+                                              ),
                                               fontSize: 14,
                                               fontWeight: isSelected
                                                   ? FontWeight.w600
@@ -1123,7 +1148,9 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
           child: Text(
             label,
             style: TextStyle(
-              fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+              fontFamily: AppTheme.fontFor(
+                !Localizations.localeOf(context).languageCode.contains('en'),
+              ),
               fontSize: 14,
               fontWeight: FontWeight.w600,
               color: onSurfaceColor,
@@ -1157,7 +1184,11 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                 child: Text(
                   option,
                   style: TextStyle(
-                    fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                    fontFamily: AppTheme.fontFor(
+                      !Localizations.localeOf(
+                        context,
+                      ).languageCode.contains('en'),
+                    ),
                     fontSize: 14,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                     color: isSelected

@@ -532,6 +532,8 @@ class _BasicInfoScreenState extends State<BasicInfoScreen>
       city: _selectedCity!.name,
     );
 
+    Provider.of<OnboardingProvider>(context, listen: false).setStepIndex(1);
+
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const ProfileDetailsScreen()),
