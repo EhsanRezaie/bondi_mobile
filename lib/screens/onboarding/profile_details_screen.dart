@@ -174,7 +174,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
   final List<String> _educationOptions = [
     'High School',
     'Undergraduate Degree', // maps to 'bachelor'
-    'Postgraduate Degree', // maps to 'master'
+    'Masters', // maps to 'master'
     'PhD / Doctorate', // maps to 'phd'
   ];
 
@@ -266,7 +266,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
       _zodiacSign = _zodiacDisplay(onboarding.zodiacSign!);
     }
     if (onboarding.education != null) {
-      _education = _capitalize(onboarding.education!);
+      _education = _educationDisplay(onboarding.education!);
     }
     if (onboarding.workplace != null) {
       _workplaceController.text = onboarding.workplace!;
@@ -288,6 +288,21 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
   String _capitalize(String str) {
     if (str.isEmpty) return str;
     return str[0].toUpperCase() + str.substring(1);
+  }
+
+  String _educationDisplay(String v) {
+    switch (v) {
+      case 'high_school':
+        return 'High School';
+      case 'bachelor':
+        return 'Undergraduate Degree';
+      case 'master':
+        return 'Masters';
+      case 'phd':
+        return 'PhD / Doctorate';
+      default:
+        return _capitalize(v);
+    }
   }
 
   String _childrenDisplay(String v) {
@@ -461,7 +476,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
     // Education
     if (displayValue == 'High School') return 'high_school';
     if (displayValue == 'Undergraduate Degree') return 'bachelor';
-    if (displayValue == 'Postgraduate Degree') return 'master';
+    if (displayValue == 'Masters') return 'master';
     if (displayValue == 'PhD / Doctorate') return 'phd';
 
     // Political Orientation
@@ -566,6 +581,10 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
         elevation: 0,
         toolbarHeight: 80,
         automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios, size: 20, color: onSurfaceColor),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Column(
@@ -615,391 +634,63 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
         child: SafeArea(
           child: AppLayout.box(
             context: context,
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return CustomScrollView(
-                  slivers: [
-                    SliverPadding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24.0,
-                        vertical: 16.0,
-                      ),
-                      sliver: SliverToBoxAdapter(
-                        child: Form(
-                          key: _formKey,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Tell us more about yourself',
-                                style: AppTheme.headlineMedium.copyWith(
-                                  color: onSurfaceColor,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'All fields are optional. Fill what you want to share.',
-                                style: AppTheme.bodyLarge.copyWith(
-                                  color: textMutedColor,
-                                ),
-                              ),
-                              const SizedBox(height: 28),
-                              if (_errorMessage != null) ...[
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 14,
+            child: Column(
+              children: [
+                Expanded(
+                  child: CustomScrollView(
+                    slivers: [
+                      SliverPadding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 24.0,
+                          vertical: 16.0,
+                        ),
+                        sliver: SliverToBoxAdapter(
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Tell us more about yourself',
+                                  style: AppTheme.headlineMedium.copyWith(
+                                    color: onSurfaceColor,
+                                    fontWeight: FontWeight.w800,
                                   ),
-                                  decoration: BoxDecoration(
-                                    color: errorColor.withValues(alpha: 0.08),
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(
-                                      color: errorColor.withValues(alpha: 0.2),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'All fields are optional. Fill what you want to share.',
+                                  style: AppTheme.bodyLarge.copyWith(
+                                    color: textMutedColor,
+                                  ),
+                                ),
+                                const SizedBox(height: 28),
+                                if (_errorMessage != null) ...[
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 14,
                                     ),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Icon(
-                                        Icons.error_outline,
-                                        color: errorColor,
-                                        size: 20,
-                                      ),
-                                      const SizedBox(width: 12),
-                                      Expanded(
-                                        child: Text(
-                                          _errorMessage!,
-                                          style: TextStyle(
-                                            fontFamily: AppTheme.fontFor(
-                                              !Localizations.localeOf(
-                                                context,
-                                              ).languageCode.contains('en'),
-                                            ),
-                                            fontSize: 14,
-                                            color: errorColor,
-                                            fontWeight: FontWeight.w500,
-                                          ),
+                                    decoration: BoxDecoration(
+                                      color: errorColor.withValues(alpha: 0.08),
+                                      borderRadius: BorderRadius.circular(16),
+                                      border: Border.all(
+                                        color: errorColor.withValues(
+                                          alpha: 0.2,
                                         ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const SizedBox(height: 20),
-                              ],
-                              // HEIGHT
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        '📏 Height',
-                                        style: TextStyle(
-                                          fontFamily: AppTheme.fontFor(
-                                            !Localizations.localeOf(
-                                              context,
-                                            ).languageCode.contains('en'),
-                                          ),
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                          color: onSurfaceColor,
-                                        ),
-                                      ),
-                                      Text(
-                                        '${_height.toInt()} cm',
-                                        style: AppTheme.labelLarge.copyWith(
-                                          color: primaryColor,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  Slider(
-                                    value: _height,
-                                    min: 140,
-                                    max: 220,
-                                    divisions: 80,
-                                    activeColor: primaryColor,
-                                    inactiveColor: isDark
-                                        ? AppTheme.darkSecondary
-                                        : AppTheme.lightSecondary,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _height = value;
-                                      });
-                                    },
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 16),
-                              // WEIGHT
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    mainAxisAlignment:
-                                        MainAxisAlignment.spaceBetween,
-                                    children: [
-                                      Text(
-                                        '🏋️ Weight',
-                                        style: TextStyle(
-                                          fontFamily: AppTheme.fontFor(
-                                            !Localizations.localeOf(
-                                              context,
-                                            ).languageCode.contains('en'),
-                                          ),
-                                          fontSize: 15,
-                                          fontWeight: FontWeight.w600,
-                                          color: onSurfaceColor,
-                                        ),
-                                      ),
-                                      Text(
-                                        '${_weight.toInt()} kg',
-                                        style: AppTheme.labelLarge.copyWith(
-                                          color: primaryColor,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  Slider(
-                                    value: _weight,
-                                    min: 40,
-                                    max: 140,
-                                    divisions: 100,
-                                    activeColor: primaryColor,
-                                    inactiveColor: isDark
-                                        ? AppTheme.darkSecondary
-                                        : AppTheme.lightSecondary,
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _weight = value;
-                                      });
-                                    },
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 24),
-                              // BODY TYPE
-                              _buildChipSection(
-                                label: '💪 Body Type',
-                                options: _bodyTypeOptions,
-                                selected: _bodyType,
-                                onTap: (value) => _selectChip(
-                                  value,
-                                  (v) => _bodyType = v,
-                                  _bodyType,
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              // RELATIONSHIP STATUS
-                              _buildChipSection(
-                                label: '❤️ Relationship Status',
-                                options: _relationshipOptions,
-                                selected: _relationshipStatus,
-                                onTap: (value) => _selectChip(
-                                  value,
-                                  (v) => _relationshipStatus = v,
-                                  _relationshipStatus,
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              // LIVING SITUATION
-                              _buildChipSection(
-                                label: '🏠 Living Situation',
-                                options: _livingSituationOptions,
-                                selected: _livingSituation,
-                                onTap: (value) => _selectChip(
-                                  value,
-                                  (v) => _livingSituation = v,
-                                  _livingSituation,
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              // CHILDREN STATUS
-                              _buildChipSection(
-                                label: '👶 Children Status',
-                                options: _childrenOptions,
-                                selected: _childrenStatus,
-                                onTap: (value) => _selectChip(
-                                  value,
-                                  (v) => _childrenStatus = v,
-                                  _childrenStatus,
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              // SMOKING
-                              _buildChipSection(
-                                label: '🚬 Smoking',
-                                options: _smokingOptions,
-                                selected: _smoking,
-                                onTap: (value) => _selectChip(
-                                  value,
-                                  (v) => _smoking = v,
-                                  _smoking,
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              // DRINKING
-                              _buildChipSection(
-                                label: '🍷 Drinking',
-                                options: _drinkingOptions,
-                                selected: _drinking,
-                                onTap: (value) => _selectChip(
-                                  value,
-                                  (v) => _drinking = v,
-                                  _drinking,
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              // HERE FOR
-                              _buildChipSection(
-                                label: '🎯 I\'m Here For',
-                                options: _hereForOptions,
-                                selected: _hereFor,
-                                onTap: (value) => _selectChip(
-                                  value,
-                                  (v) => _hereFor = v,
-                                  _hereFor,
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              // PETS
-                              _buildChipSection(
-                                label: '🐾 Pets',
-                                options: _petsOptions,
-                                selected: _pets,
-                                onTap: (value) =>
-                                    _selectChip(value, (v) => _pets = v, _pets),
-                              ),
-                              const SizedBox(height: 24),
-                              // WORKOUT FREQUENCY
-                              _buildChipSection(
-                                label: '🏃 Workout Frequency',
-                                options: _workoutOptions,
-                                selected: _workoutFrequency,
-                                onTap: (value) => _selectChip(
-                                  value,
-                                  (v) => _workoutFrequency = v,
-                                  _workoutFrequency,
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              // ZODIAC SIGN
-                              _buildChipSection(
-                                label: '♈ Zodiac Sign',
-                                options: _zodiacOptions,
-                                selected: _zodiacSign,
-                                onTap: (value) => _selectChip(
-                                  value,
-                                  (v) => _zodiacSign = v,
-                                  _zodiacSign,
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              // EDUCATION
-                              _buildChipSection(
-                                label: '🎓 Education',
-                                options: _educationOptions,
-                                selected: _education,
-                                onTap: (value) => _selectChip(
-                                  value,
-                                  (v) => _education = v,
-                                  _education,
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              // POLITICAL ORIENTATION
-                              _buildChipSection(
-                                label: '🗳️ Political Orientation',
-                                options: _politicalOptions,
-                                selected: _politicalOrientation,
-                                onTap: (value) => _selectChip(
-                                  value,
-                                  (v) => _politicalOrientation = v,
-                                  _politicalOrientation,
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              // RELIGION
-                              _buildChipSection(
-                                label: '🕌 Religion',
-                                options: _religionOptions,
-                                selected: _religion,
-                                onTap: (value) => _selectChip(
-                                  value,
-                                  (v) => _religion = v,
-                                  _religion,
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              // ETHNICITY
-                              _buildChipSection(
-                                label: '🌍 Ethnicity',
-                                options: _ethnicityOptions,
-                                selected: _ethnicity,
-                                onTap: (value) => _selectChip(
-                                  value,
-                                  (v) => _ethnicity = v,
-                                  _ethnicity,
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              // LANGUAGES (Multi-select)
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 4.0),
-                                    child: Text(
-                                      '🗣️ Languages (Multi-select)',
-                                      style: TextStyle(
-                                        fontFamily: AppTheme.fontFor(
-                                          !Localizations.localeOf(
-                                            context,
-                                          ).languageCode.contains('en'),
-                                        ),
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                        color: onSurfaceColor,
                                       ),
                                     ),
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Wrap(
-                                    spacing: 8,
-                                    runSpacing: 8,
-                                    children: _languageOptions.map((language) {
-                                      final isSelected = _selectedLanguages
-                                          .contains(language);
-                                      return GestureDetector(
-                                        onTap: () => _toggleLanguage(language),
-                                        child: AnimatedContainer(
-                                          duration: const Duration(
-                                            milliseconds: 150,
-                                          ),
-                                          padding: const EdgeInsets.symmetric(
-                                            horizontal: 16,
-                                            vertical: 10,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            color: isSelected
-                                                ? primaryColor.withValues(
-                                                    alpha: 0.06,
-                                                  )
-                                                : surfaceColor,
-                                            borderRadius: BorderRadius.circular(
-                                              20,
-                                            ),
-                                            border: Border.all(
-                                              color: isSelected
-                                                  ? primaryColor
-                                                  : borderColor,
-                                              width: isSelected ? 1.5 : 1,
-                                            ),
-                                          ),
+                                    child: Row(
+                                      children: [
+                                        Icon(
+                                          Icons.error_outline,
+                                          color: errorColor,
+                                          size: 20,
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
                                           child: Text(
-                                            language,
+                                            _errorMessage!,
                                             style: TextStyle(
                                               fontFamily: AppTheme.fontFor(
                                                 !Localizations.localeOf(
@@ -1007,120 +698,419 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
                                                 ).languageCode.contains('en'),
                                               ),
                                               fontSize: 14,
-                                              fontWeight: isSelected
-                                                  ? FontWeight.w600
-                                                  : FontWeight.w500,
-                                              color: isSelected
-                                                  ? primaryColor
-                                                  : onSurfaceColor.withValues(
-                                                      alpha: 0.8,
-                                                    ),
+                                              color: errorColor,
+                                              fontWeight: FontWeight.w500,
                                             ),
                                           ),
                                         ),
-                                      );
-                                    }).toList(),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 24),
-                              // WORKPLACE
-                              TextFormField(
-                                controller: _workplaceController,
-                                style: AppTheme.bodyLarge.copyWith(
-                                  color: onSurfaceColor,
-                                ),
-                                decoration: InputDecoration(
-                                  labelText: '💼 Workplace (optional)',
-                                  hintText: 'Your job title or company',
-                                  prefixIcon: Icon(
-                                    Icons.work_outline,
-                                    color: textMutedColor,
-                                    size: 22,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 40),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: Container(
-                        alignment: Alignment.bottomCenter,
-                        padding: const EdgeInsets.only(
-                          left: 24.0,
-                          right: 24.0,
-                          bottom: 24.0,
-                        ),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: OutlinedButton(
-                                onPressed: () => Navigator.pop(context),
-                                style: AppTheme.outlineButton,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.arrow_back,
-                                      size: 20,
-                                      color: onSurfaceColor,
+                                      ],
                                     ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      'Back',
-                                      style: AppTheme.button.copyWith(
-                                        color: onSurfaceColor,
-                                      ),
+                                  ),
+                                  const SizedBox(height: 20),
+                                ],
+                                // HERE FOR
+                                _buildChipSection(
+                                  label: '🎯 I\'m Here For',
+                                  options: _hereForOptions,
+                                  selected: _hereFor,
+                                  onTap: (value) => _selectChip(
+                                    value,
+                                    (v) => _hereFor = v,
+                                    _hereFor,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                // HEIGHT
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          '📏 Height',
+                                          style: TextStyle(
+                                            fontFamily: AppTheme.fontFor(
+                                              !Localizations.localeOf(
+                                                context,
+                                              ).languageCode.contains('en'),
+                                            ),
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w600,
+                                            color: onSurfaceColor,
+                                          ),
+                                        ),
+                                        Text(
+                                          '${_height.toInt()} cm',
+                                          style: AppTheme.labelLarge.copyWith(
+                                            color: primaryColor,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Slider(
+                                      value: _height,
+                                      min: 140,
+                                      max: 220,
+                                      divisions: 80,
+                                      activeColor: primaryColor,
+                                      inactiveColor: isDark
+                                          ? AppTheme.darkSecondary
+                                          : AppTheme.lightSecondary,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _height = value;
+                                        });
+                                      },
                                     ),
                                   ],
                                 ),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: AppTheme.gradientButton(
-                                enabled: !_isLoading,
-                                onPressed: _isLoading ? null : _handleNext,
-                                child: _isLoading
-                                    ? const SizedBox(
-                                        height: 24,
-                                        width: 24,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: Colors.white,
+                                const SizedBox(height: 16),
+                                // WEIGHT
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          '🏋️ Weight',
+                                          style: TextStyle(
+                                            fontFamily: AppTheme.fontFor(
+                                              !Localizations.localeOf(
+                                                context,
+                                              ).languageCode.contains('en'),
+                                            ),
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.w600,
+                                            color: onSurfaceColor,
+                                          ),
                                         ),
-                                      )
-                                    : Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            'Continue',
-                                            style: AppTheme.button.copyWith(
-                                              color: Colors.white,
+                                        Text(
+                                          '${_weight.toInt()} kg',
+                                          style: AppTheme.labelLarge.copyWith(
+                                            color: primaryColor,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Slider(
+                                      value: _weight,
+                                      min: 40,
+                                      max: 140,
+                                      divisions: 100,
+                                      activeColor: primaryColor,
+                                      inactiveColor: isDark
+                                          ? AppTheme.darkSecondary
+                                          : AppTheme.lightSecondary,
+                                      onChanged: (value) {
+                                        setState(() {
+                                          _weight = value;
+                                        });
+                                      },
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 24),
+                                // BODY TYPE
+                                _buildChipSection(
+                                  label: '💪 Body Type',
+                                  options: _bodyTypeOptions,
+                                  selected: _bodyType,
+                                  onTap: (value) => _selectChip(
+                                    value,
+                                    (v) => _bodyType = v,
+                                    _bodyType,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                // RELATIONSHIP STATUS
+                                _buildChipSection(
+                                  label: '❤️ Relationship Status',
+                                  options: _relationshipOptions,
+                                  selected: _relationshipStatus,
+                                  onTap: (value) => _selectChip(
+                                    value,
+                                    (v) => _relationshipStatus = v,
+                                    _relationshipStatus,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                // LIVING SITUATION
+                                _buildChipSection(
+                                  label: '🏠 Living Situation',
+                                  options: _livingSituationOptions,
+                                  selected: _livingSituation,
+                                  onTap: (value) => _selectChip(
+                                    value,
+                                    (v) => _livingSituation = v,
+                                    _livingSituation,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                // CHILDREN STATUS
+                                _buildChipSection(
+                                  label: '👶 Children Status',
+                                  options: _childrenOptions,
+                                  selected: _childrenStatus,
+                                  onTap: (value) => _selectChip(
+                                    value,
+                                    (v) => _childrenStatus = v,
+                                    _childrenStatus,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                // SMOKING
+                                _buildChipSection(
+                                  label: '🚬 Smoking',
+                                  options: _smokingOptions,
+                                  selected: _smoking,
+                                  onTap: (value) => _selectChip(
+                                    value,
+                                    (v) => _smoking = v,
+                                    _smoking,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                // DRINKING
+                                _buildChipSection(
+                                  label: '🍷 Drinking',
+                                  options: _drinkingOptions,
+                                  selected: _drinking,
+                                  onTap: (value) => _selectChip(
+                                    value,
+                                    (v) => _drinking = v,
+                                    _drinking,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                // PETS
+                                _buildChipSection(
+                                  label: '🐾 Pets',
+                                  options: _petsOptions,
+                                  selected: _pets,
+                                  onTap: (value) => _selectChip(
+                                    value,
+                                    (v) => _pets = v,
+                                    _pets,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                // WORKOUT FREQUENCY
+                                _buildChipSection(
+                                  label: '🏃 Workout Frequency',
+                                  options: _workoutOptions,
+                                  selected: _workoutFrequency,
+                                  onTap: (value) => _selectChip(
+                                    value,
+                                    (v) => _workoutFrequency = v,
+                                    _workoutFrequency,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                // ZODIAC SIGN
+                                _buildChipSection(
+                                  label: '♈ Zodiac Sign',
+                                  options: _zodiacOptions,
+                                  selected: _zodiacSign,
+                                  onTap: (value) => _selectChip(
+                                    value,
+                                    (v) => _zodiacSign = v,
+                                    _zodiacSign,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                // EDUCATION
+                                _buildChipSection(
+                                  label: '🎓 Education',
+                                  options: _educationOptions,
+                                  selected: _education,
+                                  onTap: (value) => _selectChip(
+                                    value,
+                                    (v) => _education = v,
+                                    _education,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                // POLITICAL ORIENTATION
+                                _buildChipSection(
+                                  label: '🗳️ Political Orientation',
+                                  options: _politicalOptions,
+                                  selected: _politicalOrientation,
+                                  onTap: (value) => _selectChip(
+                                    value,
+                                    (v) => _politicalOrientation = v,
+                                    _politicalOrientation,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                // RELIGION
+                                _buildChipSection(
+                                  label: '🕌 Religion',
+                                  options: _religionOptions,
+                                  selected: _religion,
+                                  onTap: (value) => _selectChip(
+                                    value,
+                                    (v) => _religion = v,
+                                    _religion,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                // ETHNICITY
+                                _buildChipSection(
+                                  label: '🌍 Ethnicity',
+                                  options: _ethnicityOptions,
+                                  selected: _ethnicity,
+                                  onTap: (value) => _selectChip(
+                                    value,
+                                    (v) => _ethnicity = v,
+                                    _ethnicity,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                // LANGUAGES (Multi-select)
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 4.0),
+                                      child: Text(
+                                        '🗣️ Languages (Multi-select)',
+                                        style: TextStyle(
+                                          fontFamily: AppTheme.fontFor(
+                                            !Localizations.localeOf(
+                                              context,
+                                            ).languageCode.contains('en'),
+                                          ),
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          color: onSurfaceColor,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Wrap(
+                                      spacing: 8,
+                                      runSpacing: 8,
+                                      children: _languageOptions.map((
+                                        language,
+                                      ) {
+                                        final isSelected = _selectedLanguages
+                                            .contains(language);
+                                        return GestureDetector(
+                                          onTap: () =>
+                                              _toggleLanguage(language),
+                                          child: AnimatedContainer(
+                                            duration: const Duration(
+                                              milliseconds: 150,
+                                            ),
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 16,
+                                              vertical: 10,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: isSelected
+                                                  ? primaryColor.withValues(
+                                                      alpha: 0.06,
+                                                    )
+                                                  : surfaceColor,
+                                              borderRadius:
+                                                  BorderRadius.circular(20),
+                                              border: Border.all(
+                                                color: isSelected
+                                                    ? primaryColor
+                                                    : borderColor,
+                                                width: isSelected ? 1.5 : 1,
+                                              ),
+                                            ),
+                                            child: Text(
+                                              language,
+                                              style: TextStyle(
+                                                fontFamily: AppTheme.fontFor(
+                                                  !Localizations.localeOf(
+                                                    context,
+                                                  ).languageCode.contains('en'),
+                                                ),
+                                                fontSize: 14,
+                                                fontWeight: isSelected
+                                                    ? FontWeight.w600
+                                                    : FontWeight.w500,
+                                                color: isSelected
+                                                    ? primaryColor
+                                                    : onSurfaceColor.withValues(
+                                                        alpha: 0.8,
+                                                      ),
+                                              ),
                                             ),
                                           ),
-                                          const SizedBox(width: 8),
-                                          const Icon(
-                                            Icons.arrow_forward,
-                                            size: 20,
-                                            color: Colors.white,
-                                          ),
-                                        ],
-                                      ),
-                              ),
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 24),
+                                // WORKPLACE
+                                TextFormField(
+                                  controller: _workplaceController,
+                                  style: AppTheme.bodyLarge.copyWith(
+                                    color: onSurfaceColor,
+                                  ),
+                                  decoration: InputDecoration(
+                                    labelText: '💼 Workplace (optional)',
+                                    hintText: 'Your job title or company',
+                                    prefixIcon: Icon(
+                                      Icons.work_outline,
+                                      color: textMutedColor,
+                                      size: 22,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 40),
+                              ],
                             ),
-                          ],
+                          ),
                         ),
                       ),
-                    ),
-                  ],
-                );
-              },
+                    ],
+                  ),
+                ),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(24.0, 12.0, 24.0, 16.0),
+                  child: AppTheme.gradientButton(
+                    enabled: !_isLoading,
+                    onPressed: _isLoading ? null : _handleNext,
+                    child: _isLoading
+                        ? const SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Continue',
+                                style: AppTheme.button.copyWith(
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              const Icon(
+                                Icons.arrow_forward,
+                                size: 20,
+                                color: Colors.white,
+                              ),
+                            ],
+                          ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),

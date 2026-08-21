@@ -119,6 +119,7 @@ class _VerifySelfieScreenState extends State<VerifySelfieScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
+        automaticallyImplyLeading: false,
         title: Text(
           t.verify_selfie_title,
           style: AppTheme.titleMedium.copyWith(color: onSurfaceColor),

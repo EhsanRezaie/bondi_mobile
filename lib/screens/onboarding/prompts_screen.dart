@@ -239,6 +239,10 @@ class _PromptsScreenState extends State<PromptsScreen> {
         elevation: 0,
         toolbarHeight: 80,
         automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios, size: 20, color: onSurfaceColor),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Column(
@@ -553,78 +557,44 @@ class _PromptsScreenState extends State<PromptsScreen> {
                       ),
               ),
 
-              // Bottom buttons
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        onPressed: () => Navigator.pop(context),
-                        style: AppTheme.outlineButton,
-                        child: Row(
+              // Bottom button
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(24.0, 12.0, 24.0, 16.0),
+                child: AppTheme.gradientButton(
+                  enabled: isComplete && !_isSubmitting,
+                  onPressed: _isSubmitting ? null : _handleSubmit,
+                  child: _isSubmitting
+                      ? const SizedBox(
+                          height: 24,
+                          width: 24,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: Colors.white,
+                          ),
+                        )
+                      : Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
-                              Icons.arrow_back,
-                              size: 20,
-                              color: onSurfaceColor,
-                            ),
-                            const SizedBox(width: 8),
                             Flexible(
                               child: Text(
-                                'Back',
+                                'Continue',
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: AppTheme.button.copyWith(
-                                  color: onSurfaceColor,
+                                  color: Colors.white,
                                   fontSize: 16,
                                 ),
                               ),
                             ),
+                            const SizedBox(width: 8),
+                            Icon(
+                              Icons.arrow_forward,
+                              size: 20,
+                              color: Colors.white,
+                            ),
                           ],
                         ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: AppTheme.gradientButton(
-                        enabled: isComplete && !_isSubmitting,
-                        onPressed: _isSubmitting ? null : _handleSubmit,
-                        child: _isSubmitting
-                            ? const SizedBox(
-                                height: 24,
-                                width: 24,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white,
-                                ),
-                              )
-                            : Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Flexible(
-                                    child: Text(
-                                      'Continue',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                      style: AppTheme.button.copyWith(
-                                        color: Colors.white,
-                                        fontSize: 16,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Icon(
-                                    Icons.arrow_forward,
-                                    size: 20,
-                                    color: Colors.white,
-                                  ),
-                                ],
-                              ),
-                      ),
-                    ),
-                  ],
                 ),
               ),
             ],

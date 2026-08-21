@@ -146,6 +146,10 @@ class _InterestsScreenState extends State<InterestsScreen> {
         elevation: 0,
         toolbarHeight: 80,
         automaticallyImplyLeading: false,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios, size: 20, color: onSurfaceColor),
+          onPressed: () => Navigator.pop(context),
+        ),
         title: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
           child: Column(
@@ -197,259 +201,220 @@ class _InterestsScreenState extends State<InterestsScreen> {
         child: SafeArea(
           child: AppLayout.box(
             context: context,
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return CustomScrollView(
-                  slivers: [
-                    SliverPadding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                      sliver: SliverToBoxAdapter(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const SizedBox(height: 16),
-                            // Header
-                            Text(
-                              'What are your interests?',
-                              style: AppTheme.headlineMedium.copyWith(
-                                color: onSurfaceColor,
-                                fontWeight: FontWeight.w800,
+            child: Column(
+              children: [
+                Expanded(
+                  child: CustomScrollView(
+                    slivers: [
+                      SliverPadding(
+                        padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                        sliver: SliverToBoxAdapter(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(height: 16),
+                              // Header
+                              Text(
+                                'What are your interests?',
+                                style: AppTheme.headlineMedium.copyWith(
+                                  color: onSurfaceColor,
+                                  fontWeight: FontWeight.w800,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Select at least 8 interests that represent you',
-                              style: AppTheme.bodyLarge.copyWith(
-                                color: textMutedColor,
+                              const SizedBox(height: 8),
+                              Text(
+                                'Select at least 8 interests that represent you',
+                                style: AppTheme.bodyLarge.copyWith(
+                                  color: textMutedColor,
+                                ),
                               ),
-                            ),
-                            const SizedBox(height: 24),
+                              const SizedBox(height: 24),
 
-                            // Error Message
-                            if (_errorMessage != null)
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 14,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: errorColor.withValues(alpha: 0.08),
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: errorColor.withValues(alpha: 0.2),
+                              // Error Message
+                              if (_errorMessage != null)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 14,
                                   ),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.error_outline,
-                                      color: errorColor,
-                                      size: 20,
+                                  decoration: BoxDecoration(
+                                    color: errorColor.withValues(alpha: 0.08),
+                                    borderRadius: BorderRadius.circular(16),
+                                    border: Border.all(
+                                      color: errorColor.withValues(alpha: 0.2),
                                     ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Text(
-                                        _errorMessage!,
-                                        style: TextStyle(
-                                          fontFamily: AppTheme.fontFor(
-                                            !Localizations.localeOf(
-                                              context,
-                                            ).languageCode.contains('en'),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Icon(
+                                        Icons.error_outline,
+                                        color: errorColor,
+                                        size: 20,
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          _errorMessage!,
+                                          style: TextStyle(
+                                            fontFamily: AppTheme.fontFor(
+                                              !Localizations.localeOf(
+                                                context,
+                                              ).languageCode.contains('en'),
+                                            ),
+                                            fontSize: 14,
+                                            color: errorColor,
+                                            fontWeight: FontWeight.w500,
                                           ),
-                                          fontSize: 14,
-                                          color: errorColor,
-                                          fontWeight: FontWeight.w500,
                                         ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            if (_errorMessage != null)
-                              const SizedBox(height: 16),
+                              if (_errorMessage != null)
+                                const SizedBox(height: 16),
 
-                            // Progress indicator
-                            Container(
-                              width: double.infinity,
-                              height: 6,
-                              decoration: BoxDecoration(
-                                color: isDark
-                                    ? Colors.white.withValues(alpha: 0.1)
-                                    : Colors.grey.shade200,
-                                borderRadius: BorderRadius.circular(3),
-                              ),
-                              child: FractionallySizedBox(
-                                widthFactor: selectedCount.clamp(0, 8) / 8,
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                    color: isEnough
-                                        ? Colors.green
-                                        : primaryColor,
-                                    borderRadius: BorderRadius.circular(3),
+                              // Progress indicator
+                              Container(
+                                width: double.infinity,
+                                height: 6,
+                                decoration: BoxDecoration(
+                                  color: isDark
+                                      ? Colors.white.withValues(alpha: 0.1)
+                                      : Colors.grey.shade200,
+                                  borderRadius: BorderRadius.circular(3),
+                                ),
+                                child: FractionallySizedBox(
+                                  widthFactor: selectedCount.clamp(0, 8) / 8,
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      color: isEnough
+                                          ? Colors.green
+                                          : primaryColor,
+                                      borderRadius: BorderRadius.circular(3),
+                                    ),
                                   ),
                                 ),
                               ),
+                              const SizedBox(height: 8),
+                              // Counter text below progress bar
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    'Selected: $selectedCount',
+                                    style: TextStyle(
+                                      fontFamily: AppTheme.fontFor(
+                                        !Localizations.localeOf(
+                                          context,
+                                        ).languageCode.contains('en'),
+                                      ),
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                      color: isEnough
+                                          ? Colors.green
+                                          : textMutedColor,
+                                    ),
+                                  ),
+                                  Text(
+                                    isEnough
+                                        ? '✅ Great!'
+                                        : '$remaining more needed',
+                                    style: TextStyle(
+                                      fontFamily: AppTheme.fontFor(
+                                        !Localizations.localeOf(
+                                          context,
+                                        ).languageCode.contains('en'),
+                                      ),
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w500,
+                                      color: isEnough
+                                          ? Colors.green
+                                          : textMutedColor,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 24),
+
+                              // Interests List
+                              if (_isLoading)
+                                const Center(child: CircularProgressIndicator())
+                              else if (_groupedInterests.isEmpty)
+                                Center(
+                                  child: Text(
+                                    'No interests available',
+                                    style: AppTheme.bodyLarge.copyWith(
+                                      color: textMutedColor,
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      if (!_isLoading && _groupedInterests.isNotEmpty)
+                        SliverToBoxAdapter(
+                          child: Column(
+                            children: _groupedInterests.keys.map((category) {
+                              return _buildCategorySection(
+                                category,
+                                _groupedInterests[category]!,
+                                primaryColor,
+                                surfaceColor,
+                                borderColor,
+                                textMutedColor,
+                                onSurfaceColor,
+                                isDark,
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.fromLTRB(24.0, 12.0, 24.0, 16.0),
+                  child: AppTheme.gradientButton(
+                    enabled: isEnough && !_isSubmitting,
+                    onPressed: _isSubmitting || !isEnough ? null : _handleNext,
+                    child: _isSubmitting
+                        ? const SizedBox(
+                            height: 24,
+                            width: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
                             ),
-                            const SizedBox(height: 8),
-                            // Counter text below progress bar
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          )
+                        : FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Text(
-                                  'Selected: $selectedCount',
-                                  style: TextStyle(
-                                    fontFamily: AppTheme.fontFor(
-                                      !Localizations.localeOf(
-                                        context,
-                                      ).languageCode.contains('en'),
-                                    ),
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w500,
-                                    color: isEnough
-                                        ? Colors.green
-                                        : textMutedColor,
-                                  ),
-                                ),
-                                Text(
                                   isEnough
-                                      ? '✅ Great!'
-                                      : '$remaining more needed',
-                                  style: TextStyle(
-                                    fontFamily: AppTheme.fontFor(
-                                      !Localizations.localeOf(
-                                        context,
-                                      ).languageCode.contains('en'),
-                                    ),
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w500,
-                                    color: isEnough
-                                        ? Colors.green
-                                        : textMutedColor,
+                                      ? 'Continue'
+                                      : 'Select ${8 - selectedCount} more',
+                                  style: AppTheme.button.copyWith(
+                                    color: Colors.white,
                                   ),
                                 ),
+                                if (isEnough) ...[
+                                  const SizedBox(width: 8),
+                                  const Icon(
+                                    Icons.arrow_forward,
+                                    size: 20,
+                                    color: Colors.white,
+                                  ),
+                                ],
                               ],
                             ),
-                            const SizedBox(height: 24),
-
-                            // Interests List
-                            if (_isLoading)
-                              const Center(child: CircularProgressIndicator())
-                            else if (_groupedInterests.isEmpty)
-                              Center(
-                                child: Text(
-                                  'No interests available',
-                                  style: AppTheme.bodyLarge.copyWith(
-                                    color: textMutedColor,
-                                  ),
-                                ),
-                              ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    if (!_isLoading && _groupedInterests.isNotEmpty)
-                      SliverToBoxAdapter(
-                        child: Column(
-                          children: _groupedInterests.keys.map((category) {
-                            return _buildCategorySection(
-                              category,
-                              _groupedInterests[category]!,
-                              primaryColor,
-                              surfaceColor,
-                              borderColor,
-                              textMutedColor,
-                              onSurfaceColor,
-                              isDark,
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                    SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: Container(
-                        alignment: Alignment.bottomCenter,
-                        padding: const EdgeInsets.only(
-                          left: 24.0,
-                          right: 24.0,
-                          bottom: 24.0,
-                        ),
-                        child: Row(
-                          children: [
-                            // Back Button
-                            Expanded(
-                              child: OutlinedButton(
-                                onPressed: () => Navigator.pop(context),
-                                style: AppTheme.outlineButton,
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.arrow_back,
-                                      size: 20,
-                                      color: onSurfaceColor,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      'Back',
-                                      style: AppTheme.button.copyWith(
-                                        color: onSurfaceColor,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            // Next Button
-                            Expanded(
-                              child: AppTheme.gradientButton(
-                                enabled: isEnough && !_isSubmitting,
-                                onPressed: _isSubmitting || !isEnough
-                                    ? null
-                                    : _handleNext,
-                                child: _isSubmitting
-                                    ? const SizedBox(
-                                        height: 24,
-                                        width: 24,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          color: Colors.white,
-                                        ),
-                                      )
-                                    : FittedBox(
-                                        fit: BoxFit.scaleDown,
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: [
-                                            Text(
-                                              isEnough
-                                                  ? 'Continue'
-                                                  : 'Select ${8 - selectedCount} more',
-                                              style: AppTheme.button.copyWith(
-                                                color: Colors.white,
-                                              ),
-                                            ),
-                                            if (isEnough) ...[
-                                              const SizedBox(width: 8),
-                                              const Icon(
-                                                Icons.arrow_forward,
-                                                size: 20,
-                                                color: Colors.white,
-                                              ),
-                                            ],
-                                          ],
-                                        ),
-                                      ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                );
-              },
+                          ),
+                  ),
+                ),
+              ],
             ),
           ),
         ),
