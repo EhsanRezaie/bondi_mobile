@@ -88,7 +88,7 @@ Health check: `GET /api/v1/auth/health` → `{"status":"healthy","redis":"connec
 
 ## Android Build
 
-- compileSdk/targetSdk: 36
+- compileSdk: 37 (required by permission_handler_android), targetSdk: 36
 - minSdk: `flutter.minSdkVersion`
 - JVM: Java 17 (`sourceCompatibility`, `targetCompatibility`, `jvmTarget`)
 - Google Services plugin applied (requires `google-services.json` in `android/app/`)
