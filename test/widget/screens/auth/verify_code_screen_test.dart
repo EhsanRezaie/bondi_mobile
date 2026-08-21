@@ -7,13 +7,10 @@ import "package:dating_app/providers/language_provider.dart";
 import '../../../helpers/test_helpers.dart';
 
 class FakeOnboardingProvider extends ChangeNotifier {
-  String _email = '';
-  String _password = '';
-  String get email => _email;
-  String get password => _password;
-  void setEmailAndPassword(String email, String password) {
-    _email = email;
-    _password = password;
+  String _phone = '';
+  String get phone => _phone;
+  void setPhone(String phone) {
+    _phone = phone;
     notifyListeners();
   }
 }
@@ -29,10 +26,7 @@ void main() {
     ) async {
       await tester.pumpWidget(
         buildTestable(
-          const VerifyCodeScreen(
-            email: 'test@example.com',
-            password: 'password123',
-          ),
+          const VerifyCodeScreen(phone: '+989121112233'),
           providers: [
             ChangeNotifierProvider(create: (_) => AuthProvider()),
             ChangeNotifierProvider(create: (_) => FakeOnboardingProvider()),
@@ -56,10 +50,7 @@ void main() {
     ) async {
       await tester.pumpWidget(
         buildTestable(
-          const VerifyCodeScreen(
-            email: 'test@example.com',
-            password: 'password123',
-          ),
+          const VerifyCodeScreen(phone: '+989121112233'),
           providers: [
             ChangeNotifierProvider(create: (_) => AuthProvider()),
             ChangeNotifierProvider(create: (_) => FakeOnboardingProvider()),
@@ -83,10 +74,7 @@ void main() {
     ) async {
       await tester.pumpWidget(
         buildTestable(
-          const VerifyCodeScreen(
-            email: 'test@example.com',
-            password: 'password123',
-          ),
+          const VerifyCodeScreen(phone: '+989121112233'),
           providers: [
             ChangeNotifierProvider(create: (_) => AuthProvider()),
             ChangeNotifierProvider(create: (_) => FakeOnboardingProvider()),
@@ -112,10 +100,7 @@ void main() {
     testWidgets('shows error for incomplete 6-digit code', (tester) async {
       await tester.pumpWidget(
         buildTestable(
-          const VerifyCodeScreen(
-            email: 'test@example.com',
-            password: 'password123',
-          ),
+          const VerifyCodeScreen(phone: '+989121112233'),
           providers: [
             ChangeNotifierProvider(create: (_) => AuthProvider()),
             ChangeNotifierProvider(create: (_) => FakeOnboardingProvider()),
@@ -127,7 +112,7 @@ void main() {
       await tester.enterText(find.byType(TextFormField).first, '123');
       await tester.pump();
 
-      await tester.tap(find.text('Verify & Continue'));
+      await tester.tap(find.text('Verify'));
       await tester.pump();
 
       expect(find.text('Please enter the 6-digit code'), findsOneWidget);
@@ -138,10 +123,7 @@ void main() {
     ) async {
       await tester.pumpWidget(
         buildTestable(
-          const VerifyCodeScreen(
-            email: 'test@example.com',
-            password: 'password123',
-          ),
+          const VerifyCodeScreen(phone: '+989121112233'),
           providers: [
             ChangeNotifierProvider(create: (_) => AuthProvider()),
             ChangeNotifierProvider(create: (_) => FakeOnboardingProvider()),
@@ -152,11 +134,11 @@ void main() {
 
       final resendButton = find.byWidgetPredicate(
         (widget) =>
-            widget is TextButton &&
+            widget is OutlinedButton &&
             widget.child is Text &&
             (widget.child as Text).data!.contains('Resend Code'),
       );
-      expect(tester.widget<TextButton>(resendButton).onPressed, isNull);
+      expect(tester.widget<OutlinedButton>(resendButton).onPressed, isNull);
     });
   });
 }

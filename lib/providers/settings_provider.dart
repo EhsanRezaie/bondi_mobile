@@ -8,7 +8,7 @@ class SettingsProvider extends ChangeNotifier {
 
   static const String _darkModeKey = 'dark_mode';
 
-  bool _darkMode = false;
+  bool _darkMode = true;
   bool _hideLastSeen = false;
   bool _hideOnlineStatus = false;
   bool _pushEnabled = true;
@@ -41,7 +41,7 @@ class SettingsProvider extends ChangeNotifier {
 
    Future<void> _loadSavedDarkMode() async {
     final prefs = await SharedPreferences.getInstance();
-    final darkMode = prefs.getBool(_darkModeKey) ?? false;
+    final darkMode = prefs.getBool(_darkModeKey) ?? true;
     if (_darkMode != darkMode) {
       _darkMode = darkMode;
       _safeNotify();

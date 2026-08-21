@@ -13,19 +13,18 @@ void main() {
       provider.dispose();
     });
 
-    group('setEmailAndPassword', () {
-      test('sets email and password', () {
-        provider.setEmailAndPassword('test@example.com', 'pass123');
+    group('setPhone', () {
+      test('sets phone and hasPhone is true', () {
+        provider.setPhone('+989121112233');
 
-        expect(provider.email, 'test@example.com');
-        expect(provider.password, 'pass123');
-        expect(provider.hasEmail, isTrue);
+        expect(provider.phone, '+989121112233');
+        expect(provider.hasPhone, isTrue);
       });
 
-      test('hasEmail is false when email is empty', () {
-        provider.setEmailAndPassword('', 'pass123');
+      test('hasPhone is false when phone is empty', () {
+        provider.setPhone('');
 
-        expect(provider.hasEmail, isFalse);
+        expect(provider.hasPhone, isFalse);
       });
     });
 
@@ -192,19 +191,19 @@ void main() {
     });
 
     group('isComplete', () {
-      test('returns false when no email set', () {
+      test('returns false when no phone set', () {
         expect(provider.isComplete, isFalse);
       });
 
-      test('returns false when email set but no name', () {
-        provider.setEmailAndPassword('test@example.com', 'pass123');
+      test('returns false when phone set but no name', () {
+        provider.setPhone('+989121112233');
         expect(provider.isComplete, isFalse);
       });
     });
 
     group('clear', () {
       test('resets all fields', () {
-        provider.setEmailAndPassword('test@example.com', 'pass123');
+        provider.setPhone('+989121112233');
         provider.setPersonalInfo(
           name: 'Test',
           birthDate: '1990-01-01',
@@ -214,8 +213,7 @@ void main() {
 
         provider.clear();
 
-        expect(provider.email, isNull);
-        expect(provider.password, isNull);
+        expect(provider.phone, isNull);
         expect(provider.name, isNull);
         expect(provider.interests, isNull);
       });

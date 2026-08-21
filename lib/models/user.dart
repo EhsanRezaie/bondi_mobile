@@ -49,7 +49,8 @@ class UserSettings {
 
 class User {
   final String id;
-  final String email;
+  final String? email;
+  final String? phone;
   final String? name;
   final int? age;
   final String? birthDate;
@@ -96,7 +97,8 @@ class User {
 
   User({
     required this.id,
-    required this.email,
+    this.email,
+    this.phone,
     this.name,
     this.age,
     this.birthDate,
@@ -156,6 +158,7 @@ class User {
     return User(
       id: json['id'],
       email: json['email'],
+      phone: json['phone'],
       name: json['name'],
       age: json['age'],
       birthDate: json['birth_date'],
@@ -210,6 +213,7 @@ class User {
     return {
       'id': id,
       'email': email,
+      'phone': phone,
       'name': name,
       'age': age,
       'birth_date': birthDate,

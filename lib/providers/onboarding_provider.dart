@@ -4,9 +4,8 @@ import 'package:flutter/material.dart';
 class OnboardingProvider extends ChangeNotifier {
   bool _disposed = false;
 
-  // Step 1: Email & Password (already passed from SignUp)
-  String? _email;
-  String? _password;
+  // Step 1: Phone (from auth)
+  String? _phone;
 
   // Step 2: Personal Info
   String? _name;
@@ -54,8 +53,7 @@ class OnboardingProvider extends ChangeNotifier {
   // ============================================================
   // Getters
   // ============================================================
-  String? get email => _email;
-  String? get password => _password;
+  String? get phone => _phone;
   String? get name => _name;
   String? get birthDate => _birthDate;
   String? get gender => _gender;
@@ -88,7 +86,7 @@ class OnboardingProvider extends ChangeNotifier {
   List<Map<String, dynamic>>? get prompts => _prompts;
   List<String>? get photos => _photos;
 
-  bool get hasEmail => _email != null && _email!.isNotEmpty;
+  bool get hasPhone => _phone != null && _phone!.isNotEmpty;
 
   @override
   void dispose() {
@@ -101,11 +99,10 @@ class OnboardingProvider extends ChangeNotifier {
   }
 
   // ============================================================
-  // Set from SignUp (called after successful verify)
+  // Set from auth (phone)
   // ============================================================
-  void setEmailAndPassword(String email, String password) {
-    _email = email;
-    _password = password;
+  void setPhone(String phone) {
+    _phone = phone;
     _safeNotify();
   }
 
@@ -300,8 +297,7 @@ class OnboardingProvider extends ChangeNotifier {
   // Reset all data
   // ============================================================
   void clear() {
-    _email = null;
-    _password = null;
+    _phone = null;
     _name = null;
     _birthDate = null;
     _gender = null;

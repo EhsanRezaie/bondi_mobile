@@ -7,7 +7,14 @@ import 'package:dating_app/utils/responsive.dart';
 import 'package:dating_app/widgets/action_toast.dart';
 
 class CreateTicketScreen extends StatefulWidget {
-  const CreateTicketScreen({super.key});
+  final String? initialSubject;
+  final String? initialMessage;
+
+  const CreateTicketScreen({
+    super.key,
+    this.initialSubject,
+    this.initialMessage,
+  });
 
   @override
   State<CreateTicketScreen> createState() => _CreateTicketScreenState();
@@ -34,6 +41,15 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
       _messageController.text.trim().length >= 10;
 
   @override
+  void initState() {
+    super.initState();
+    _selectedSubjectValue = widget.initialSubject;
+    if (widget.initialMessage != null) {
+      _messageController.text = widget.initialMessage!;
+    }
+  }
+
+  @override
   void dispose() {
     _messageController.dispose();
     super.dispose();
@@ -56,7 +72,8 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
     } else {
       showActionToast(
         context,
-        provider.errorMessage ?? AppLocalizations.of(context)!.ticket_load_error,
+        provider.errorMessage ??
+            AppLocalizations.of(context)!.ticket_load_error,
         isError: true,
       );
     }
@@ -68,8 +85,9 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
     final isDark = context.isDarkMode;
     final bgColor = isDark ? AppTheme.darkBackground : AppTheme.lightBackground;
     final onSurfaceColor = Theme.of(context).colorScheme.onSurface;
-    final textMutedColor =
-        isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted;
+    final textMutedColor = isDark
+        ? AppTheme.darkTextMuted
+        : AppTheme.lightTextMuted;
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
     final isPersian = !Localizations.localeOf(
       context,
@@ -117,17 +135,11 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
                     fontFamily: AppTheme.fontFor(isPersian),
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
-                    color: isDark
-                        ? Colors.grey.shade500
-                        : Colors.grey.shade700,
+                    color: isDark ? Colors.grey.shade500 : Colors.grey.shade700,
                   ),
                 ),
                 const SizedBox(height: 8),
-                _buildMessageField(
-                  isDark,
-                  onSurfaceColor,
-                  textMutedColor,
-                ),
+                _buildMessageField(isDark, onSurfaceColor, textMutedColor),
                 const SizedBox(height: 24),
                 SizedBox(
                   width: double.infinity,
@@ -138,8 +150,9 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: primaryColor,
                       foregroundColor: Colors.white,
-                      disabledBackgroundColor:
-                          Colors.grey.shade300.withValues(alpha: 0.8),
+                      disabledBackgroundColor: Colors.grey.shade300.withValues(
+                        alpha: 0.8,
+                      ),
                       minimumSize: const Size(double.infinity, 52),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(26),
@@ -243,19 +256,13 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
     );
   }
 
-  Widget _buildOtherHint(
-    AppLocalizations t,
-    bool isDark,
-    Color primaryColor,
-  ) {
+  Widget _buildOtherHint(AppLocalizations t, bool isDark, Color primaryColor) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: primaryColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: primaryColor.withValues(alpha: 0.3),
-        ),
+        border: Border.all(color: primaryColor.withValues(alpha: 0.3)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -267,9 +274,7 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
               t.ticket_other_hint,
               style: TextStyle(
                 fontFamily: AppTheme.fontFor(
-                  !Localizations.localeOf(
-                    context,
-                  ).languageCode.contains('en'),
+                  !Localizations.localeOf(context).languageCode.contains('en'),
                 ),
                 fontSize: 13,
                 color: isDark ? AppTheme.darkText : AppTheme.lightText,
@@ -316,9 +321,7 @@ class _CreateTicketScreenState extends State<CreateTicketScreen> {
           hintText: t.ticket_message_hint,
           hintStyle: TextStyle(
             fontFamily: AppTheme.fontFor(
-              !Localizations.localeOf(
-                context,
-              ).languageCode.contains('en'),
+              !Localizations.localeOf(context).languageCode.contains('en'),
             ),
             fontSize: 14,
             color: textMutedColor,

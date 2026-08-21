@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../config/app_theme.dart';
 import '../../generated/app_localizations.dart';
+import '../../models/photo.dart';
 import '../../services/photo_service.dart';
 import '../../utils/responsive.dart';
 import '../../widgets/action_toast.dart';
@@ -21,6 +22,31 @@ class _VerifySelfieScreenState extends State<VerifySelfieScreen> {
   final ImagePicker _picker = ImagePicker();
   File? _selfieFile;
   bool _isVerifying = false;
+  bool _isLoadingStatus = true;
+  VerificationStatus? _status;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStatus();
+  }
+
+  Future<void> _loadStatus() async {
+    final t = AppLocalizations.of(context)!;
+    final status = await PhotoService.getVerificationStatus();
+    if (!mounted) return;
+    setState(() {
+      _status = status;
+      _isLoadingStatus = false;
+    });
+    if (status != null && !status.eligibleToVerify && !status.isVerified) {
+      showActionToast(
+        context,
+        t.verify_selfie_cooldown(status.cooldownRemainingSeconds ?? 0),
+        isError: true,
+      );
+    }
+  }
 
   Future<void> _pickSelfie() async {
     final t = AppLocalizations.of(context)!;
@@ -75,7 +101,19 @@ class _VerifySelfieScreenState extends State<VerifySelfieScreen> {
       Navigator.pop(context, true);
     } else {
       showActionToast(context, result.message, isError: true);
+      await _loadStatus();
     }
+  }
+
+  bool get _canVerify {
+    if (_isVerifying) return false;
+    if (_status == null) return true;
+    if (_status!.isVerified) return false;
+    if (!_status!.eligibleToVerify &&
+        (_status!.cooldownRemainingSeconds ?? 0) > 0) {
+      return false;
+    }
+    return _status!.eligibleToVerify || _selfieFile != null;
   }
 
   @override
@@ -112,6 +150,108 @@ class _VerifySelfieScreenState extends State<VerifySelfieScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 16),
+
+                // Status banner
+                if (_isLoadingStatus)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          t.verify_selfie_checking,
+                          style: AppTheme.bodyMedium.copyWith(
+                            color: textMutedColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                else if (_status?.isVerified ?? false)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.green.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: Colors.green.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.verified,
+                            color: Colors.green,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            t.verify_selfie_already_verified,
+                            style: AppTheme.bodyMedium.copyWith(
+                              color: Colors.green,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                else if (!(_status?.eligibleToVerify ?? true) &&
+                    (_status?.cooldownRemainingSeconds ?? 0) > 0)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppTheme.lightError.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: AppTheme.lightError.withValues(alpha: 0.3),
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(
+                            Icons.hourglass_top,
+                            color: AppTheme.lightError,
+                            size: 18,
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              t.verify_selfie_cooldown(
+                                _status!.cooldownRemainingSeconds!,
+                              ),
+                              textAlign: TextAlign.center,
+                              style: AppTheme.bodyMedium.copyWith(
+                                color: AppTheme.lightError,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
                 Text(
                   t.verify_selfie_subtitle,
                   textAlign: TextAlign.center,
@@ -177,13 +317,18 @@ class _VerifySelfieScreenState extends State<VerifySelfieScreen> {
                 SizedBox(
                   height: 56,
                   child: ElevatedButton(
-                    onPressed: _isVerifying ? null : _verify,
+                    onPressed: _canVerify ? _verify : null,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryColor,
-                      foregroundColor: Colors.white,
+                      backgroundColor: _canVerify
+                          ? primaryColor
+                          : primaryColor.withValues(alpha: 0.3),
+                      foregroundColor: _canVerify
+                          ? Colors.white
+                          : primaryColor.withValues(alpha: 0.5),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
+                      elevation: 0,
                     ),
                     child: _isVerifying
                         ? const SizedBox(

@@ -12,7 +12,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get app_title => 'Bondi';
 
   @override
+  String get welcome_message => 'Welcome to Bondi';
+
+  @override
   String get welcome_subtitle => 'Connect with people around you';
+
+  @override
+  String get find_match_tagline => 'Find your match here';
 
   @override
   String get email_label => 'Email';
@@ -151,10 +157,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signup_confirm_password_hint => 'Confirm your password';
 
   @override
-  String get verify_title => 'Verify Your Email';
+  String get verify_title => 'Enter Verification Code';
 
   @override
-  String get verify_subtitle => 'Enter the 6-digit code sent to';
+  String get verify_subtitle => 'We sent a 6-digit code to';
 
   @override
   String get verify_code_hint => 'Enter 6-digit code';
@@ -163,7 +169,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get verify_resend => 'Resend Code';
 
   @override
-  String get verify_button => 'Verify & Continue';
+  String get verify_button => 'Verify';
 
   @override
   String get verify_referral_hint => 'Referral code (optional)';
@@ -171,6 +177,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get verify_referral_bonus =>
       '💡 Get 3 days of premium free with a referral code';
+
+  @override
+  String get verify_referral_invalid =>
+      'Referral code must be exactly 8 characters';
 
   @override
   String get login_email_required => 'Email is required';
@@ -186,13 +196,168 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get verify_resend_success =>
-      'New verification code sent to your email';
+      'New verification code sent to your phone';
 
   @override
   String get verify_resend_failed => 'Failed to resend code';
 
   @override
   String get verify_code_required => 'Please enter the 6-digit code';
+
+  @override
+  String get phone_hint => 'Phone number';
+
+  @override
+  String get phone_error_required => 'Please enter your phone number';
+
+  @override
+  String get phone_error_invalid => 'Please enter a valid phone number';
+
+  @override
+  String get send_code => 'Send Code';
+
+  @override
+  String get enter_phone_title => 'What\'s your phone number?';
+
+  @override
+  String get enter_phone_subtitle =>
+      'We\'ll send you a verification code via SMS';
+
+  @override
+  String get signup_phone_title => 'Create your account';
+
+  @override
+  String get signup_phone_subtitle =>
+      'We\'ll send a verification code to your phone';
+
+  @override
+  String get terms_and_policy_agreement => 'By continuing you agree to our';
+
+  @override
+  String get terms_of_service => 'Terms of Service';
+
+  @override
+  String get privacy_policy => 'Privacy Policy';
+
+  @override
+  String get and => 'and';
+
+  @override
+  String get terms_title => 'Terms of Service';
+
+  @override
+  String get terms_last_updated => 'Last updated: August 2026';
+
+  @override
+  String get terms_sec_1_title => '1. Acceptance of Terms';
+
+  @override
+  String get terms_sec_1_body =>
+      'By accessing or using the Bondi application, you agree to be bound by these Terms of Service and all applicable laws and regulations. If you do not agree with any part of these terms, you may not use the app.';
+
+  @override
+  String get terms_sec_2_title => '2. Eligibility';
+
+  @override
+  String get terms_sec_2_body =>
+      'You must be at least 18 years old to use Bondi. By creating an account you confirm that you meet this requirement and that all information you provide is accurate and truthful.';
+
+  @override
+  String get terms_sec_3_title => '3. User Accounts';
+
+  @override
+  String get terms_sec_3_body =>
+      'You are responsible for maintaining the confidentiality of your account and for all activity that occurs under it. You must notify us immediately of any unauthorized use of your account.';
+
+  @override
+  String get terms_sec_4_title => '4. Acceptable Use';
+
+  @override
+  String get terms_sec_4_body =>
+      'You agree not to use Bondi for any unlawful purpose, to harass or abuse other users, to post offensive or inappropriate content, or to attempt to gain unauthorized access to the service or other users\' accounts.';
+
+  @override
+  String get terms_sec_5_title => '5. Content';
+
+  @override
+  String get terms_sec_5_body =>
+      'You retain ownership of the content you post. By posting content you grant Bondi a limited license to display and distribute it within the app. We may remove content that violates these terms.';
+
+  @override
+  String get terms_sec_6_title => '6. Limitation of Liability';
+
+  @override
+  String get terms_sec_6_body =>
+      'Bondi and its operators shall not be liable for any indirect, incidental, or consequential damages arising from your use of the service. The service is provided on an \'as is\' basis without warranty.';
+
+  @override
+  String get terms_sec_7_title => '7. Termination';
+
+  @override
+  String get terms_sec_7_body =>
+      'We may suspend or terminate your account at any time if you violate these terms or if required by law. You may stop using the app at any time and request account deletion through the app settings.';
+
+  @override
+  String get terms_sec_8_title => '8. Changes to These Terms';
+
+  @override
+  String get terms_sec_8_body =>
+      'We may update these Terms from time to time. We will notify you of significant changes. Continued use of the app after changes means you accept the updated terms.';
+
+  @override
+  String get privacy_title => 'Privacy Policy';
+
+  @override
+  String get privacy_last_updated => 'Last updated: August 2026';
+
+  @override
+  String get privacy_sec_1_title => '1. Information We Collect';
+
+  @override
+  String get privacy_sec_1_body =>
+      'We collect information you provide directly, such as your phone number, profile information, photos, and preferences. We also collect usage data and device information to improve the service.';
+
+  @override
+  String get privacy_sec_2_title => '2. How We Use Information';
+
+  @override
+  String get privacy_sec_2_body =>
+      'We use your information to provide and personalize the service, verify your identity, match you with other users, process support requests, and ensure the safety and security of our community.';
+
+  @override
+  String get privacy_sec_3_title => '3. Sharing of Information';
+
+  @override
+  String get privacy_sec_3_body =>
+      'We do not sell your personal data. We share your profile information with other users in order to provide the matching service. We may share data with service providers who help us operate the app.';
+
+  @override
+  String get privacy_sec_4_title => '4. Data Security';
+
+  @override
+  String get privacy_sec_4_body =>
+      'We use industry-standard security measures to protect your data, including encryption in transit and at rest. No method of transmission is 100% secure, but we work hard to safeguard your information.';
+
+  @override
+  String get privacy_sec_5_title => '5. Your Choices';
+
+  @override
+  String get privacy_sec_5_body =>
+      'You can edit or delete your profile at any time through the app. You can control what information is visible to others and manage notification preferences in your settings.';
+
+  @override
+  String get privacy_sec_6_title => '6. Data Retention';
+
+  @override
+  String get privacy_sec_6_body =>
+      'We retain your data for as long as your account is active. If you delete your account, we remove or anonymize your personal data within a reasonable period, except where retention is required by law.';
+
+  @override
+  String get privacy_sec_7_title => '7. Contact Us';
+
+  @override
+  String get privacy_sec_7_body =>
+      'If you have questions about this Privacy Policy or our data practices, please contact our support team through the app\'s Help & Support section.';
 
   @override
   String get settings_title => 'Settings';
@@ -966,9 +1131,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String get verify_selfie_pick_first => 'Please take a selfie first';
 
   @override
+  String get verify_selfie_checking => 'Checking verification status…';
+
+  @override
+  String get verify_selfie_already_verified => 'You are already verified ✓';
+
+  @override
+  String verify_selfie_cooldown(int seconds) {
+    return 'Verification unavailable. Please wait ${seconds}s and try again.';
+  }
+
+  @override
   String photo_rejected_reason(String reason) {
     return 'Reason: $reason';
   }
+
+  @override
+  String get photo_rejected_badge => 'Rejected';
+
+  @override
+  String get photo_rejected_some =>
+      'Some photos were rejected. Remove or retake them, or contact support.';
+
+  @override
+  String get photo_retake => 'Retake';
+
+  @override
+  String get photo_contact_support => 'Contact support';
 
   @override
   String get support => 'Support';
@@ -1054,4 +1243,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notifications_see_details => 'See details';
+
+  @override
+  String get location_manual_hint =>
+      'If the city is wrong, you can set it manually.';
 }

@@ -7,19 +7,17 @@ import '../../config/app_theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/onboarding_provider.dart';
 import '../../utils/responsive.dart';
-import 'sign_up_screen.dart';
 import '../onboarding/basic_info_screen.dart';
+import '../main_screen.dart';
 import '../../widgets/action_toast.dart';
 
 class VerifyCodeScreen extends StatefulWidget {
-  final String email;
-  final String password;
+  final String phone;
   final String? referralCode;
 
   const VerifyCodeScreen({
     super.key,
-    required this.email,
-    required this.password,
+    required this.phone,
     this.referralCode,
   });
 
@@ -37,7 +35,6 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
     (index) => FocusNode(),
   );
 
-  final TextEditingController _referralController = TextEditingController();
   bool _isLoading = false;
   String? _errorMessage;
 
@@ -89,7 +86,6 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
     for (var node in _codeFocusNodes) {
       node.dispose();
     }
-    _referralController.dispose();
     _resendTimer?.cancel();
     _isTimerRunning = false;
     super.dispose();
@@ -126,12 +122,8 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     _setLoading(true);
 
-    final success = await authProvider.registerVerify(
+    final success = await authProvider.verifyCode(
       code: code,
-      password: widget.password,
-      referralCode: _referralController.text.trim().isNotEmpty
-          ? _referralController.text.trim()
-          : null,
       context: context,
     );
 
@@ -143,12 +135,19 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
           context,
           listen: false,
         );
-        onboardingProvider.setEmailAndPassword(widget.email, widget.password);
+        onboardingProvider.setPhone(widget.phone);
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const BasicInfoScreen()),
-        );
+        if (authProvider.isNewUser) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const BasicInfoScreen()),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const MainScreen()),
+          );
+        }
       }
     } else {
       if (mounted) {
@@ -170,8 +169,8 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
     });
   }
 
-  void _resendCode() async {
-    if (_isTimerRunning) {
+  Future<void> _resendCode() async {
+    if (_isTimerRunning || _isLoading) {
       return;
     }
 
@@ -179,7 +178,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
     _setLoading(true);
 
-    final success = await authProvider.registerInit(widget.email, context);
+    final success = await authProvider.requestCode(widget.phone, context);
 
     _setLoading(false);
 
@@ -203,7 +202,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context)!;
     final colors = Theme.of(context).colorScheme;
-    final isDark = context.isDarkMode;
+    final isDark = colors.brightness == Brightness.dark;
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
     final bgColor = isDark ? AppTheme.darkBackground : AppTheme.lightBackground;
     final surfaceColor = isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
@@ -222,12 +221,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
         elevation: 0,
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: onSurfaceColor),
-          onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const SignUpScreen()),
-            );
-          },
+          onPressed: () => Navigator.pop(context),
         ),
         centerTitle: true,
       ),
@@ -256,7 +250,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                       style: AppTheme.bodyLarge.copyWith(color: textMutedColor),
                     ),
                     Text(
-                      widget.email,
+                      widget.phone,
                       style: AppTheme.bodyLarge.copyWith(
                         color: primaryColor,
                         fontWeight: FontWeight.w600,
@@ -361,76 +355,41 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                     ),
                     const SizedBox(height: 16),
 
-                    TextButton(
-                      onPressed: _isTimerRunning || _isLoading
-                          ? null
-                          : _resendCode,
-                      child: Text(
-                        _isTimerRunning
-                            ? '${t.verify_resend} (${_formatTime(_resendTimerSeconds)})'
-                            : t.verify_resend,
-                        style: TextStyle(
-                          fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
-                          fontSize: 14,
-                          color: _isTimerRunning
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: OutlinedButton(
+                        onPressed: _isTimerRunning || _isLoading
+                            ? null
+                            : _resendCode,
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: _isTimerRunning
                               ? textMutedColor
                               : primaryColor,
-                          fontWeight: _isTimerRunning
-                              ? FontWeight.w400
-                              : FontWeight.w600,
+                          disabledForegroundColor: textMutedColor,
+                          side: BorderSide(
+                            color: _isTimerRunning
+                                ? borderColor
+                                : primaryColor,
+                            width: 1.5,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
+                          ),
+                        ),
+                        child: Text(
+                          _isTimerRunning
+                              ? '${t.verify_resend} (${_formatTime(_resendTimerSeconds)})'
+                              : t.verify_resend,
+                          style: TextStyle(
+                            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
                     const SizedBox(height: 16),
-
-                    Text(
-                      t.verify_referral_hint,
-                      style: TextStyle(
-                        fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
-                        fontSize: 14,
-                        color: textMutedColor,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-
-                    TextFormField(
-                      controller: _referralController,
-                      textInputAction: TextInputAction.done,
-                      style: AppTheme.bodyLarge.copyWith(color: onSurfaceColor),
-                      decoration: InputDecoration(
-                        hintText: t.verify_referral_hint,
-                        hintStyle: AppTheme.bodyMedium.copyWith(
-                          color: textMutedColor,
-                        ),
-                        prefixIcon: Icon(
-                          Icons.card_giftcard_outlined,
-                          color: textMutedColor,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(color: borderColor),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(16),
-                          borderSide: BorderSide(color: primaryColor, width: 2),
-                        ),
-                        filled: true,
-                        fillColor: surfaceColor,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      t.verify_referral_bonus,
-                      style: TextStyle(
-                        fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
-                        fontSize: 12,
-                        color: textMutedColor,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
 
                     SizedBox(
                       width: double.infinity,

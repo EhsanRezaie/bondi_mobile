@@ -13,18 +13,20 @@ class AuthProvider extends ChangeNotifier {
   final StorageService _storageService = StorageService();
 
   User? _user;
-  String? _email;
+  String? _phone;
   bool _isLoading = false;
   bool _isAuthenticated = false;
   bool _isServerHealthy = true;
+  bool _isNewUser = false;
   String? _serverError;
   String? _errorMessage;
 
   User? get user => _user;
-  String? get email => _email;
+  String? get phone => _phone;
   bool get isLoading => _isLoading;
   bool get isAuthenticated => _isAuthenticated;
   bool get isServerHealthy => _isServerHealthy;
+  bool get isNewUser => _isNewUser;
   String? get serverError => _serverError;
   String? get errorMessage => _errorMessage;
 
@@ -36,7 +38,7 @@ class AuthProvider extends ChangeNotifier {
     super.dispose();
   }
 
-   void _safeNotify() {
+  void _safeNotify() {
     if (!_disposed) notifyListeners();
   }
 
@@ -114,19 +116,19 @@ class AuthProvider extends ChangeNotifier {
   }
 
   // ============================================================
-  // Step 1: Register Init - request verification code
-  // POST /auth/register/init
+  // Request verification code (login or signup)
+  // POST /auth/request-code
   // ============================================================
-  Future<bool> registerInit(String email, BuildContext context) async {
+  Future<bool> requestCode(String phone, BuildContext context) async {
     final t = AppLocalizations.of(context)!;
     _isLoading = true;
     _errorMessage = null;
+    _phone = phone;
     _safeNotify();
 
     try {
-      final response = await AuthService.registerInit(email);
+      final response = await AuthService.requestCode(phone);
       if (response.statusCode == 200) {
-        _email = email;
         _isLoading = false;
         _safeNotify();
         return true;
@@ -137,10 +139,76 @@ class AuthProvider extends ChangeNotifier {
         return false;
       }
     } on DioException catch (e) {
-      if (e.response?.statusCode == 409) {
-        _errorMessage = t.error_email_exists;
+      if (e.response?.statusCode == 429) {
+        _errorMessage = t.error_too_many_attempts;
       } else if (e.response?.statusCode == 422) {
-        _errorMessage = t.error_email_invalid_format;
+        _errorMessage = t.error_invalid_data;
+      } else {
+        _errorMessage = t.error_network;
+      }
+      _isLoading = false;
+      _safeNotify();
+      return false;
+    } catch (e) {
+      _errorMessage = t.error_something_wrong;
+      _isLoading = false;
+      _safeNotify();
+      return false;
+    }
+  }
+
+  // ============================================================
+  // Verify code -> login or create user
+  // POST /auth/verify-code
+  // ============================================================
+  Future<bool> verifyCode({
+    required String code,
+    String? referralCode,
+    required BuildContext context,
+  }) async {
+    final t = AppLocalizations.of(context)!;
+    if (_phone == null) {
+      _errorMessage = t.error_email_not_found;
+      _safeNotify();
+      return false;
+    }
+
+    _isLoading = true;
+    _errorMessage = null;
+    _safeNotify();
+
+    try {
+      final response = await AuthService.verifyCode(
+        phone: _phone!,
+        code: code,
+        referralCode: referralCode,
+      );
+
+      if (response.statusCode == 200) {
+        final data = response.data;
+        final userData = data['user'];
+        _isNewUser = data['is_new_user'] ?? false;
+
+        await _storageService.saveTokens(
+          accessToken: data['access_token'],
+          refreshToken: data['refresh_token'],
+          userId: userData['id'],
+        );
+
+        _user = User.fromJson(userData);
+        _isAuthenticated = true;
+        _isLoading = false;
+        _safeNotify();
+        return true;
+      } else {
+        _errorMessage = response.data['detail'] ?? t.error_verification_failed;
+        _isLoading = false;
+        _safeNotify();
+        return false;
+      }
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 400) {
+        _errorMessage = t.error_invalid_code;
       } else if (e.response?.statusCode == 429) {
         _errorMessage = t.error_too_many_attempts;
       } else {
@@ -158,56 +226,30 @@ class AuthProvider extends ChangeNotifier {
   }
 
   // ============================================================
-  // Step 2: Register Verify - verify code + create user
-  // POST /auth/register/verify
+  // Claim referral code (new users only, during onboarding)
+  // POST /referrals/claim
   // ============================================================
-  Future<bool> registerVerify({
-    required String code,
-    required String password,
-    String? referralCode,
-    required BuildContext context,
-  }) async {
+  Future<bool> claimReferral(String referralCode, BuildContext context) async {
     final t = AppLocalizations.of(context)!;
-    if (_email == null) {
-      _errorMessage = t.error_email_not_found;
-      _safeNotify();
-      return false;
-    }
-
     _isLoading = true;
     _errorMessage = null;
     _safeNotify();
 
     try {
-      final response = await AuthService.registerVerify(
-        email: _email!,
-        code: code,
-        password: password,
-        referralCode: referralCode,
-      );
-
+      final response = await AuthService.claimReferral(referralCode);
       if (response.statusCode == 200) {
-        final data = response.data;
-        await _storageService.saveTokens(
-          accessToken: data['access_token'],
-          refreshToken: data['refresh_token'],
-          userId: data['user_id'],
-        );
-        _isAuthenticated = true;
         _isLoading = false;
         _safeNotify();
         return true;
       } else {
-        _errorMessage = response.data['detail'] ?? t.error_verification_failed;
+        _errorMessage = response.data['detail'] ?? t.error_something_wrong;
         _isLoading = false;
         _safeNotify();
         return false;
       }
     } on DioException catch (e) {
-      if (e.response?.statusCode == 400) {
-        _errorMessage = t.error_invalid_code;
-      } else if (e.response?.statusCode == 409) {
-        _errorMessage = t.error_email_exists;
+      if (e.response != null) {
+        _errorMessage = e.response?.data['detail'] ?? t.error_something_wrong;
       } else {
         _errorMessage = t.error_network;
       }
@@ -223,7 +265,7 @@ class AuthProvider extends ChangeNotifier {
   }
 
   // ============================================================
-  // Step 3: Register Complete - complete profile
+  // Complete onboarding profile
   // POST /auth/register/complete
   // ============================================================
   Future<bool> registerComplete(
@@ -249,6 +291,7 @@ class AuthProvider extends ChangeNotifier {
 
         _user = User.fromJson(userData);
         _isAuthenticated = true;
+        _isNewUser = false;
         _isLoading = false;
         _safeNotify();
         return true;
@@ -280,64 +323,6 @@ class AuthProvider extends ChangeNotifier {
   }
 
   // ============================================================
-  // Login
-  // POST /auth/login
-  // ============================================================
-  Future<bool> login({
-    required String email,
-    required String password,
-    required BuildContext context,
-  }) async {
-    final t = AppLocalizations.of(context)!;
-    _isLoading = true;
-    _errorMessage = null;
-    _safeNotify();
-
-    try {
-      final response = await AuthService.login(
-        email: email,
-        password: password,
-      );
-
-      if (response.statusCode == 200) {
-        final data = response.data;
-        final userData = data['user'];
-
-        await _storageService.saveTokens(
-          accessToken: data['access_token'],
-          refreshToken: data['refresh_token'],
-          userId: userData['id'],
-        );
-
-        _user = User.fromJson(userData);
-        _isAuthenticated = true;
-        _isLoading = false;
-        _safeNotify();
-        return true;
-      } else {
-        _errorMessage = response.data['detail'] ?? t.error_login_failed;
-        _isLoading = false;
-        _safeNotify();
-        return false;
-      }
-    } on DioException catch (e) {
-      if (e.response?.statusCode == 401) {
-        _errorMessage = t.error_wrong_credentials;
-      } else {
-        _errorMessage = t.error_network;
-      }
-      _isLoading = false;
-      _safeNotify();
-      return false;
-    } catch (e) {
-      _errorMessage = t.error_something_wrong;
-      _isLoading = false;
-      _safeNotify();
-      return false;
-    }
-  }
-
-  // ============================================================
   // Logout
   // ============================================================
   Future<void> logout() async {
@@ -352,8 +337,9 @@ class AuthProvider extends ChangeNotifier {
     }
     await _storageService.clearTokens();
     _user = null;
-    _email = null;
+    _phone = null;
     _isAuthenticated = false;
+    _isNewUser = false;
     _safeNotify();
   }
 
@@ -383,7 +369,7 @@ class AuthProvider extends ChangeNotifier {
 
     try {
       final response = await AuthService.updateProfile(data);
-      
+
       if (response.statusCode == 200) {
         _user = User.fromJson(response.data);
         _isLoading = false;
@@ -425,65 +411,7 @@ class AuthProvider extends ChangeNotifier {
     _safeNotify();
   }
 
-  Future<bool> googleLogin({
-    required String idToken,
-    String? name,
-    String? email,
-    String? picture,
-    required BuildContext context,
-  }) async {
-    final t = AppLocalizations.of(context)!;
-    _isLoading = true;
-    _errorMessage = null;
-    _safeNotify();
-
-    try {
-      final response = await AuthService.googleLogin(
-        idToken: idToken,
-        name: name,
-        email: email,
-        picture: picture,
-      );
-
-      if (response.statusCode == 200) {
-        final data = response.data;
-        final userData = data['user'];
-
-        await _storageService.saveTokens(
-          accessToken: data['access_token'],
-          refreshToken: data['refresh_token'],
-          userId: userData['id'],
-        );
-
-        _user = User.fromJson(userData);
-        _isAuthenticated = true;
-        _isLoading = false;
-        _safeNotify();
-        return true;
-      } else {
-        _errorMessage = response.data['detail'] ?? t.error_login_failed;
-        _isLoading = false;
-        _safeNotify();
-        return false;
-      }
-    } on DioException catch (e) {
-      if (e.response?.statusCode == 401) {
-        _errorMessage = t.error_wrong_credentials;
-      } else {
-        _errorMessage = t.error_network;
-      }
-      _isLoading = false;
-      _safeNotify();
-      return false;
-    } catch (e) {
-      _errorMessage = t.error_something_wrong;
-      _isLoading = false;
-      _safeNotify();
-      return false;
-    }
-  }
-
-   /// Update user interests
+  /// Update user interests
   Future<bool> updateInterests(List<String> interests) async {
     _isLoading = true;
     _errorMessage = null;
@@ -491,7 +419,7 @@ class AuthProvider extends ChangeNotifier {
 
     try {
       final response = await AuthService.updateInterests(interests);
-      
+
       if (response.statusCode == 200) {
         _user = User.fromJson(response.data);
         _isLoading = false;
@@ -521,7 +449,7 @@ class AuthProvider extends ChangeNotifier {
       return false;
     }
   }
-  
+
   /// Update user prompts
   Future<bool> updatePrompts(List<Map<String, dynamic>> prompts) async {
     _isLoading = true;
@@ -530,7 +458,7 @@ class AuthProvider extends ChangeNotifier {
 
     try {
       final response = await AuthService.updatePrompts(prompts);
-      
+
       if (response.statusCode == 200) {
         _user = User.fromJson(response.data);
         _isLoading = false;
@@ -560,5 +488,4 @@ class AuthProvider extends ChangeNotifier {
       return false;
     }
   }
-
 }

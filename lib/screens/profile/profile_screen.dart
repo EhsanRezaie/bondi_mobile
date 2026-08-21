@@ -616,8 +616,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     Color textMutedColor,
     bool isDark,
   ) {
-    // Check if main photo is face verified
-    final bool isFaceVerified = mainPhoto?.faceVerified ?? false;
+    // Check if the user is verified (selfie/face verification)
+    final bool isFaceVerified = (user?.isVerified ?? false) ||
+        (mainPhoto?.faceVerified ?? false);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,

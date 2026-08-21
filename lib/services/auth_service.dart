@@ -18,13 +18,13 @@ class AuthService {
   }
 
   // ============================================================
-  // Step 1: Register Init - request verification code
-  // POST /auth/register/init
+  // Request verification code (login or signup)
+  // POST /auth/request-code
   // ============================================================
-  static Future<Response> registerInit(String email) async {
+  static Future<Response> requestCode(String phone) async {
     try {
-      return await ApiService.post('/auth/register/init', data: {
-        'email': email,
+      return await ApiService.post('/auth/request-code', data: {
+        'phone': phone,
       });
     } on DioException catch (e) {
       if (e.response != null) {
@@ -35,25 +35,23 @@ class AuthService {
   }
 
   // ============================================================
-  // Step 2: Register Verify - verify code + create user
-  // POST /auth/register/verify
+  // Verify code + login/create user
+  // POST /auth/verify-code
   // ============================================================
-  static Future<Response> registerVerify({
-    required String email,
+  static Future<Response> verifyCode({
+    required String phone,
     required String code,
-    required String password,
     String? referralCode,
   }) async {
     try {
       final data = {
-        'email': email,
+        'phone': phone,
         'code': code,
-        'password': password,
       };
       if (referralCode != null && referralCode.isNotEmpty) {
         data['referral_code'] = referralCode;
       }
-      return await ApiService.post('/auth/register/verify', data: data);
+      return await ApiService.post('/auth/verify-code', data: data);
     } on DioException catch (e) {
       if (e.response != null) {
         return e.response!;
@@ -63,7 +61,7 @@ class AuthService {
   }
 
   // ============================================================
-  // Step 3: Register Complete - complete profile
+  // Complete onboarding profile
   // POST /auth/register/complete
   // ============================================================
   static Future<Response> registerComplete(Map<String, dynamic> data) async {
@@ -78,44 +76,14 @@ class AuthService {
   }
 
   // ============================================================
-  // Login
-  // POST /auth/login
+  // Claim a referral code (new users only)
+  // POST /referrals/claim
   // ============================================================
-  static Future<Response> login({
-    required String email,
-    required String password,
-  }) async {
+  static Future<Response> claimReferral(String referralCode) async {
     try {
-      return await ApiService.post('/auth/login', data: {
-        'email': email,
-        'password': password,
+      return await ApiService.post('/referrals/claim', data: {
+        'referral_code': referralCode,
       });
-    } on DioException catch (e) {
-      if (e.response != null) {
-        return e.response!;
-      }
-      rethrow;
-    }
-  }
-
-  // ============================================================
-  // Google Login
-  // POST /auth/google
-  // ============================================================
-  static Future<Response> googleLogin({
-    required String idToken,
-    String? name,
-    String? email,
-    String? picture,
-  }) async {
-    try {
-      final data = {
-        'id_token': idToken,
-      };
-      if (name != null && name.isNotEmpty) data['name'] = name;
-      if (email != null && email.isNotEmpty) data['email'] = email;
-      if (picture != null && picture.isNotEmpty) data['picture'] = picture;
-      return await ApiService.post('/auth/google', data: data);
     } on DioException catch (e) {
       if (e.response != null) {
         return e.response!;
@@ -204,67 +172,6 @@ class AuthService {
     }
   }
 
-  // ============================================================
-  // Change Password
-  // POST /auth/change-password
-  // ============================================================
-  static Future<Response> changePassword({
-    required String currentPassword,
-    required String newPassword,
-  }) async {
-    try {
-      return await ApiService.post('/auth/change-password', data: {
-        'current_password': currentPassword,
-        'new_password': newPassword,
-      });
-    } on DioException catch (e) {
-      if (e.response != null) {
-        return e.response!;
-      }
-      rethrow;
-    }
-  }
-
-  // ============================================================
-  // Password Reset Request
-  // POST /auth/password-reset
-  // ============================================================
-  static Future<Response> requestPasswordReset(String email) async {
-    try {
-      return await ApiService.post('/auth/password-reset', data: {
-        'email': email,
-      });
-    } on DioException catch (e) {
-      if (e.response != null) {
-        return e.response!;
-      }
-      rethrow;
-    }
-  }
-
-  // ============================================================
-  // Password Reset Verify
-  // POST /auth/password-reset/verify
-  // ============================================================
-  static Future<Response> verifyPasswordReset({
-    required String email,
-    required String code,
-    required String newPassword,
-  }) async {
-    try {
-      return await ApiService.post('/auth/password-reset/verify', data: {
-        'email': email,
-        'code': code,
-        'new_password': newPassword,
-      });
-    } on DioException catch (e) {
-      if (e.response != null) {
-        return e.response!;
-      }
-      rethrow;
-    }
-  }
-
   static Future<Response> updateInterests(List<String> interests) async {
     try {
       return await ApiService.put('/users/me/interests', data: {
@@ -305,5 +212,4 @@ class AuthService {
       rethrow;
     }
   }
-
 }

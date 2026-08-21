@@ -8,6 +8,10 @@ class PhotoUpload {
   bool isUploaded;
   String? url;
   String? serverId;
+  String? rejectReason;
+  bool needsSelfieMatch;
+
+  bool get isRejected => rejectReason != null;
 
   PhotoUpload({
     required this.id,
@@ -16,6 +20,8 @@ class PhotoUpload {
     this.isUploaded = false,
     this.url,
     this.serverId,
+    this.rejectReason,
+    this.needsSelfieMatch = false,
   });
 
   PhotoUpload copyWith({
@@ -25,6 +31,8 @@ class PhotoUpload {
     bool? isUploaded,
     String? url,
     String? serverId,
+    String? rejectReason,
+    bool? needsSelfieMatch,
   }) {
     return PhotoUpload(
       id: id ?? this.id,
@@ -33,6 +41,8 @@ class PhotoUpload {
       isUploaded: isUploaded ?? this.isUploaded,
       url: url ?? this.url,
       serverId: serverId ?? this.serverId,
+      rejectReason: rejectReason ?? this.rejectReason,
+      needsSelfieMatch: needsSelfieMatch ?? this.needsSelfieMatch,
     );
   }
 }
@@ -42,11 +52,7 @@ class CropData {
   final double y;
   final double size;
 
-  CropData({
-    this.x = 0.0,
-    this.y = 0.0,
-    this.size = 120.0,
-  });
+  CropData({this.x = 0.0, this.y = 0.0, this.size = 120.0});
 
   factory CropData.fromJson(Map<String, dynamic> json) {
     return CropData(
@@ -57,11 +63,7 @@ class CropData {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'x': x,
-      'y': y,
-      'size': size,
-    };
+    return {'x': x, 'y': y, 'size': size};
   }
 }
 
@@ -160,6 +162,33 @@ class PhotoUploadResponse {
       url: json['url'] ?? '',
       status: json['status'] ?? 'pending',
       message: json['message'] ?? 'Photo uploaded. Under review by admin.',
+    );
+  }
+}
+
+class VerificationStatus {
+  final bool isVerified;
+  final DateTime? verifiedAt;
+  final bool eligibleToVerify;
+  final int? cooldownRemainingSeconds;
+
+  VerificationStatus({
+    required this.isVerified,
+    this.verifiedAt,
+    required this.eligibleToVerify,
+    this.cooldownRemainingSeconds,
+  });
+
+  factory VerificationStatus.fromJson(Map<String, dynamic> json) {
+    return VerificationStatus(
+      isVerified: json['is_verified'] ?? false,
+      verifiedAt: json['verified_at'] != null
+          ? DateTime.tryParse(json['verified_at'].toString())
+          : null,
+      eligibleToVerify: json['eligible_to_verify'] ?? false,
+      cooldownRemainingSeconds: json['cooldown_remaining_seconds'] != null
+          ? (json['cooldown_remaining_seconds'] as num).toInt()
+          : null,
     );
   }
 }

@@ -104,11 +104,23 @@ abstract class AppLocalizations {
   /// **'Bondi'**
   String get app_title;
 
+  /// No description provided for @welcome_message.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to Bondi'**
+  String get welcome_message;
+
   /// No description provided for @welcome_subtitle.
   ///
   /// In en, this message translates to:
   /// **'Connect with people around you'**
   String get welcome_subtitle;
+
+  /// No description provided for @find_match_tagline.
+  ///
+  /// In en, this message translates to:
+  /// **'Find your match here'**
+  String get find_match_tagline;
 
   /// No description provided for @email_label.
   ///
@@ -377,13 +389,13 @@ abstract class AppLocalizations {
   /// No description provided for @verify_title.
   ///
   /// In en, this message translates to:
-  /// **'Verify Your Email'**
+  /// **'Enter Verification Code'**
   String get verify_title;
 
   /// No description provided for @verify_subtitle.
   ///
   /// In en, this message translates to:
-  /// **'Enter the 6-digit code sent to'**
+  /// **'We sent a 6-digit code to'**
   String get verify_subtitle;
 
   /// No description provided for @verify_code_hint.
@@ -401,7 +413,7 @@ abstract class AppLocalizations {
   /// No description provided for @verify_button.
   ///
   /// In en, this message translates to:
-  /// **'Verify & Continue'**
+  /// **'Verify'**
   String get verify_button;
 
   /// No description provided for @verify_referral_hint.
@@ -415,6 +427,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'💡 Get 3 days of premium free with a referral code'**
   String get verify_referral_bonus;
+
+  /// No description provided for @verify_referral_invalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Referral code must be exactly 8 characters'**
+  String get verify_referral_invalid;
 
   /// No description provided for @login_email_required.
   ///
@@ -443,7 +461,7 @@ abstract class AppLocalizations {
   /// No description provided for @verify_resend_success.
   ///
   /// In en, this message translates to:
-  /// **'New verification code sent to your email'**
+  /// **'New verification code sent to your phone'**
   String get verify_resend_success;
 
   /// No description provided for @verify_resend_failed.
@@ -457,6 +475,282 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please enter the 6-digit code'**
   String get verify_code_required;
+
+  /// No description provided for @phone_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Phone number'**
+  String get phone_hint;
+
+  /// No description provided for @phone_error_required.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter your phone number'**
+  String get phone_error_required;
+
+  /// No description provided for @phone_error_invalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter a valid phone number'**
+  String get phone_error_invalid;
+
+  /// No description provided for @send_code.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Code'**
+  String get send_code;
+
+  /// No description provided for @enter_phone_title.
+  ///
+  /// In en, this message translates to:
+  /// **'What\'s your phone number?'**
+  String get enter_phone_title;
+
+  /// No description provided for @enter_phone_subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll send you a verification code via SMS'**
+  String get enter_phone_subtitle;
+
+  /// No description provided for @signup_phone_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Create your account'**
+  String get signup_phone_title;
+
+  /// No description provided for @signup_phone_subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'We\'ll send a verification code to your phone'**
+  String get signup_phone_subtitle;
+
+  /// No description provided for @terms_and_policy_agreement.
+  ///
+  /// In en, this message translates to:
+  /// **'By continuing you agree to our'**
+  String get terms_and_policy_agreement;
+
+  /// No description provided for @terms_of_service.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of Service'**
+  String get terms_of_service;
+
+  /// No description provided for @privacy_policy.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get privacy_policy;
+
+  /// No description provided for @and.
+  ///
+  /// In en, this message translates to:
+  /// **'and'**
+  String get and;
+
+  /// No description provided for @terms_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Terms of Service'**
+  String get terms_title;
+
+  /// No description provided for @terms_last_updated.
+  ///
+  /// In en, this message translates to:
+  /// **'Last updated: August 2026'**
+  String get terms_last_updated;
+
+  /// No description provided for @terms_sec_1_title.
+  ///
+  /// In en, this message translates to:
+  /// **'1. Acceptance of Terms'**
+  String get terms_sec_1_title;
+
+  /// No description provided for @terms_sec_1_body.
+  ///
+  /// In en, this message translates to:
+  /// **'By accessing or using the Bondi application, you agree to be bound by these Terms of Service and all applicable laws and regulations. If you do not agree with any part of these terms, you may not use the app.'**
+  String get terms_sec_1_body;
+
+  /// No description provided for @terms_sec_2_title.
+  ///
+  /// In en, this message translates to:
+  /// **'2. Eligibility'**
+  String get terms_sec_2_title;
+
+  /// No description provided for @terms_sec_2_body.
+  ///
+  /// In en, this message translates to:
+  /// **'You must be at least 18 years old to use Bondi. By creating an account you confirm that you meet this requirement and that all information you provide is accurate and truthful.'**
+  String get terms_sec_2_body;
+
+  /// No description provided for @terms_sec_3_title.
+  ///
+  /// In en, this message translates to:
+  /// **'3. User Accounts'**
+  String get terms_sec_3_title;
+
+  /// No description provided for @terms_sec_3_body.
+  ///
+  /// In en, this message translates to:
+  /// **'You are responsible for maintaining the confidentiality of your account and for all activity that occurs under it. You must notify us immediately of any unauthorized use of your account.'**
+  String get terms_sec_3_body;
+
+  /// No description provided for @terms_sec_4_title.
+  ///
+  /// In en, this message translates to:
+  /// **'4. Acceptable Use'**
+  String get terms_sec_4_title;
+
+  /// No description provided for @terms_sec_4_body.
+  ///
+  /// In en, this message translates to:
+  /// **'You agree not to use Bondi for any unlawful purpose, to harass or abuse other users, to post offensive or inappropriate content, or to attempt to gain unauthorized access to the service or other users\' accounts.'**
+  String get terms_sec_4_body;
+
+  /// No description provided for @terms_sec_5_title.
+  ///
+  /// In en, this message translates to:
+  /// **'5. Content'**
+  String get terms_sec_5_title;
+
+  /// No description provided for @terms_sec_5_body.
+  ///
+  /// In en, this message translates to:
+  /// **'You retain ownership of the content you post. By posting content you grant Bondi a limited license to display and distribute it within the app. We may remove content that violates these terms.'**
+  String get terms_sec_5_body;
+
+  /// No description provided for @terms_sec_6_title.
+  ///
+  /// In en, this message translates to:
+  /// **'6. Limitation of Liability'**
+  String get terms_sec_6_title;
+
+  /// No description provided for @terms_sec_6_body.
+  ///
+  /// In en, this message translates to:
+  /// **'Bondi and its operators shall not be liable for any indirect, incidental, or consequential damages arising from your use of the service. The service is provided on an \'as is\' basis without warranty.'**
+  String get terms_sec_6_body;
+
+  /// No description provided for @terms_sec_7_title.
+  ///
+  /// In en, this message translates to:
+  /// **'7. Termination'**
+  String get terms_sec_7_title;
+
+  /// No description provided for @terms_sec_7_body.
+  ///
+  /// In en, this message translates to:
+  /// **'We may suspend or terminate your account at any time if you violate these terms or if required by law. You may stop using the app at any time and request account deletion through the app settings.'**
+  String get terms_sec_7_body;
+
+  /// No description provided for @terms_sec_8_title.
+  ///
+  /// In en, this message translates to:
+  /// **'8. Changes to These Terms'**
+  String get terms_sec_8_title;
+
+  /// No description provided for @terms_sec_8_body.
+  ///
+  /// In en, this message translates to:
+  /// **'We may update these Terms from time to time. We will notify you of significant changes. Continued use of the app after changes means you accept the updated terms.'**
+  String get terms_sec_8_body;
+
+  /// No description provided for @privacy_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Policy'**
+  String get privacy_title;
+
+  /// No description provided for @privacy_last_updated.
+  ///
+  /// In en, this message translates to:
+  /// **'Last updated: August 2026'**
+  String get privacy_last_updated;
+
+  /// No description provided for @privacy_sec_1_title.
+  ///
+  /// In en, this message translates to:
+  /// **'1. Information We Collect'**
+  String get privacy_sec_1_title;
+
+  /// No description provided for @privacy_sec_1_body.
+  ///
+  /// In en, this message translates to:
+  /// **'We collect information you provide directly, such as your phone number, profile information, photos, and preferences. We also collect usage data and device information to improve the service.'**
+  String get privacy_sec_1_body;
+
+  /// No description provided for @privacy_sec_2_title.
+  ///
+  /// In en, this message translates to:
+  /// **'2. How We Use Information'**
+  String get privacy_sec_2_title;
+
+  /// No description provided for @privacy_sec_2_body.
+  ///
+  /// In en, this message translates to:
+  /// **'We use your information to provide and personalize the service, verify your identity, match you with other users, process support requests, and ensure the safety and security of our community.'**
+  String get privacy_sec_2_body;
+
+  /// No description provided for @privacy_sec_3_title.
+  ///
+  /// In en, this message translates to:
+  /// **'3. Sharing of Information'**
+  String get privacy_sec_3_title;
+
+  /// No description provided for @privacy_sec_3_body.
+  ///
+  /// In en, this message translates to:
+  /// **'We do not sell your personal data. We share your profile information with other users in order to provide the matching service. We may share data with service providers who help us operate the app.'**
+  String get privacy_sec_3_body;
+
+  /// No description provided for @privacy_sec_4_title.
+  ///
+  /// In en, this message translates to:
+  /// **'4. Data Security'**
+  String get privacy_sec_4_title;
+
+  /// No description provided for @privacy_sec_4_body.
+  ///
+  /// In en, this message translates to:
+  /// **'We use industry-standard security measures to protect your data, including encryption in transit and at rest. No method of transmission is 100% secure, but we work hard to safeguard your information.'**
+  String get privacy_sec_4_body;
+
+  /// No description provided for @privacy_sec_5_title.
+  ///
+  /// In en, this message translates to:
+  /// **'5. Your Choices'**
+  String get privacy_sec_5_title;
+
+  /// No description provided for @privacy_sec_5_body.
+  ///
+  /// In en, this message translates to:
+  /// **'You can edit or delete your profile at any time through the app. You can control what information is visible to others and manage notification preferences in your settings.'**
+  String get privacy_sec_5_body;
+
+  /// No description provided for @privacy_sec_6_title.
+  ///
+  /// In en, this message translates to:
+  /// **'6. Data Retention'**
+  String get privacy_sec_6_title;
+
+  /// No description provided for @privacy_sec_6_body.
+  ///
+  /// In en, this message translates to:
+  /// **'We retain your data for as long as your account is active. If you delete your account, we remove or anonymize your personal data within a reasonable period, except where retention is required by law.'**
+  String get privacy_sec_6_body;
+
+  /// No description provided for @privacy_sec_7_title.
+  ///
+  /// In en, this message translates to:
+  /// **'7. Contact Us'**
+  String get privacy_sec_7_title;
+
+  /// No description provided for @privacy_sec_7_body.
+  ///
+  /// In en, this message translates to:
+  /// **'If you have questions about this Privacy Policy or our data practices, please contact our support team through the app\'s Help & Support section.'**
+  String get privacy_sec_7_body;
 
   /// No description provided for @settings_title.
   ///
@@ -1880,11 +2174,53 @@ abstract class AppLocalizations {
   /// **'Please take a selfie first'**
   String get verify_selfie_pick_first;
 
+  /// No description provided for @verify_selfie_checking.
+  ///
+  /// In en, this message translates to:
+  /// **'Checking verification status…'**
+  String get verify_selfie_checking;
+
+  /// No description provided for @verify_selfie_already_verified.
+  ///
+  /// In en, this message translates to:
+  /// **'You are already verified ✓'**
+  String get verify_selfie_already_verified;
+
+  /// No description provided for @verify_selfie_cooldown.
+  ///
+  /// In en, this message translates to:
+  /// **'Verification unavailable. Please wait {seconds}s and try again.'**
+  String verify_selfie_cooldown(int seconds);
+
   /// No description provided for @photo_rejected_reason.
   ///
   /// In en, this message translates to:
   /// **'Reason: {reason}'**
   String photo_rejected_reason(String reason);
+
+  /// No description provided for @photo_rejected_badge.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get photo_rejected_badge;
+
+  /// No description provided for @photo_rejected_some.
+  ///
+  /// In en, this message translates to:
+  /// **'Some photos were rejected. Remove or retake them, or contact support.'**
+  String get photo_rejected_some;
+
+  /// No description provided for @photo_retake.
+  ///
+  /// In en, this message translates to:
+  /// **'Retake'**
+  String get photo_retake;
+
+  /// No description provided for @photo_contact_support.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact support'**
+  String get photo_contact_support;
 
   /// No description provided for @support.
   ///
@@ -2047,6 +2383,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'See details'**
   String get notifications_see_details;
+
+  /// No description provided for @location_manual_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'If the city is wrong, you can set it manually.'**
+  String get location_manual_hint;
 }
 
 class _AppLocalizationsDelegate

@@ -1,7 +1,9 @@
 {
   "@@locale": "en",
   "app_title": "Bondi",
+  "welcome_message": "Welcome to Bondi",
   "welcome_subtitle": "Connect with people around you",
+  "find_match_tagline": "Find your match here",
   "email_label": "Email",
   "sign_in_button": "Sign In",
   "or": "OR",
@@ -56,15 +58,68 @@
   "verify_button": "Verify & Continue",
   "verify_referral_hint": "Referral code (optional)",
   "verify_referral_bonus": "💡 Get 3 days of premium free with a referral code",
+  "verify_referral_invalid": "Referral code must be exactly 8 characters",
 
   "login_email_required": "Email is required",
   "login_email_invalid": "Please enter a valid email",
   "login_password_required": "Password is required",
   "login_password_invalid": "Password must be at least 8 characters",
 
-  "verify_resend_success": "New verification code sent to your email",
+  "verify_resend_success": "New verification code sent to your phone",
   "verify_resend_failed": "Failed to resend code",
   "verify_code_required": "Please enter the 6-digit code",
+
+  "phone_hint": "Phone number",
+  "phone_error_required": "Please enter your phone number",
+  "phone_error_invalid": "Please enter a valid phone number",
+  "send_code": "Send Code",
+  "enter_phone_title": "What's your phone number?",
+  "enter_phone_subtitle": "We'll send you a verification code via SMS",
+  "signup_phone_title": "Create your account",
+  "signup_phone_subtitle": "We'll send a verification code to your phone",
+  "verify_title": "Enter Verification Code",
+  "verify_subtitle": "We sent a 6-digit code to",
+  "verify_button": "Verify",
+  "terms_and_policy_agreement": "By continuing you agree to our",
+  "terms_of_service": "Terms of Service",
+  "privacy_policy": "Privacy Policy",
+  "and": "and",
+
+  "terms_title": "Terms of Service",
+  "terms_last_updated": "Last updated: August 2026",
+  "terms_sec_1_title": "1. Acceptance of Terms",
+  "terms_sec_1_body": "By accessing or using the Bondi application, you agree to be bound by these Terms of Service and all applicable laws and regulations. If you do not agree with any part of these terms, you may not use the app.",
+  "terms_sec_2_title": "2. Eligibility",
+  "terms_sec_2_body": "You must be at least 18 years old to use Bondi. By creating an account you confirm that you meet this requirement and that all information you provide is accurate and truthful.",
+  "terms_sec_3_title": "3. User Accounts",
+  "terms_sec_3_body": "You are responsible for maintaining the confidentiality of your account and for all activity that occurs under it. You must notify us immediately of any unauthorized use of your account.",
+  "terms_sec_4_title": "4. Acceptable Use",
+  "terms_sec_4_body": "You agree not to use Bondi for any unlawful purpose, to harass or abuse other users, to post offensive or inappropriate content, or to attempt to gain unauthorized access to the service or other users' accounts.",
+  "terms_sec_5_title": "5. Content",
+  "terms_sec_5_body": "You retain ownership of the content you post. By posting content you grant Bondi a limited license to display and distribute it within the app. We may remove content that violates these terms.",
+  "terms_sec_6_title": "6. Limitation of Liability",
+  "terms_sec_6_body": "Bondi and its operators shall not be liable for any indirect, incidental, or consequential damages arising from your use of the service. The service is provided on an 'as is' basis without warranty.",
+  "terms_sec_7_title": "7. Termination",
+  "terms_sec_7_body": "We may suspend or terminate your account at any time if you violate these terms or if required by law. You may stop using the app at any time and request account deletion through the app settings.",
+  "terms_sec_8_title": "8. Changes to These Terms",
+  "terms_sec_8_body": "We may update these Terms from time to time. We will notify you of significant changes. Continued use of the app after changes means you accept the updated terms.",
+
+  "privacy_title": "Privacy Policy",
+  "privacy_last_updated": "Last updated: August 2026",
+  "privacy_sec_1_title": "1. Information We Collect",
+  "privacy_sec_1_body": "We collect information you provide directly, such as your phone number, profile information, photos, and preferences. We also collect usage data and device information to improve the service.",
+  "privacy_sec_2_title": "2. How We Use Information",
+  "privacy_sec_2_body": "We use your information to provide and personalize the service, verify your identity, match you with other users, process support requests, and ensure the safety and security of our community.",
+  "privacy_sec_3_title": "3. Sharing of Information",
+  "privacy_sec_3_body": "We do not sell your personal data. We share your profile information with other users in order to provide the matching service. We may share data with service providers who help us operate the app.",
+  "privacy_sec_4_title": "4. Data Security",
+  "privacy_sec_4_body": "We use industry-standard security measures to protect your data, including encryption in transit and at rest. No method of transmission is 100% secure, but we work hard to safeguard your information.",
+  "privacy_sec_5_title": "5. Your Choices",
+  "privacy_sec_5_body": "You can edit or delete your profile at any time through the app. You can control what information is visible to others and manage notification preferences in your settings.",
+  "privacy_sec_6_title": "6. Data Retention",
+  "privacy_sec_6_body": "We retain your data for as long as your account is active. If you delete your account, we remove or anonymize your personal data within a reasonable period, except where retention is required by law.",
+  "privacy_sec_7_title": "7. Contact Us",
+  "privacy_sec_7_body": "If you have questions about this Privacy Policy or our data practices, please contact our support team through the app's Help & Support section.",
 
   "settings_title": "Settings",
   "settings_appearance": "Appearance",
@@ -374,7 +429,14 @@
   "verify_selfie_retake": "Retake",
   "verify_selfie_submit": "Verify",
   "verify_selfie_pick_first": "Please take a selfie first",
+  "verify_selfie_checking": "Checking verification status…",
+  "verify_selfie_already_verified": "You are already verified ✓",
+  "verify_selfie_cooldown": "Verification unavailable. Please wait {seconds}s and try again.",
   "photo_rejected_reason": "Reason: {reason}",
+  "photo_rejected_badge": "Rejected",
+  "photo_rejected_some": "Some photos were rejected. Remove or retake them, or contact support.",
+  "photo_retake": "Retake",
+  "photo_contact_support": "Contact support",
   "@photo_crop_error": {
     "placeholders": {
       "error": { "type": "String", "format": "text" }
@@ -383,6 +445,11 @@
   "@photo_rejected_reason": {
     "placeholders": {
       "reason": { "type": "String", "format": "text" }
+    }
+  },
+  "@verify_selfie_cooldown": {
+    "placeholders": {
+      "seconds": { "type": "int" }
     }
   },
 
@@ -412,5 +479,6 @@
   "ticket_support_team": "Support Team",
   "ticket_you": "You",
   "ticket_load_error": "Couldn't load tickets. Pull to refresh.",
-  "notifications_see_details": "See details"
+  "notifications_see_details": "See details",
+  "location_manual_hint": "If the city is wrong, you can set it manually."
 }

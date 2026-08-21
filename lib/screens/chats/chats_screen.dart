@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:dating_app/config/app_theme.dart';
 import 'package:dating_app/providers/auth_provider.dart';
 import 'package:dating_app/providers/chat_provider.dart';
-import 'package:dating_app/screens/auth/sign_up_screen.dart';
+import 'package:dating_app/screens/login_screen.dart';
 import 'package:dating_app/screens/chats/chat_list_screen.dart';
 import 'package:dating_app/screens/chats/chat_detail_screen.dart';
 import 'package:dating_app/screens/chats/notifications_screen.dart';
@@ -94,7 +94,7 @@ class _ChatsScreenState extends State<ChatsScreen>
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const SignUpScreen()),
+          MaterialPageRoute(builder: (_) => const LoginScreen()),
         );
       });
       return const SizedBox.shrink();

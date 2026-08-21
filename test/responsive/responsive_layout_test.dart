@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:nested/nested.dart';
 import 'package:provider/provider.dart';
 import 'package:dating_app/screens/login_screen.dart';
-import 'package:dating_app/screens/auth/sign_up_screen.dart';
 import 'package:dating_app/screens/discover/discover_screen.dart';
 import 'package:dating_app/screens/discover/profile_detail_screen.dart';
 import 'package:dating_app/models/photo.dart';
@@ -101,21 +100,9 @@ void main() {
           width,
           const LoginScreen(),
           [
-            ChangeNotifierProvider(create: (_) => SettingsProvider()),
-            ChangeNotifierProvider(create: (_) => LanguageProvider()),
-          ],
-        );
-      });
-
-      testWidgets('sign up no overflow @$width', (tester) async {
-        await _pumpAt(
-          tester,
-          width,
-          const SignUpScreen(),
-          [
             ChangeNotifierProvider(create: (_) => AuthProvider()),
-            ChangeNotifierProvider(create: (_) => LanguageProvider()),
             ChangeNotifierProvider(create: (_) => SettingsProvider()),
+            ChangeNotifierProvider(create: (_) => LanguageProvider()),
           ],
         );
       });

@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../config/app_theme.dart';
+import '../../generated/app_localizations.dart';
 import '../../providers/onboarding_provider.dart';
 import '../../services/photo_service.dart';
 import '../../models/photo.dart';
 import '../../utils/responsive.dart';
 import '../main_screen.dart';
+import '../profile/create_ticket_screen.dart';
 
 class PhotoUploadScreen extends StatefulWidget {
   const PhotoUploadScreen({super.key});
@@ -23,6 +25,11 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
   bool _isUploading = false;
   String? _errorMessage;
 
+  File? _selfieFile;
+  bool _isSelfieStage = false;
+  bool _isVerifyingSelfie = false;
+  List<String> _mismatchedPhotoIds = [];
+
   static const int minPhotos = 3;
   static const int maxPhotos = 9;
 
@@ -35,16 +42,21 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
   void _loadSavedPhotos() {
     final onboarding = Provider.of<OnboardingProvider>(context, listen: false);
     if (onboarding.photos != null && onboarding.photos!.isNotEmpty) {
-      _photos = onboarding.photos!
-          .map(
-            (path) => PhotoUpload(
+      final restored = <PhotoUpload>[];
+      for (final path in onboarding.photos!) {
+        final file = File(path);
+        if (file.existsSync()) {
+          restored.add(
+            PhotoUpload(
               id: DateTime.now().millisecondsSinceEpoch.toString(),
-              file: File(path),
+              file: file,
               isMain: false,
               isUploaded: false,
             ),
-          )
-          .toList();
+          );
+        }
+      }
+      _photos = restored;
       if (_photos.isNotEmpty) {
         _photos[0].isMain = true;
       }
@@ -113,6 +125,46 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
     });
   }
 
+  Future<void> _retakePhoto(int index) async {
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1200,
+        maxHeight: 1200,
+        imageQuality: 85,
+      );
+
+      if (image == null || index >= _photos.length) return;
+
+      final file = File(image.path);
+
+      final validationError = PhotoService.validateImage(file);
+      if (validationError != null) {
+        setState(() {
+          _errorMessage = validationError;
+        });
+        return;
+      }
+
+      final finalFile = await PhotoService.convertToJpeg(file);
+
+      setState(() {
+        _photos[index] = PhotoUpload(
+          id: DateTime.now().millisecondsSinceEpoch.toString(),
+          file: finalFile,
+          isMain: _photos[index].isMain,
+          isUploaded: false,
+          needsSelfieMatch: false,
+        );
+        _errorMessage = null;
+      });
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Failed to pick image';
+      });
+    }
+  }
+
   void _reorderPhotos(int oldIndex, int newIndex) {
     if (oldIndex == newIndex) return;
 
@@ -150,42 +202,60 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
     setState(() => _isUploading = true);
 
     final onboarding = Provider.of<OnboardingProvider>(context, listen: false);
+    final t = AppLocalizations.of(context)!;
 
     try {
-      // Upload all photos
+      // Upload all photos (skipping any already uploaded on a previous pass).
       final List<String> uploadedUrls = [];
 
       for (var i = 0; i < _photos.length; i++) {
         final photo = _photos[i];
 
-        final (result, uploadError) = await PhotoService.uploadPhoto(photo.file);
+        if (photo.isUploaded && photo.url != null) {
+          uploadedUrls.add(photo.url!);
+          continue;
+        }
+
+        final (result, uploadError) = await PhotoService.uploadPhoto(
+          photo.file,
+        );
         if (result != null) {
           photo.url = result.url;
           photo.serverId = result.id;
           photo.isUploaded = true;
+          photo.rejectReason = null;
           uploadedUrls.add(result.url);
 
           if (photo.isMain) {
             await PhotoService.setMainPhoto(result.id);
           }
         } else {
-          setState(() {
-            _errorMessage = uploadError ?? 'Failed to upload photo ${i + 1}';
-            _isUploading = false;
-          });
-          return;
+          // Don't abort the whole flow — mark this photo as rejected so the
+          // user can retake/remove it (or contact support) while others finish.
+          photo.rejectReason = uploadError ?? t.error_something_wrong;
         }
+      }
+
+      setState(() => _isUploading = false);
+
+      final rejected = _photos.where((p) => p.isRejected).toList();
+      if (rejected.isNotEmpty) {
+        setState(() {
+          _errorMessage = t.photo_rejected_some;
+        });
+        return;
       }
 
       // Save photo URLs to provider
       onboarding.setPhotos(uploadedUrls);
 
-      // Profile is already complete - just go to MainScreen!
+      // All photos uploaded & accepted — move to the required selfie step.
       if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const MainScreen()),
-        );
+        setState(() {
+          _isSelfieStage = true;
+          _mismatchedPhotoIds = [];
+          _errorMessage = null;
+        });
       }
     } catch (e) {
       setState(() {
@@ -193,6 +263,102 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
         _isUploading = false;
       });
     }
+  }
+
+  Future<void> _pickSelfie() async {
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: ImageSource.camera,
+        maxWidth: 1200,
+        maxHeight: 1200,
+        imageQuality: 85,
+        preferredCameraDevice: CameraDevice.front,
+      );
+      if (image == null) return;
+      final file = File(image.path);
+      final validationError = PhotoService.validateImage(file);
+      if (validationError != null) {
+        setState(() => _errorMessage = validationError);
+        return;
+      }
+      setState(() {
+        _selfieFile = file;
+        _errorMessage = null;
+      });
+    } catch (e) {
+      setState(() => _errorMessage = 'Failed to take selfie');
+    }
+  }
+
+  Future<void> _verifySelfie() async {
+    final selfie = _selfieFile;
+    if (selfie == null) {
+      setState(() => _errorMessage = 'Take a selfie first');
+      return;
+    }
+    setState(() {
+      _isVerifyingSelfie = true;
+      _errorMessage = null;
+    });
+
+    final result = await PhotoService.verifyWithSelfie(selfie);
+    if (!mounted) return;
+    setState(() => _isVerifyingSelfie = false);
+
+    if (result.verified) {
+      for (final photo in _photos) {
+        photo.needsSelfieMatch = false;
+      }
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const MainScreen()),
+      );
+      return;
+    }
+
+    setState(() {
+      _errorMessage = result.message;
+      _mismatchedPhotoIds = result.mismatchedPhotoIds;
+      for (final photo in _photos) {
+        photo.needsSelfieMatch =
+            photo.serverId != null &&
+            _mismatchedPhotoIds.contains(photo.serverId);
+      }
+    });
+  }
+
+  void _retakeSelfie() {
+    setState(() {
+      _selfieFile = null;
+      _errorMessage = null;
+    });
+  }
+
+  void _backToPhotos() {
+    setState(() {
+      _isSelfieStage = false;
+      _errorMessage = null;
+    });
+  }
+
+  void _openSupportTicket() {
+    final mismatched = _photos
+        .where((p) => p.needsSelfieMatch)
+        .map((p) => p.serverId ?? p.id)
+        .toList();
+    final ids = mismatched.isNotEmpty
+        ? mismatched
+        : _photos.map((p) => p.serverId ?? p.id).toList();
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CreateTicketScreen(
+          initialSubject: 'Photo verification',
+          initialMessage:
+              'My photos could not be verified with my selfie. Please review them manually.\nPhoto IDs: ${ids.join(', ')}',
+        ),
+      ),
+    );
   }
 
   @override
@@ -245,7 +411,11 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
               Text(
                 'Photos',
                 style: TextStyle(
-                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                  fontFamily: AppTheme.fontFor(
+                    !Localizations.localeOf(
+                      context,
+                    ).languageCode.contains('en'),
+                  ),
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
                   color: onSurfaceColor,
@@ -302,7 +472,11 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
                               child: Text(
                                 _errorMessage!,
                                 style: TextStyle(
-                                  fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                                  fontFamily: AppTheme.fontFor(
+                                    !Localizations.localeOf(
+                                      context,
+                                    ).languageCode.contains('en'),
+                                  ),
                                   fontSize: 12,
                                   color: errorColor,
                                   fontWeight: FontWeight.w500,
@@ -317,93 +491,289 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
                 ),
               ),
 
-              // Photo Grid with Drag & Drop
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: _buildPhotoGrid(primaryColor, borderColor),
+              if (_isSelfieStage)
+                Expanded(
+                  child: _buildSelfieStep(
+                    primaryColor: primaryColor,
+                    borderColor: borderColor,
+                  ),
+                )
+              else ...[
+                // Photo Grid with Drag & Drop
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                    child: _buildPhotoGrid(primaryColor, borderColor),
+                  ),
                 ),
-              ),
 
-              // Tips with drag hint
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24.0,
-                  vertical: 4.0,
-                ),
-                child: Wrap(
-                  alignment: WrapAlignment.center,
-                  crossAxisAlignment: WrapCrossAlignment.center,
-                  spacing: 12,
-                  runSpacing: 4,
-                  children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.drag_handle, size: 14, color: textMutedColor),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Drag to reorder photos',
-                          style: TextStyle(
-                            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
-                            fontSize: 11,
+                // Tips with drag hint
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24.0,
+                    vertical: 4.0,
+                  ),
+                  child: Wrap(
+                    alignment: WrapAlignment.center,
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 12,
+                    runSpacing: 4,
+                    children: [
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.drag_handle,
+                            size: 14,
                             color: textMutedColor,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Drag to reorder photos',
+                            style: TextStyle(
+                              fontFamily: AppTheme.fontFor(
+                                !Localizations.localeOf(
+                                  context,
+                                ).languageCode.contains('en'),
+                              ),
+                              fontSize: 11,
+                              color: textMutedColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Text(
+                        'Tips: Clear, high-quality photos work best.',
+                        style: TextStyle(
+                          fontFamily: AppTheme.fontFor(
+                            !Localizations.localeOf(
+                              context,
+                            ).languageCode.contains('en'),
+                          ),
+                          fontSize: 11,
+                          fontStyle: FontStyle.italic,
+                          color: textMutedColor,
+                        ),
+                      ),
+                      if (_photos.any((p) => p.isRejected)) ...[
+                        const SizedBox(width: 12),
+                        TextButton.icon(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const CreateTicketScreen(),
+                              ),
+                            );
+                          },
+                          icon: Icon(
+                            Icons.support_agent,
+                            size: 16,
+                            color: primaryColor,
+                          ),
+                          label: Text(
+                            'Contact support',
+                            style: TextStyle(
+                              fontFamily: AppTheme.fontFor(
+                                !Localizations.localeOf(
+                                  context,
+                                ).languageCode.contains('en'),
+                              ),
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: primaryColor,
+                            ),
                           ),
                         ),
                       ],
-                    ),
-                    Text(
-                      'Tips: Clear, high-quality photos work best.',
-                      style: TextStyle(
-                        fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
-                        fontSize: 11,
-                        fontStyle: FontStyle.italic,
-                        color: textMutedColor,
-                      ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
 
-              // Bottom Button
-              Container(
-                padding: const EdgeInsets.all(20.0),
-                decoration: BoxDecoration(
-                  color: bgColor,
-                  border: Border(
-                    top: BorderSide(color: borderColor, width: 0.5),
+                // Bottom Button
+                Container(
+                  padding: const EdgeInsets.all(20.0),
+                  decoration: BoxDecoration(
+                    color: bgColor,
+                    border: Border(
+                      top: BorderSide(color: borderColor, width: 0.5),
+                    ),
+                  ),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: AppTheme.gradientButton(
+                      enabled: canProceed && !_isUploading,
+                      onPressed: _isUploading ? null : _handleComplete,
+                      child: _isUploading
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Text(
+                              canProceed
+                                  ? 'Complete'
+                                  : 'Add ${minPhotos - selectedCount} more',
+                              style: AppTheme.button.copyWith(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                    ),
                   ),
                 ),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: AppTheme.gradientButton(
-                    enabled: canProceed && !_isUploading,
-                    onPressed: _isUploading ? null : _handleComplete,
-                    child: _isUploading
-                        ? const SizedBox(
-                            height: 20,
-                            width: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              color: Colors.white,
-                            ),
-                          )
-                        : Text(
-                            canProceed
-                                ? 'Complete'
-                                : 'Add ${minPhotos - selectedCount} more',
-                            style: AppTheme.button.copyWith(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.white,
-                            ),
-                          ),
-                  ),
-                ),
-              ),
+              ],
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildSelfieStep({
+    required Color primaryColor,
+    required Color borderColor,
+  }) {
+    final isDark = context.isDarkMode;
+    final surfaceColor = isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
+    final onSurfaceColor = Theme.of(context).colorScheme.onSurface;
+
+    final mismatchLabels = _photos
+        .asMap()
+        .entries
+        .where(
+          (e) =>
+              e.value.serverId != null &&
+              _mismatchedPhotoIds.contains(e.value.serverId),
+        )
+        .map((e) => 'Photo ${e.key + 1}')
+        .toList();
+    final hasMismatch = mismatchLabels.isNotEmpty;
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Verify your identity',
+            style: AppTheme.headlineMedium.copyWith(
+              color: onSurfaceColor,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Take a clear selfie with your face well-lit so we can confirm your '
+            'photos are really you. This step is required.',
+            style: AppTheme.bodyLarge.copyWith(color: Colors.grey),
+          ),
+          const SizedBox(height: 20),
+          GestureDetector(
+            onTap: _isVerifyingSelfie ? null : _pickSelfie,
+            child: Container(
+              height: 280,
+              decoration: BoxDecoration(
+                color: surfaceColor,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(color: borderColor),
+                image: _selfieFile != null
+                    ? DecorationImage(
+                        image: FileImage(_selfieFile!),
+                        fit: BoxFit.cover,
+                      )
+                    : null,
+              ),
+              child: _selfieFile == null
+                  ? Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.camera_alt_outlined,
+                          size: 56,
+                          color: Colors.grey,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Take a selfie',
+                          style: AppTheme.bodyMedium.copyWith(
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
+                    )
+                  : const SizedBox.shrink(),
+            ),
+          ),
+          const SizedBox(height: 16),
+
+          if (hasMismatch) ...[
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppTheme.lightError.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: AppTheme.lightError.withValues(alpha: 0.2),
+                ),
+              ),
+              child: Text(
+                'These photos didn\'t match your selfie: ${mismatchLabels.join(', ')}. '
+                'Update them, retake your selfie, or send a ticket for manual review.',
+                style: AppTheme.bodyMedium.copyWith(color: AppTheme.lightError),
+              ),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton(
+              onPressed: _backToPhotos,
+              child: const Text('Update photos'),
+            ),
+            const SizedBox(height: 8),
+          ],
+
+          SizedBox(
+            height: 54,
+            child: AppTheme.gradientButton(
+              enabled: _selfieFile != null && !_isVerifyingSelfie,
+              onPressed: _isVerifyingSelfie ? null : _verifySelfie,
+              child: _isVerifyingSelfie
+                  ? const SizedBox(
+                      height: 22,
+                      width: 22,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: Colors.white,
+                      ),
+                    )
+                  : const Text(
+                      'Verify',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              TextButton(
+                onPressed: _isVerifyingSelfie ? null : _retakeSelfie,
+                child: const Text('Retake selfie'),
+              ),
+              TextButton(
+                onPressed: _isVerifyingSelfie ? null : _openSupportTicket,
+                child: const Text('Manual review'),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -440,7 +810,8 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
                               photo: count > (row * 3 + col)
                                   ? _photos[row * 3 + col]
                                   : null,
-                              isMain: (row * 3 + col) == 0 &&
+                              isMain:
+                                  (row * 3 + col) == 0 &&
                                   count > 0 &&
                                   _photos[0].isMain,
                               primaryColor: primaryColor,
@@ -554,7 +925,11 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
     required bool isBig,
   }) {
     return GestureDetector(
-      onTap: hasPhoto ? null : () => _showImagePicker(context),
+      onTap: hasPhoto
+          ? ((photo?.isRejected ?? false) || (photo?.needsSelfieMatch ?? false))
+                ? () => _retakePhoto(index)
+                : null
+          : () => _showImagePicker(context),
       child: Container(
         decoration: BoxDecoration(
           color: hasPhoto ? Colors.transparent : Colors.grey.shade100,
@@ -618,8 +993,103 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
                         Text(
                           'Main',
                           style: TextStyle(
-                            fontFamily: AppTheme.fontFor(!Localizations.localeOf(context).languageCode.contains('en')),
+                            fontFamily: AppTheme.fontFor(
+                              !Localizations.localeOf(
+                                context,
+                              ).languageCode.contains('en'),
+                            ),
                             fontSize: 9,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
+              // Rejected badge (with reason on tap)
+              if (hasPhoto && (photo?.isRejected ?? false))
+                Positioned(
+                  bottom: 26,
+                  left: 5,
+                  child: GestureDetector(
+                    onTap: () {
+                      final reason = photo?.rejectReason;
+                      ScaffoldMessenger.of(context)
+                        ..hideCurrentSnackBar()
+                        ..showSnackBar(
+                          SnackBar(
+                            content: Text(reason ?? 'Rejected'),
+                            duration: const Duration(seconds: 3),
+                          ),
+                        );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppTheme.lightError,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.block, color: Colors.white, size: 10),
+                          const SizedBox(width: 3),
+                          Text(
+                            'Rejected',
+                            style: TextStyle(
+                              fontFamily: AppTheme.fontFor(
+                                !Localizations.localeOf(
+                                  context,
+                                ).languageCode.contains('en'),
+                              ),
+                              fontSize: 8,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+
+              // Selfie-mismatch badge
+              if (hasPhoto && (photo?.needsSelfieMatch ?? false))
+                Positioned(
+                  bottom: 26,
+                  right: 5,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 6,
+                      vertical: 2,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.orange.shade700,
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.face_retouching_natural,
+                          color: Colors.white,
+                          size: 10,
+                        ),
+                        const SizedBox(width: 3),
+                        Text(
+                          'Check',
+                          style: TextStyle(
+                            fontFamily: AppTheme.fontFor(
+                              !Localizations.localeOf(
+                                context,
+                              ).languageCode.contains('en'),
+                            ),
+                            fontSize: 8,
                             fontWeight: FontWeight.w600,
                             color: Colors.white,
                           ),

@@ -79,9 +79,9 @@ class _MainScreenState extends State<MainScreen> {
       
       if (user != null && !user.isProfileComplete) {
         if (mounted) {
-          if (onboardingProvider.email == null ||
-              onboardingProvider.email!.isEmpty) {
-            onboardingProvider.setEmailAndPassword(user.email, '');
+          if (onboardingProvider.phone == null ||
+              onboardingProvider.phone!.isEmpty) {
+            onboardingProvider.setPhone(user.phone ?? '');
           }
           Navigator.pushReplacement(
             context,

@@ -85,8 +85,8 @@ class _MainAuthProvider extends AuthProvider {
 }
 
 class _FakeOnboardingProvider extends ChangeNotifier {
-  String get email => '';
-  String get password => '';
+  String get phone => '';
+  bool get hasPhone => false;
 }
 
 class _FakeChatProvider extends ChatProvider {
@@ -491,8 +491,7 @@ void main() {
           width,
           height,
           const VerifyCodeScreen(
-            email: 'test@example.com',
-            password: 'password123',
+            phone: '+989121112233',
           ),
           [
             ChangeNotifierProvider(create: (_) => AuthProvider()),

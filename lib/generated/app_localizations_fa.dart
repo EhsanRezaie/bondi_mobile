@@ -12,7 +12,13 @@ class AppLocalizationsFa extends AppLocalizations {
   String get app_title => 'باندی';
 
   @override
+  String get welcome_message => 'به باندی خوش آمدید';
+
+  @override
   String get welcome_subtitle => 'ارتباط با افراد نزدیکت';
+
+  @override
+  String get find_match_tagline => 'جفتت رو همینجا پیدا کن';
 
   @override
   String get email_label => 'ایمیل';
@@ -150,10 +156,10 @@ class AppLocalizationsFa extends AppLocalizations {
   String get signup_confirm_password_hint => 'رمز عبور را تکرار کنید';
 
   @override
-  String get verify_title => 'تایید ایمیل';
+  String get verify_title => 'کد تایید را وارد کنید';
 
   @override
-  String get verify_subtitle => 'کد ۶ رقمی ارسال شده به را وارد کنید';
+  String get verify_subtitle => 'کد ۶ رقمی ارسال شده است به';
 
   @override
   String get verify_code_hint => 'کد ۶ رقمی را وارد کنید';
@@ -162,7 +168,7 @@ class AppLocalizationsFa extends AppLocalizations {
   String get verify_resend => 'ارسال مجدد کد';
 
   @override
-  String get verify_button => 'تایید و ادامه';
+  String get verify_button => 'تایید';
 
   @override
   String get verify_referral_hint => 'کد دعوت (اختیاری)';
@@ -170,6 +176,9 @@ class AppLocalizationsFa extends AppLocalizations {
   @override
   String get verify_referral_bonus =>
       '💡 با کد دعوت ۳ روز پریمیوم رایگان دریافت کنید';
+
+  @override
+  String get verify_referral_invalid => 'کد دعوت باید دقیقاً ۸ کاراکتر باشد';
 
   @override
   String get login_email_required => 'ایمیل الزامی است';
@@ -184,13 +193,167 @@ class AppLocalizationsFa extends AppLocalizations {
   String get login_password_invalid => 'رمز عبور باید حداقل ۸ کاراکتر باشد';
 
   @override
-  String get verify_resend_success => 'کد تایید جدید به ایمیل شما ارسال شد';
+  String get verify_resend_success => 'کد تایید جدید به تلفن شما ارسال شد';
 
   @override
   String get verify_resend_failed => 'ارسال مجدد کد انجام نشد';
 
   @override
   String get verify_code_required => 'لطفاً کد ۶ رقمی را وارد کنید';
+
+  @override
+  String get phone_hint => 'شماره تلفن';
+
+  @override
+  String get phone_error_required => 'لطفاً شماره تلفن خود را وارد کنید';
+
+  @override
+  String get phone_error_invalid => 'لطفاً یک شماره تلفن معتبر وارد کنید';
+
+  @override
+  String get send_code => 'ارسال کد';
+
+  @override
+  String get enter_phone_title => 'شماره تلفن شما چیست؟';
+
+  @override
+  String get enter_phone_subtitle =>
+      'یک کد تایید از طریق پیامک برای شما ارسال می‌کنیم';
+
+  @override
+  String get signup_phone_title => 'ساخت حساب کاربری';
+
+  @override
+  String get signup_phone_subtitle => 'کد تایید به شماره تلفن شما ارسال می‌شود';
+
+  @override
+  String get terms_and_policy_agreement => 'با ادامه، شما با';
+
+  @override
+  String get terms_of_service => 'شرایط خدمات';
+
+  @override
+  String get privacy_policy => 'سیاست حریم خصوصی';
+
+  @override
+  String get and => 'و';
+
+  @override
+  String get terms_title => 'شرایط خدمات';
+
+  @override
+  String get terms_last_updated => 'آخرین به‌روزرسانی: آگوست ۲۰۲۶';
+
+  @override
+  String get terms_sec_1_title => '۱. پذیرش شرایط';
+
+  @override
+  String get terms_sec_1_body =>
+      'با دسترسی یا استفاده از اپلیکیشن باندی، می‌پذیرید که به این شرایط خدمات و تمام قوانین و مقررات مربوطه ملزم هستید. اگر با هر بخش از این شرایط موافق نیستید، نباید از برنامه استفاده کنید.';
+
+  @override
+  String get terms_sec_2_title => '۲. شرایط استفاده';
+
+  @override
+  String get terms_sec_2_body =>
+      'برای استفاده از باندی باید حداقل ۱۸ سال داشته باشید. با ایجاد حساب کاربری تأیید می‌کنید که این شرط را دارید و تمام اطلاعات ارائه‌شده دقیق و درست است.';
+
+  @override
+  String get terms_sec_3_title => '۳. حساب کاربری';
+
+  @override
+  String get terms_sec_3_body =>
+      'شما مسئول حفظ محرمانگی حساب خود و تمام فعالیت‌هایی هستید که تحت آن انجام می‌شود. در صورت استفاده غیرمجاز از حساب، باید فوراً به ما اطلاع دهید.';
+
+  @override
+  String get terms_sec_4_title => '۴. استفاده قابل قبول';
+
+  @override
+  String get terms_sec_4_body =>
+      'موافقت می‌کنید که از باندی برای هیچ هدف غیرقانونی استفاده نکنید، به کاربران دیگر آزار نرسانید، محتوای نامناسب منتشر نکنید یا سعی در دسترسی غیرمجاز به سرویس یا حساب دیگران نداشته باشید.';
+
+  @override
+  String get terms_sec_5_title => '۵. محتوا';
+
+  @override
+  String get terms_sec_5_body =>
+      'مالکیت محتوایی که منتشر می‌کنید متعلق به شماست. با انتشار محتوا، به باندی مجوز محدود برای نمایش و توزیع آن در برنامه می‌دهید. ما ممکن است محتوایی که شرایط را نقض کند حذف کنیم.';
+
+  @override
+  String get terms_sec_6_title => '۶. محدودیت مسئولیت';
+
+  @override
+  String get terms_sec_6_body =>
+      'باندی و اپراتورهای آن مسئول خسارات غیرمستقیم یا تبعی ناشی از استفاده شما از سرویس نیستند. این سرویس بدون هیچ تضمینی ارائه می‌شود.';
+
+  @override
+  String get terms_sec_7_title => '۷. فسخ';
+
+  @override
+  String get terms_sec_7_body =>
+      'در صورت نقض این شرایط یا الزام قانونی، ممکن است حساب شما را در هر زمان معلق یا خاتمه دهیم. می‌توانید در هر زمان استفاده از برنامه را متوقف و از طریق تنظیمات، حذف حساب را درخواست کنید.';
+
+  @override
+  String get terms_sec_8_title => '۸. تغییرات در شرایط';
+
+  @override
+  String get terms_sec_8_body =>
+      'ممکن است این شرایط را هر از گاهی به‌روزرسانی کنیم. در صورت تغییرات مهم به شما اطلاع می‌دهیم. ادامه استفاده از برنامه پس از تغییرات به معنای پذیرش شرایط به‌روز شده است.';
+
+  @override
+  String get privacy_title => 'سیاست حریم خصوصی';
+
+  @override
+  String get privacy_last_updated => 'آخرین به‌روزرسانی: آگوست ۲۰۲۶';
+
+  @override
+  String get privacy_sec_1_title => '۱. اطلاعاتی که جمع‌آوری می‌کنیم';
+
+  @override
+  String get privacy_sec_1_body =>
+      'ما اطلاعاتی را که مستقیماً ارائه می‌دهید جمع‌آوری می‌کنیم؛ مانند شماره تلفن، اطلاعات پروفایل، عکس‌ها و ترجیحات. همچنین داده‌های استفاده و اطلاعات دستگاه را برای بهبود خدمت جمع‌آوری می‌کنیم.';
+
+  @override
+  String get privacy_sec_2_title => '۲. نحوه استفاده از اطلاعات';
+
+  @override
+  String get privacy_sec_2_body =>
+      'ما از اطلاعات شما برای ارائه و شخصی‌سازی سرویس، تأیید هویت، تطبیق با سایر کاربران، پاسخ به درخواست‌های پشتیبانی و تضمین امنیت جامعه استفاده می‌کنیم.';
+
+  @override
+  String get privacy_sec_3_title => '۳. اشتراک‌گذاری اطلاعات';
+
+  @override
+  String get privacy_sec_3_body =>
+      'ما داده‌های شخصی شما را نمی‌فروشیم. اطلاعات پروفایل شما را برای ارائه سرویس تطبیق با کاربران دیگر به اشتراک می‌گذاریم. ممکن است داده‌ها را با ارائه‌دهندگان خدماتی که به ما در راه‌اندازی برنامه کمک می‌کنند به اشتراک بگذاریم.';
+
+  @override
+  String get privacy_sec_4_title => '۴. امنیت داده';
+
+  @override
+  String get privacy_sec_4_body =>
+      'ما از اقدامات امنیتی استاندارد صنعت برای محافظت از داده‌های شما، از جمله رمزنگاری در انتقال و ذخیره‌سازی، استفاده می‌کنیم. هیچ روش انتقالی ۱۰۰٪ امن نیست، اما ما برای محافظت از اطلاعات شما تلاش می‌کنیم.';
+
+  @override
+  String get privacy_sec_5_title => '۵. انتخاب‌های شما';
+
+  @override
+  String get privacy_sec_5_body =>
+      'می‌توانید در هر زمان از طریق برنامه پروفایل خود را ویرایش یا حذف کنید. می‌توانید کنترل کنید چه اطلاعاتی برای دیگران قابل مشاهده باشد و در تنظیمات، ترجیحات اطلاع‌رسانی را مدیریت کنید.';
+
+  @override
+  String get privacy_sec_6_title => '۶. نگهداری داده';
+
+  @override
+  String get privacy_sec_6_body =>
+      'داده‌های شما تا زمانی که حساب شما فعال است نگهداری می‌شود. پس از حذف حساب، اطلاعات شخصی شما در مدت زمان مناسب حذف یا ناشناس می‌شود، مگر اینکه قانون نگهداری را الزام کند.';
+
+  @override
+  String get privacy_sec_7_title => '۷. تماس با ما';
+
+  @override
+  String get privacy_sec_7_body =>
+      'اگر سؤالی درباره این سیاست حریم خصوصی یا روش‌های داده‌ای ما دارید، از طریق بخش پشتیبانی و راهنما در برنامه با تیم پشتیبانی تماس بگیرید.';
 
   @override
   String get settings_title => 'تنظیمات';
@@ -970,9 +1133,33 @@ class AppLocalizationsFa extends AppLocalizations {
   String get verify_selfie_pick_first => 'لطفاً ابتدا سلفی بگیرید';
 
   @override
+  String get verify_selfie_checking => 'در حال بررسی وضعیت تأیید…';
+
+  @override
+  String get verify_selfie_already_verified => 'شما قبلاً تأیید شده‌اید ✓';
+
+  @override
+  String verify_selfie_cooldown(int seconds) {
+    return 'تأیید در حال حاضر ممکن نیست. لطفاً $seconds ثانیه دیگر تلاش کنید.';
+  }
+
+  @override
   String photo_rejected_reason(String reason) {
     return 'دلیل: $reason';
   }
+
+  @override
+  String get photo_rejected_badge => 'رد شد';
+
+  @override
+  String get photo_rejected_some =>
+      'برخی از عکس‌ها رد شدند. آن‌ها را حذف یا دوباره بگیرید، یا با پشتیبانی تماس بگیرید.';
+
+  @override
+  String get photo_retake => 'گرفتن دوباره';
+
+  @override
+  String get photo_contact_support => 'تماس با پشتیبانی';
 
   @override
   String get support => 'پشتیبانی';
@@ -1059,4 +1246,8 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get notifications_see_details => 'مشاهده جزئیات';
+
+  @override
+  String get location_manual_hint =>
+      'اگر شهر اشتباه است، می‌توانید آن را به صورت دستی انتخاب کنید.';
 }
