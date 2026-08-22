@@ -23,7 +23,10 @@ class PhotoService {
       final response = await _dio.post(
         '/users/me/photos',
         data: formData,
-        options: Options(headers: {'Content-Type': 'multipart/form-data'}),
+        options: Options(
+          headers: {'Content-Type': 'multipart/form-data'},
+          receiveTimeout: const Duration(seconds: 120),
+        ),
       );
 
       return (PhotoUploadResponse.fromJson(response.data), null);
@@ -61,7 +64,11 @@ class PhotoService {
       final response = await _dio.post(
         '/users/me/verify',
         data: formData,
-        options: Options(headers: {'Content-Type': 'multipart/form-data'}),
+        options: Options(
+          headers: {'Content-Type': 'multipart/form-data'},
+          receiveTimeout: const Duration(seconds: 180),
+          sendTimeout: const Duration(seconds: 60),
+        ),
       );
 
       final data = response.data as Map<String, dynamic>;

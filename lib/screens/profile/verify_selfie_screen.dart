@@ -10,6 +10,7 @@ import '../../services/photo_service.dart';
 import '../../utils/responsive.dart';
 import '../../widgets/action_toast.dart';
 import '../../widgets/selfie_capture_view.dart';
+import 'create_ticket_screen.dart';
 
 class VerifySelfieScreen extends StatefulWidget {
   const VerifySelfieScreen({super.key});
@@ -84,8 +85,39 @@ class _VerifySelfieScreenState extends State<VerifySelfieScreen> {
       showActionToast(context, result.message);
       Navigator.pop(context, true);
     } else {
-      showActionToast(context, result.message, isError: true);
       await _loadStatus();
+      if (!mounted) return;
+      await _showFailureDialog(result.message);
+    }
+  }
+
+  Future<void> _showFailureDialog(String message) async {
+    final t = AppLocalizations.of(context)!;
+    final action = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(t.verify_selfie_failed_title),
+        content: Text(message),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, 'support'),
+            child: Text(t.verify_selfie_failed_support),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, 'retake'),
+            child: Text(t.verify_selfie_failed_retake),
+          ),
+        ],
+      ),
+    );
+    if (!mounted) return;
+    if (action == 'retake') {
+      await _pickSelfie();
+    } else if (action == 'support') {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const CreateTicketScreen()),
+      );
     }
   }
 
@@ -107,8 +139,6 @@ class _VerifySelfieScreenState extends State<VerifySelfieScreen> {
     final colors = Theme.of(context).colorScheme;
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
     final bgColor = isDark ? AppTheme.darkBackground : AppTheme.lightBackground;
-    final surfaceColor = isDark ? AppTheme.darkSurface : AppTheme.lightSurface;
-    final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
     final textMutedColor = isDark
         ? AppTheme.darkTextMuted
         : AppTheme.lightTextMuted;
@@ -249,58 +279,33 @@ class _VerifySelfieScreenState extends State<VerifySelfieScreen> {
                 const SizedBox(height: 28),
                 Expanded(
                   child: Center(
-                    child: GestureDetector(
-                      onTap: _isVerifying ? null : _pickSelfie,
-                      child: Container(
-                        width: 220,
-                        height: 300,
-                        decoration: BoxDecoration(
-                          color: surfaceColor,
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(color: borderColor),
-                          image: _selfieFile != null
-                              ? DecorationImage(
-                                  image: FileImage(_selfieFile!),
-                                  fit: BoxFit.cover,
-                                )
-                              : null,
-                        ),
-                        child: _selfieFile == null
-                            ? Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.camera_alt_outlined,
-                                    size: 56,
-                                    color: textMutedColor,
-                                  ),
-                                  const SizedBox(height: 12),
-                                  Text(
-                                    t.verify_selfie_take_selfie,
-                                    style: AppTheme.bodyMedium.copyWith(
-                                      color: textMutedColor,
-                                    ),
-                                  ),
-                                ],
-                              )
-                            : const SizedBox.shrink(),
-                      ),
-                    ),
+                    child: _selfieFile == null
+                        ? Icon(
+                            Icons.camera_alt_outlined,
+                            size: 64,
+                            color: textMutedColor.withValues(alpha: 0.5),
+                          )
+                        : GestureDetector(
+                            onTap: _isVerifying ? null : _pickSelfie,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(20),
+                              child: Image.file(
+                                _selfieFile!,
+                                width: 180,
+                                height: 240,
+                                fit: BoxFit.cover,
+                              ),
+                            ),
+                          ),
                   ),
                 ),
                 const SizedBox(height: 20),
-                if (_selfieFile != null) ...[
-                  OutlinedButton(
-                    onPressed: _isVerifying ? null : _pickSelfie,
-                    style: AppTheme.outlineButton,
-                    child: Text(t.verify_selfie_retake),
-                  ),
-                  const SizedBox(height: 12),
-                ],
                 SizedBox(
                   height: 56,
                   child: ElevatedButton(
-                    onPressed: _canVerify ? _verify : null,
+                    onPressed: _selfieFile == null
+                        ? (_canVerify ? _pickSelfie : null)
+                        : (_canVerify ? _verify : null),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _canVerify
                           ? primaryColor
@@ -323,7 +328,9 @@ class _VerifySelfieScreenState extends State<VerifySelfieScreen> {
                             ),
                           )
                         : Text(
-                            t.verify_selfie_submit,
+                            _selfieFile == null
+                                ? t.verify_selfie_get
+                                : t.verify_selfie_submit,
                             style: AppTheme.buttonText,
                           ),
                   ),

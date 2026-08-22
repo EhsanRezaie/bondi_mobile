@@ -1,6 +1,6 @@
 android {
     namespace = "ir.bondi.app"
-    compileSdk = 37
+    compileSdk = 36
     buildToolsVersion = "35.0.1"
 
     defaultConfig {

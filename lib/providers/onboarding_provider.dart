@@ -16,6 +16,15 @@ class OnboardingProvider extends ChangeNotifier {
 
   static String _stateKeyFor(String userId) => 'onboarding_state:$userId';
 
+  // Backend DrinkingStatus only accepts: never, socially, regularly.
+  // Normalize any legacy/stale 'occasionally' (from an old bug) to 'socially'
+  // so register/complete never fails validation.
+  static String? _normalizeDrinking(String? v) {
+    if (v == null || v.isEmpty) return v;
+    if (v == 'occasionally') return 'socially';
+    return v;
+  }
+
   // Step 1: Phone (from auth)
   String? _phone;
 
@@ -133,7 +142,7 @@ class OnboardingProvider extends ChangeNotifier {
       _livingSituation = data['livingSituation'] as String?;
       _childrenStatus = data['childrenStatus'] as String?;
       _smoking = data['smoking'] as String?;
-      _drinking = data['drinking'] as String?;
+      _drinking = _normalizeDrinking(data['drinking'] as String?);
       _hereFor = data['hereFor'] as String?;
       _pets = data['pets'] as String?;
       _workoutFrequency = data['workoutFrequency'] as String?;
@@ -325,7 +334,7 @@ class OnboardingProvider extends ChangeNotifier {
     _livingSituation = livingSituation;
     _childrenStatus = childrenStatus;
     _smoking = smoking;
-    _drinking = drinking;
+    _drinking = _normalizeDrinking(drinking);
     _hereFor = hereFor;
     _pets = pets;
     _workoutFrequency = workoutFrequency;
@@ -458,7 +467,8 @@ class OnboardingProvider extends ChangeNotifier {
       if (_childrenStatus != null && _childrenStatus!.isNotEmpty)
         'children_status': _childrenStatus,
       if (_smoking != null && _smoking!.isNotEmpty) 'smoking': _smoking,
-      if (_drinking != null && _drinking!.isNotEmpty) 'drinking': _drinking,
+      if (_drinking != null && _drinking!.isNotEmpty)
+        'drinking': _normalizeDrinking(_drinking),
       if (_hereFor != null && _hereFor!.isNotEmpty) 'here_for': _hereFor,
       if (_pets != null && _pets!.isNotEmpty) 'pets': _pets,
       if (_workoutFrequency != null && _workoutFrequency!.isNotEmpty)

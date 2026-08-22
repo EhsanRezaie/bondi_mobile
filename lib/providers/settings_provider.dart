@@ -64,8 +64,8 @@ class SettingsProvider extends ChangeNotifier {
     _matchNotifications = s.matchNotifications;
     _messageNotifications = s.messageNotifications;
     _language = s.language;
-    _darkMode = s.darkMode;
-    _saveDarkMode(s.darkMode);
+    // Dark mode is driven by the local preference (default: dark), not the
+    // backend default, so the theme stays dark until the user changes it.
     _safeNotify();
   }
 

@@ -2192,6 +2192,90 @@ abstract class AppLocalizations {
   /// **'Verification unavailable. Please wait {seconds}s and try again.'**
   String verify_selfie_cooldown(int seconds);
 
+  /// No description provided for @verify_selfie_get.
+  ///
+  /// In en, this message translates to:
+  /// **'Get selfie'**
+  String get verify_selfie_get;
+
+  /// No description provided for @verify_selfie_failed_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Selfie verification failed'**
+  String get verify_selfie_failed_title;
+
+  /// No description provided for @verify_selfie_failed_retake.
+  ///
+  /// In en, this message translates to:
+  /// **'Retake selfie'**
+  String get verify_selfie_failed_retake;
+
+  /// No description provided for @verify_selfie_failed_support.
+  ///
+  /// In en, this message translates to:
+  /// **'Contact support'**
+  String get verify_selfie_failed_support;
+
+  /// No description provided for @photo_verification_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo Verification'**
+  String get photo_verification_title;
+
+  /// No description provided for @photo_verification_count.
+  ///
+  /// In en, this message translates to:
+  /// **'{verified} of {total} photos verified'**
+  String photo_verification_count(int verified, int total);
+
+  /// No description provided for @photo_verification_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap a photo marked as not verified to replace it.'**
+  String get photo_verification_hint;
+
+  /// No description provided for @photo_verification_retake.
+  ///
+  /// In en, this message translates to:
+  /// **'Retake selfie'**
+  String get photo_verification_retake;
+
+  /// No description provided for @photo_verification_manual_review.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual review'**
+  String get photo_verification_manual_review;
+
+  /// No description provided for @photo_verification_finish.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish'**
+  String get photo_verification_finish;
+
+  /// No description provided for @photo_verification_all_verified.
+  ///
+  /// In en, this message translates to:
+  /// **'All your photos are verified — you\'re all set.'**
+  String get photo_verification_all_verified;
+
+  /// No description provided for @photo_verification_not_verified.
+  ///
+  /// In en, this message translates to:
+  /// **'Not verified'**
+  String get photo_verification_not_verified;
+
+  /// No description provided for @photo_verification_verified.
+  ///
+  /// In en, this message translates to:
+  /// **'Verified'**
+  String get photo_verification_verified;
+
+  /// No description provided for @photo_verification_replaced.
+  ///
+  /// In en, this message translates to:
+  /// **'Photo replaced — retake your selfie to verify'**
+  String get photo_verification_replaced;
+
   /// No description provided for @photo_rejected_reason.
   ///
   /// In en, this message translates to:

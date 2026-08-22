@@ -8,7 +8,7 @@ class AppConstants {
   static String get adminSecretKey => dotenv.env['ADMIN_SECRET_KEY'] ?? '';
   
   static const int connectTimeout = 30;
-  static const int receiveTimeout = 30;
+  static const int receiveTimeout = 90;
   
   // Storage keys
   static const String accessTokenKey = "access_token";

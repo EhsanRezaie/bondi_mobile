@@ -8,6 +8,7 @@ import '../../providers/language_provider.dart';
 import '../../services/onboarding_service.dart';
 import '../../models/prompt.dart';
 import '../../utils/responsive.dart';
+import 'interests_screen.dart';
 import 'photo_upload_screen.dart';
 
 class PromptsScreen extends StatefulWidget {
@@ -178,6 +179,18 @@ class _PromptsScreenState extends State<PromptsScreen> {
     await _completeOnboarding();
   }
 
+  void _goBack() {
+    Provider.of<OnboardingProvider>(context, listen: false).setStepIndex(2);
+    final navigator = Navigator.of(context);
+    if (navigator.canPop()) {
+      navigator.pop();
+    } else {
+      navigator.pushReplacement(
+        MaterialPageRoute(builder: (_) => const InterestsScreen()),
+      );
+    }
+  }
+
   Future<void> _completeOnboarding() async {
     final onboarding = Provider.of<OnboardingProvider>(context, listen: false);
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
@@ -241,7 +254,7 @@ class _PromptsScreenState extends State<PromptsScreen> {
         automaticallyImplyLeading: false,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios, size: 20, color: onSurfaceColor),
-          onPressed: () => Navigator.pop(context),
+          onPressed: _goBack,
         ),
         title: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),

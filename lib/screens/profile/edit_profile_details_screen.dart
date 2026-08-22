@@ -159,7 +159,7 @@ class _EditProfileDetailsScreenState extends State<EditProfileDetailsScreen> {
   // ============================================================
   final List<String> _smokingOptions = [
     'Never',
-    'Socially',    // maps to 'occasionally'
+    'Occasionally',
     'Regularly',
   ];
 
@@ -373,7 +373,7 @@ class _EditProfileDetailsScreenState extends State<EditProfileDetailsScreen> {
     }
   }
 
-  String _getBackendValue(String displayValue) {
+  String _getBackendValue(String displayValue, {String field = ''}) {
     // Body Type
     if (displayValue == 'Slim') return 'slim';
     if (displayValue == 'Average') return 'average';
@@ -432,15 +432,21 @@ class _EditProfileDetailsScreenState extends State<EditProfileDetailsScreen> {
     if (displayValue == 'Aquarius') return 'aquarius';
     if (displayValue == 'Pisces') return 'pisces';
 
-    // Smoking
-    if (displayValue == 'Never') return 'never';
-    if (displayValue == 'Socially') return 'occasionally';
-    if (displayValue == 'Regularly') return 'regularly';
+    // Smoking (values: never, occasionally, regularly)
+    if (field == 'smoking') {
+      if (displayValue == 'Never') return 'never';
+      if (displayValue == 'Occasionally') return 'occasionally';
+      if (displayValue == 'Regularly') return 'regularly';
+    }
 
-    // Drinking
-    if (displayValue == 'Never') return 'never';
-    if (displayValue == 'Socially') return 'socially';
-    if (displayValue == 'Regularly') return 'regularly';
+    // Drinking (values: never, socially, regularly).
+    // Normalize any stale 'occasionally' (legacy bug) to 'socially'.
+    if (field == 'drinking') {
+      if (displayValue == 'Never') return 'never';
+      if (displayValue == 'Socially') return 'socially';
+      if (displayValue == 'Occasionally') return 'socially';
+      if (displayValue == 'Regularly') return 'regularly';
+    }
 
     // Education
     if (displayValue == 'High School') return 'high_school';
@@ -523,13 +529,13 @@ class _EditProfileDetailsScreenState extends State<EditProfileDetailsScreen> {
 
       // Smoking
       if (_smoking != null) {
-        final backendValue = _getBackendValue(_smoking!);
+        final backendValue = _getBackendValue(_smoking!, field: 'smoking');
         updateData['smoking'] = backendValue;
       }
 
       // Drinking
       if (_drinking != null) {
-        final backendValue = _getBackendValue(_drinking!);
+        final backendValue = _getBackendValue(_drinking!, field: 'drinking');
         updateData['drinking'] = backendValue;
       }
 

@@ -1142,6 +1142,53 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get verify_selfie_get => 'Get selfie';
+
+  @override
+  String get verify_selfie_failed_title => 'Selfie verification failed';
+
+  @override
+  String get verify_selfie_failed_retake => 'Retake selfie';
+
+  @override
+  String get verify_selfie_failed_support => 'Contact support';
+
+  @override
+  String get photo_verification_title => 'Photo Verification';
+
+  @override
+  String photo_verification_count(int verified, int total) {
+    return '$verified of $total photos verified';
+  }
+
+  @override
+  String get photo_verification_hint =>
+      'Tap a photo marked as not verified to replace it.';
+
+  @override
+  String get photo_verification_retake => 'Retake selfie';
+
+  @override
+  String get photo_verification_manual_review => 'Manual review';
+
+  @override
+  String get photo_verification_finish => 'Finish';
+
+  @override
+  String get photo_verification_all_verified =>
+      'All your photos are verified — you\'re all set.';
+
+  @override
+  String get photo_verification_not_verified => 'Not verified';
+
+  @override
+  String get photo_verification_verified => 'Verified';
+
+  @override
+  String get photo_verification_replaced =>
+      'Photo replaced — retake your selfie to verify';
+
+  @override
   String photo_rejected_reason(String reason) {
     return 'Reason: $reason';
   }

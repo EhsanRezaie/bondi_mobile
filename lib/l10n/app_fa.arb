@@ -432,6 +432,20 @@
   "verify_selfie_checking": "در حال بررسی وضعیت تأیید…",
   "verify_selfie_already_verified": "شما قبلاً تأیید شده‌اید ✓",
   "verify_selfie_cooldown": "تأیید در حال حاضر ممکن نیست. لطفاً {seconds} ثانیه دیگر تلاش کنید.",
+  "verify_selfie_get": "گرفتن سلفی",
+  "verify_selfie_failed_title": "تأیید سلفی ناموفق بود",
+  "verify_selfie_failed_retake": "گرفتن سلفی دوباره",
+  "verify_selfie_failed_support": "تماس با پشتیبانی",
+  "photo_verification_title": "تأیید عکس",
+  "photo_verification_count": "{verified} از {total} عکس تأیید شد",
+  "photo_verification_hint": "برای جایگزینی، روی عکسی که تأیید نشده ضربه بزنید.",
+  "photo_verification_retake": "گرفتن سلفی دوباره",
+  "photo_verification_manual_review": "بررسی دستی",
+  "photo_verification_finish": "پایان",
+  "photo_verification_all_verified": "همه عکس‌های شما تأیید شد — کارتان تمام است.",
+  "photo_verification_not_verified": "تأیید نشده",
+  "photo_verification_verified": "تأیید شده",
+  "photo_verification_replaced": "عکس جایگزین شد — برای تأیید، سلفی بگیرید",
   "photo_rejected_reason": "دلیل: {reason}",
   "photo_rejected_badge": "رد شد",
   "photo_rejected_some": "برخی از عکس‌ها رد شدند. آن‌ها را حذف یا دوباره بگیرید، یا با پشتیبانی تماس بگیرید.",
@@ -445,6 +459,17 @@
   "@photo_rejected_reason": {
     "placeholders": {
       "reason": { "type": "String", "format": "text" }
+    }
+  },
+  "@verify_selfie_cooldown": {
+    "placeholders": {
+      "seconds": { "type": "int" }
+    }
+  },
+  "@photo_verification_count": {
+    "placeholders": {
+      "verified": { "type": "int" },
+      "total": { "type": "int" }
     }
   },
   "@verify_selfie_cooldown": {

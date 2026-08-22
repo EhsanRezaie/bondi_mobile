@@ -432,6 +432,20 @@
   "verify_selfie_checking": "Checking verification status…",
   "verify_selfie_already_verified": "You are already verified ✓",
   "verify_selfie_cooldown": "Verification unavailable. Please wait {seconds}s and try again.",
+  "verify_selfie_get": "Get selfie",
+  "verify_selfie_failed_title": "Selfie verification failed",
+  "verify_selfie_failed_retake": "Retake selfie",
+  "verify_selfie_failed_support": "Contact support",
+  "photo_verification_title": "Photo Verification",
+  "photo_verification_count": "{verified} of {total} photos verified",
+  "photo_verification_hint": "Tap a photo marked as not verified to replace it.",
+  "photo_verification_retake": "Retake selfie",
+  "photo_verification_manual_review": "Manual review",
+  "photo_verification_finish": "Finish",
+  "photo_verification_all_verified": "All your photos are verified — you're all set.",
+  "photo_verification_not_verified": "Not verified",
+  "photo_verification_verified": "Verified",
+  "photo_verification_replaced": "Photo replaced — retake your selfie to verify",
   "photo_rejected_reason": "Reason: {reason}",
   "photo_rejected_badge": "Rejected",
   "photo_rejected_some": "Some photos were rejected. Remove or retake them, or contact support.",
@@ -450,6 +464,12 @@
   "@verify_selfie_cooldown": {
     "placeholders": {
       "seconds": { "type": "int" }
+    }
+  },
+  "@photo_verification_count": {
+    "placeholders": {
+      "verified": { "type": "int" },
+      "total": { "type": "int" }
     }
   },
 

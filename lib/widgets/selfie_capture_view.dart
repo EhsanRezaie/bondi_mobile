@@ -6,6 +6,7 @@ import 'dart:ui' as ui;
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_mlkit_face_detection/google_mlkit_face_detection.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -24,6 +25,7 @@ class SelfieCaptureView extends StatefulWidget {
 
 class _SelfieCaptureViewState extends State<SelfieCaptureView> {
   CameraController? _controller;
+  CameraDescription? _camera;
   FaceDetector? _detector;
   bool _ready = false;
   bool _initializing = true;
@@ -34,7 +36,6 @@ class _SelfieCaptureViewState extends State<SelfieCaptureView> {
 
   final _lastDetect = <String, int>{};
   static const int _detectIntervalMs = 250;
-  static const double _circleRadiusFraction = 0.35;
 
   @override
   void initState() {
@@ -88,18 +89,24 @@ class _SelfieCaptureViewState extends State<SelfieCaptureView> {
         });
         return;
       }
+      _camera = camera;
 
       final controller = CameraController(
         camera,
         ResolutionPreset.medium,
         enableAudio: false,
+        // nv21 (Android) / bgra8888 (iOS) produce a single packed plane that
+        // google_mlkit can consume directly — no manual YUV conversion needed.
+        imageFormatGroup: defaultTargetPlatform == TargetPlatform.android
+            ? ImageFormatGroup.nv21
+            : ImageFormatGroup.bgra8888,
       );
       await controller.initialize();
       _detector = FaceDetector(
         options: FaceDetectorOptions(
           performanceMode: FaceDetectorMode.fast,
           enableTracking: false,
-          minFaceSize: 0.1,
+          minFaceSize: 0.05,
         ),
       );
 
@@ -126,11 +133,59 @@ class _SelfieCaptureViewState extends State<SelfieCaptureView> {
     }
   }
 
+  // Canonical ML Kit rotation: iOS uses sensor orientation directly; Android
+  // compensates sensor orientation with the current device orientation.
   InputImageRotation get _rotation {
-    if (defaultTargetPlatform == TargetPlatform.android) {
-      return InputImageRotation.rotation90deg;
+    final camera = _camera;
+    final controller = _controller;
+    if (camera == null) return InputImageRotation.rotation0deg;
+
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      return _rotationFromDegrees(camera.sensorOrientation);
     }
-    return InputImageRotation.rotation0deg;
+    if (controller == null) return InputImageRotation.rotation0deg;
+
+    const orientations = {
+      DeviceOrientation.portraitUp: 0,
+      DeviceOrientation.landscapeLeft: 90,
+      DeviceOrientation.portraitDown: 180,
+      DeviceOrientation.landscapeRight: 270,
+    };
+    var compensation = orientations[controller.value.deviceOrientation] ?? 0;
+    if (camera.lensDirection == CameraLensDirection.front) {
+      compensation = (camera.sensorOrientation + compensation) % 360;
+    } else {
+      compensation =
+          (camera.sensorOrientation - compensation + 360) % 360;
+    }
+    return _rotationFromDegrees(compensation);
+  }
+
+  InputImageRotation _rotationFromDegrees(int degrees) {
+    switch (degrees % 360) {
+      case 90:
+        return InputImageRotation.rotation90deg;
+      case 180:
+        return InputImageRotation.rotation180deg;
+      case 270:
+        return InputImageRotation.rotation270deg;
+      default:
+        return InputImageRotation.rotation0deg;
+    }
+  }
+
+  // ML Kit works in the upright (displayed) image space after applying
+  // rotation, so for 90/270 rotations the width and height swap.
+  ({double width, double height}) _uprightImageSize(
+    double imageWidth,
+    double imageHeight,
+  ) {
+    final rotation = _rotation;
+    if (rotation == InputImageRotation.rotation90deg ||
+        rotation == InputImageRotation.rotation270deg) {
+      return (width: imageHeight, height: imageWidth);
+    }
+    return (width: imageWidth, height: imageHeight);
   }
 
   void _startImageStream() {
@@ -148,38 +203,47 @@ class _SelfieCaptureViewState extends State<SelfieCaptureView> {
     final controller = _controller;
     if (controller == null || !mounted) return;
 
-    final now = DateTime.now().millisecondsSinceEpoch;
-    final last = _lastDetect['f'] ?? 0;
-    if (now - last < _detectIntervalMs) return;
-    _lastDetect['f'] = now;
+    try {
+      final now = DateTime.now().millisecondsSinceEpoch;
+      final last = _lastDetect['f'] ?? 0;
+      if (now - last < _detectIntervalMs) return;
+      _lastDetect['f'] = now;
 
-    final input = _inputImageFromCameraImage(image, controller);
-    if (input == null) return;
+      final input = _inputImageFromCameraImage(image, controller);
+      if (input == null) return;
 
-    final faces = await _safeDetect(input);
-    if (!mounted || faces == null) return;
+      final faces = await _safeDetect(input);
+      if (!mounted || faces == null) return;
 
-    final face = _pickFace(faces);
-    if (face == null) {
-      _setStatus(false, 'Move your face into the circle');
-      return;
+      final face = _pickFace(faces);
+      if (face == null) {
+        _setStatus(false, 'Move your face into the oval');
+        return;
+      }
+
+      // ML Kit returns bounding boxes in the upright (portrait) coordinate
+      // space after applying rotation, so the ellipse must use upright dims.
+      final upright = _uprightImageSize(
+        image.width.toDouble(),
+        image.height.toDouble(),
+      );
+      final result = checkFaceInEllipse(
+        face: face,
+        imageWidth: upright.width,
+        imageHeight: upright.height,
+      );
+      _setStatus(
+        result.ok,
+        result.ok ? 'Face detected — capture!' : 'Fill the oval',
+      );
+    } catch (e) {
+      // Never let a bad frame take down the capture screen.
+      debugPrint('❌ Camera frame error: $e');
     }
-
-    final result = checkFaceInCircle(
-      face: face,
-      imageWidth: image.width.toDouble(),
-      imageHeight: image.height.toDouble(),
-      circleRadiusFraction: _circleRadiusFraction,
-    );
-    _setStatus(
-      result.ok,
-      result.ok ? 'Face detected — capture!' : 'Fill the circle',
-    );
   }
 
   List<Face>? _facesCache;
-  Future<List<Face>?> _safeDetect(InputImage input) async {
-    final detector = _detector;
+  Future<List<Face>?> _safeDetect(InputImage input) async {    final detector = _detector;
     if (detector == null) return null;
     try {
       final faces = await detector.processImage(input);
@@ -265,65 +329,139 @@ class _SelfieCaptureViewState extends State<SelfieCaptureView> {
       final face = _pickFace(faces);
       if (face == null) return false;
 
-      return checkFaceInCircle(
-        face: face,
-        imageWidth: w,
-        imageHeight: h,
-        circleRadiusFraction: _circleRadiusFraction,
-      ).ok;
+      // The captured JPEG may be stored with EXIF orientation that differs
+      // from the raw decoded dims — accept if the face fills the ellipse in
+      // either orientation.
+      final ok = checkFaceInEllipse(
+            face: face,
+            imageWidth: w,
+            imageHeight: h,
+          ).ok ||
+          checkFaceInEllipse(
+            face: face,
+            imageWidth: h,
+            imageHeight: w,
+          ).ok;
+      return ok;
     } catch (e) {
       debugPrint('❌ Validate captured error: $e');
       return false;
     }
   }
 
+  // Build a contiguous, de-padded NV21 buffer for ML Kit regardless of the
+  // plane layout the camera actually reports (nv21 single/two-plane, or
+  // YUV_420_888 three-plane). Handles row padding so rows are never misread.
+  Uint8List _toNv21(CameraImage image) {
+    final w = image.width;
+    final h = image.height;
+    final ySize = w * h;
+    final uvSize = ySize ~/ 2;
+    final planes = image.planes;
+    if (planes.isEmpty) return Uint8List(0);
+
+    if (planes.length == 1) {
+      final y = planes[0];
+      if (y.bytes.length >= ySize + uvSize && y.bytesPerRow == w) {
+        return y.bytes;
+      }
+      final data = Uint8List(ySize + uvSize);
+      final uvCount = uvSize < data.length - ySize ? uvSize : 0;
+      for (var i = 0; i < h; i++) {
+        final src = i * y.bytesPerRow;
+        final dst = i * w;
+        if (src + w <= y.bytes.length) data.setRange(dst, dst + w, y.bytes, src);
+      }
+      for (var i = 0; i < uvCount; i++) {
+        final src = ySize + i * y.bytesPerRow;
+        final dst = ySize + i * w;
+        if (src + w <= y.bytes.length) data.setRange(dst, dst + w, y.bytes, src);
+      }
+      return data;
+    }
+
+    if (planes.length == 2) {
+      // NV21: Y plane + interleaved VU plane.
+      final y = planes[0];
+      final uv = planes[1];
+      final data = Uint8List(ySize + uvSize);
+      for (var i = 0; i < h; i++) {
+        final src = i * y.bytesPerRow;
+        final dst = i * w;
+        if (src + w <= y.bytes.length) data.setRange(dst, dst + w, y.bytes, src);
+      }
+      final uvRows = h ~/ 2;
+      for (var i = 0; i < uvRows; i++) {
+        final src = i * uv.bytesPerRow;
+        final dst = ySize + i * w;
+        if (src + w <= uv.bytes.length) data.setRange(dst, dst + w, uv.bytes, src);
+      }
+      return data;
+    }
+
+    // YUV_420_888: separate Y, U, V planes -> interleave V,U as NV21.
+    final y = planes[0];
+    final u = planes[1];
+    final v = planes[2];
+    final data = Uint8List(ySize + uvSize);
+    for (var i = 0; i < h; i++) {
+      final src = i * y.bytesPerRow;
+      final dst = i * w;
+      if (src + w <= y.bytes.length) data.setRange(dst, dst + w, y.bytes, src);
+    }
+    final uStride = u.bytesPerRow;
+    final vStride = v.bytesPerRow;
+    final uPS = u.bytesPerPixel ?? 2;
+    final vPS = v.bytesPerPixel ?? 2;
+    final rows = (h + 1) ~/ 2;
+    final samples = (w + 1) ~/ 2;
+    var k = ySize;
+    for (var i = 0; i < rows; i++) {
+      for (var sample = 0; sample < samples; sample++) {
+        final uIdx = i * uStride + sample * uPS;
+        final vIdx = i * vStride + sample * vPS;
+        if (uIdx >= u.bytes.length || vIdx >= v.bytes.length) break;
+        if (k + 1 > data.length) break;
+        data[k++] = v.bytes[vIdx];
+        data[k++] = u.bytes[uIdx];
+      }
+    }
+    return data;
+  }
+
+  // Canonical google_mlkit approach: convert the camera frame to a single
+  // contiguous NV21 (Android) buffer, or pass the bgra8888 plane straight
+  // through (iOS). No fragile YUV math in the hot path beyond _toNv21.
   InputImage? _inputImageFromCameraImage(
     CameraImage image,
     CameraController controller,
   ) {
-    final bytes = _concatenatePlanes(image.planes, image.width, image.height);
+    final isAndroid = defaultTargetPlatform == TargetPlatform.android;
+
+    Uint8List bytes;
+    int bytesPerRow;
+    if (isAndroid) {
+      bytes = _toNv21(image);
+      if (bytes.isEmpty) return null;
+      bytesPerRow = image.width;
+    } else {
+      if (image.planes.isEmpty) return null;
+      bytes = image.planes.first.bytes;
+      bytesPerRow = image.planes.first.bytesPerRow;
+    }
+
+    final format =
+        isAndroid ? InputImageFormat.nv21 : InputImageFormat.bgra8888;
+
     return InputImage.fromBytes(
       bytes: bytes,
       metadata: InputImageMetadata(
         size: Size(image.width.toDouble(), image.height.toDouble()),
         rotation: _rotation,
-        format: InputImageFormat.nv21,
-        bytesPerRow: image.planes[0].bytesPerRow,
+        format: format,
+        bytesPerRow: bytesPerRow,
       ),
     );
-  }
-
-  // Standard NV21 conversion for camera YUV420 frames (used by ML Kit samples).
-  Uint8List _concatenatePlanes(List<Plane> planes, int width, int height) {
-    final yRowStride = planes[0].bytesPerRow;
-    final yRowSize = width;
-    final ySize = yRowSize * height;
-    final uvRowStride = planes[1].bytesPerRow;
-    final uvPixelStride = planes[1].bytesPerPixel ?? 2;
-    final uvRowSize = (uvRowStride / uvPixelStride).round();
-    final uvSize = uvRowSize * ((height + 1) / 2).round();
-
-    final data = Uint8List(ySize + uvSize * 2);
-
-    for (var i = 0; i < height; i++) {
-      data.setRange(
-        i * yRowSize,
-        i * yRowSize + yRowSize,
-        planes[0].bytes,
-        i * yRowStride,
-      );
-    }
-
-    for (var i = 0; i < ((height + 1) / 2).ceil(); i++) {
-      final dstOffset = ySize + i * uvRowSize * 2;
-      for (var j = 0; j < uvRowSize; j++) {
-        final srcOffset = i * uvRowStride + j * uvPixelStride;
-        data[dstOffset + j * 2] = planes[2].bytes[srcOffset]; // V
-        data[dstOffset + j * 2 + 1] = planes[1].bytes[srcOffset]; // U
-      }
-    }
-
-    return data;
   }
 
   @override
@@ -381,10 +519,15 @@ class _SelfieCaptureViewState extends State<SelfieCaptureView> {
           child: LayoutBuilder(
             builder: (context, constraints) {
               final size = constraints.biggest;
-              final r =
-                  math.min(size.width, size.height) * _circleRadiusFraction;
+              final s = math.min(size.width, size.height);
+              final w = kFaceEllipseWidthFraction * s;
+              final h = kFaceEllipseHeightFraction * s;
               return CustomPaint(
-                painter: _CircleGuidePainter(circleRadius: r, ok: _faceOk),
+                painter: _OvalGuidePainter(
+                  ellipseWidth: w,
+                  ellipseHeight: h,
+                  ok: _faceOk,
+                ),
                 child: const SizedBox.expand(),
               );
             },
@@ -444,35 +587,46 @@ class _SelfieCaptureViewState extends State<SelfieCaptureView> {
   }
 }
 
-class _CircleGuidePainter extends CustomPainter {
-  final double circleRadius;
+class _OvalGuidePainter extends CustomPainter {
+  final double ellipseWidth;
+  final double ellipseHeight;
   final bool ok;
 
-  _CircleGuidePainter({required this.circleRadius, required this.ok});
+  _OvalGuidePainter({
+    required this.ellipseWidth,
+    required this.ellipseHeight,
+    required this.ok,
+  });
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
+    final ovalRect = Rect.fromCenter(
+      center: center,
+      width: ellipseWidth,
+      height: ellipseHeight,
+    );
 
-    // Dim everything outside the circle.
-    final scrim = Paint()
-      ..color = Colors.black.withValues(alpha: 0.5)
-      ..blendMode = BlendMode.srcOver;
-    canvas.drawRect(Offset.zero & size, scrim);
+    // Dim everything outside the oval WITHOUT touching the camera pixels
+    // below (BlendMode.clear would erase them, showing a black circle). Draw
+    // a single scrim path that has an oval hole instead.
+    final scrim = Paint()..color = Colors.black.withValues(alpha: 0.5);
+    final full = Path()..addRect(Offset.zero & size);
+    final hole = Path()..addOval(ovalRect);
+    final scrimPath = Path.combine(PathOperation.difference, full, hole);
+    canvas.drawPath(scrimPath, scrim);
 
-    // Clear the circle so the preview shows through.
-    final clear = Paint()..blendMode = BlendMode.clear;
-    canvas.drawCircle(center, circleRadius, clear);
-
-    // Guide outline.
+    // Guide outline: red until a face fills the oval, green when ready.
     final outline = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 4
-      ..color = ok ? Colors.greenAccent : Colors.white;
-    canvas.drawCircle(center, circleRadius, outline);
+      ..color = ok ? Colors.greenAccent : Colors.redAccent;
+    canvas.drawOval(ovalRect, outline);
   }
 
   @override
-  bool shouldRepaint(_CircleGuidePainter oldDelegate) =>
-      oldDelegate.circleRadius != circleRadius || oldDelegate.ok != ok;
+  bool shouldRepaint(_OvalGuidePainter oldDelegate) =>
+      oldDelegate.ellipseWidth != ellipseWidth ||
+      oldDelegate.ellipseHeight != ellipseHeight ||
+      oldDelegate.ok != ok;
 }

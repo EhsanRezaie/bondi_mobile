@@ -1144,6 +1144,53 @@ class AppLocalizationsFa extends AppLocalizations {
   }
 
   @override
+  String get verify_selfie_get => 'گرفتن سلفی';
+
+  @override
+  String get verify_selfie_failed_title => 'تأیید سلفی ناموفق بود';
+
+  @override
+  String get verify_selfie_failed_retake => 'گرفتن سلفی دوباره';
+
+  @override
+  String get verify_selfie_failed_support => 'تماس با پشتیبانی';
+
+  @override
+  String get photo_verification_title => 'تأیید عکس';
+
+  @override
+  String photo_verification_count(int verified, int total) {
+    return '$verified از $total عکس تأیید شد';
+  }
+
+  @override
+  String get photo_verification_hint =>
+      'برای جایگزینی، روی عکسی که تأیید نشده ضربه بزنید.';
+
+  @override
+  String get photo_verification_retake => 'گرفتن سلفی دوباره';
+
+  @override
+  String get photo_verification_manual_review => 'بررسی دستی';
+
+  @override
+  String get photo_verification_finish => 'پایان';
+
+  @override
+  String get photo_verification_all_verified =>
+      'همه عکس‌های شما تأیید شد — کارتان تمام است.';
+
+  @override
+  String get photo_verification_not_verified => 'تأیید نشده';
+
+  @override
+  String get photo_verification_verified => 'تأیید شده';
+
+  @override
+  String get photo_verification_replaced =>
+      'عکس جایگزین شد — برای تأیید، سلفی بگیرید';
+
+  @override
   String photo_rejected_reason(String reason) {
     return 'دلیل: $reason';
   }

@@ -6,6 +6,7 @@ import '../../providers/onboarding_provider.dart';
 import '../../services/onboarding_service.dart';
 import '../../models/interest.dart';
 import '../../utils/responsive.dart';
+import 'profile_details_screen.dart';
 import 'prompts_screen.dart';
 
 class InterestsScreen extends StatefulWidget {
@@ -103,6 +104,18 @@ class _InterestsScreenState extends State<InterestsScreen> {
     return _selectedInterests.contains(interestName);
   }
 
+  void _goBack() {
+    Provider.of<OnboardingProvider>(context, listen: false).setStepIndex(1);
+    final navigator = Navigator.of(context);
+    if (navigator.canPop()) {
+      navigator.pop();
+    } else {
+      navigator.pushReplacement(
+        MaterialPageRoute(builder: (_) => const ProfileDetailsScreen()),
+      );
+    }
+  }
+
   Future<void> _handleNext() async {
     if (_selectedInterests.length < 8) {
       setState(() {
@@ -148,7 +161,7 @@ class _InterestsScreenState extends State<InterestsScreen> {
         automaticallyImplyLeading: false,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios, size: 20, color: onSurfaceColor),
-          onPressed: () => Navigator.pop(context),
+          onPressed: _goBack,
         ),
         title: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),

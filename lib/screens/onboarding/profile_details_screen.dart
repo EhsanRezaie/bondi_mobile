@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../config/app_theme.dart';
 import '../../providers/onboarding_provider.dart';
 import '../../utils/responsive.dart';
+import 'basic_info_screen.dart';
 import 'interests_screen.dart';
 
 class ProfileDetailsScreen extends StatefulWidget {
@@ -159,7 +160,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
   // ============================================================
   final List<String> _smokingOptions = [
     'Never',
-    'Socially', // maps to 'occasionally'
+    'Occasionally',
     'Regularly',
   ];
 
@@ -402,7 +403,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
     }
   }
 
-  String _getBackendValue(String displayValue) {
+  String _getBackendValue(String displayValue, {String field = ''}) {
     // Body Type
     if (displayValue == 'Slim') return 'slim';
     if (displayValue == 'Average') return 'average';
@@ -463,15 +464,21 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
     if (displayValue == 'Aquarius') return 'aquarius';
     if (displayValue == 'Pisces') return 'pisces';
 
-    // Smoking
-    if (displayValue == 'Never') return 'never';
-    if (displayValue == 'Socially') return 'occasionally';
-    if (displayValue == 'Regularly') return 'regularly';
+    // Smoking (values: never, occasionally, regularly)
+    if (field == 'smoking') {
+      if (displayValue == 'Never') return 'never';
+      if (displayValue == 'Occasionally') return 'occasionally';
+      if (displayValue == 'Regularly') return 'regularly';
+    }
 
-    // Drinking
-    if (displayValue == 'Never') return 'never';
-    if (displayValue == 'Socially') return 'socially';
-    if (displayValue == 'Regularly') return 'regularly';
+    // Drinking (values: never, socially, regularly).
+    // Normalize any stale 'occasionally' (legacy bug) to 'socially'.
+    if (field == 'drinking') {
+      if (displayValue == 'Never') return 'never';
+      if (displayValue == 'Socially') return 'socially';
+      if (displayValue == 'Occasionally') return 'socially';
+      if (displayValue == 'Regularly') return 'regularly';
+    }
 
     // Education
     if (displayValue == 'High School') return 'high_school';
@@ -510,6 +517,18 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
     });
   }
 
+  void _goBack() {
+    Provider.of<OnboardingProvider>(context, listen: false).setStepIndex(0);
+    final navigator = Navigator.of(context);
+    if (navigator.canPop()) {
+      navigator.pop();
+    } else {
+      navigator.pushReplacement(
+        MaterialPageRoute(builder: (_) => const BasicInfoScreen()),
+      );
+    }
+  }
+
   Future<void> _handleNext() async {
     final onboarding = Provider.of<OnboardingProvider>(context, listen: false);
 
@@ -526,8 +545,8 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
       childrenStatus: _childrenStatus != null
           ? _getBackendValue(_childrenStatus!)
           : null,
-      smoking: _smoking != null ? _getBackendValue(_smoking!) : null,
-      drinking: _drinking != null ? _getBackendValue(_drinking!) : null,
+      smoking: _smoking != null ? _getBackendValue(_smoking!, field: 'smoking') : null,
+      drinking: _drinking != null ? _getBackendValue(_drinking!, field: 'drinking') : null,
       hereFor: _hereFor != null ? _getBackendValue(_hereFor!) : null,
       pets: _pets != null ? _getBackendValue(_pets!) : null,
       workoutFrequency: _workoutFrequency != null
@@ -583,7 +602,7 @@ class _ProfileDetailsScreenState extends State<ProfileDetailsScreen> {
         automaticallyImplyLeading: false,
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios, size: 20, color: onSurfaceColor),
-          onPressed: () => Navigator.pop(context),
+          onPressed: _goBack,
         ),
         title: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
