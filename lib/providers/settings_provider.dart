@@ -7,6 +7,7 @@ class SettingsProvider extends ChangeNotifier {
   bool _disposed = false;
 
   static const String _darkModeKey = 'dark_mode';
+  static const String _darkModeSetKey = 'dark_mode_set';
 
   bool _darkMode = true;
   bool _hideLastSeen = false;
@@ -41,6 +42,17 @@ class SettingsProvider extends ChangeNotifier {
 
    Future<void> _loadSavedDarkMode() async {
     final prefs = await SharedPreferences.getInstance();
+    // Dark is the default unless the user explicitly chose otherwise. This
+    // also repairs stale 'dark_mode=false' written by older buggy builds.
+    final userSet = prefs.getBool(_darkModeSetKey) ?? false;
+    if (!userSet) {
+      if (_darkMode != true) {
+        _darkMode = true;
+        _safeNotify();
+      }
+      await prefs.setBool(_darkModeKey, true);
+      return;
+    }
     final darkMode = prefs.getBool(_darkModeKey) ?? true;
     if (_darkMode != darkMode) {
       _darkMode = darkMode;
@@ -50,6 +62,7 @@ class SettingsProvider extends ChangeNotifier {
 
   Future<void> _saveDarkMode(bool value) async {
     final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_darkModeSetKey, true);
     await prefs.setBool(_darkModeKey, value);
   }
 

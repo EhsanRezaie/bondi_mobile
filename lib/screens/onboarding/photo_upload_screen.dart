@@ -203,6 +203,68 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
     }
   }
 
+  // Multi-select from the gallery; photos are added in the order selected and
+  // uploaded (and checked) one by one, filling the grid as each completes.
+  Future<void> _pickMultiFromGallery() async {
+    final remaining = maxPhotos - _photos.length;
+    if (remaining <= 0) return;
+
+    final List<XFile> picked = await _picker.pickMultiImage(
+      maxWidth: 1200,
+      maxHeight: 1200,
+      imageQuality: 85,
+      limit: remaining,
+    );
+    if (picked.isEmpty || !mounted) return;
+
+    setState(() => _isWorking = true);
+    for (final xfile in picked) {
+      if (!mounted) return;
+      if (_photos.length >= maxPhotos) break;
+
+      final file = File(xfile.path);
+      final validationError = PhotoService.validateImage(file);
+      if (validationError != null) {
+        showActionToast(context, validationError, isError: true);
+        continue;
+      }
+      final finalFile = await PhotoService.convertToJpeg(file);
+      if (!mounted) return;
+
+      final (result, uploadError) = await PhotoService.uploadPhoto(finalFile);
+      if (!mounted) return;
+
+      setState(() {
+        if (result != null) {
+          _photos.add(
+            PhotoUpload(
+              id: result.id,
+              file: finalFile,
+              isMain: _photos.isEmpty,
+              isUploaded: true,
+              url: result.url,
+              serverId: result.id,
+            ),
+          );
+        } else {
+          _photos.add(
+            PhotoUpload(
+              id: DateTime.now().millisecondsSinceEpoch.toString(),
+              file: finalFile,
+              isMain: _photos.isEmpty,
+              rejectReason: uploadError,
+            ),
+          );
+        }
+        _allVerified = false;
+        _lastVerifyMessage = null;
+      });
+      _syncPhotosToProvider();
+    }
+    if (!mounted) return;
+    setState(() => _isWorking = false);
+  }
+
   Future<void> _removePhoto(int index) async {
     final photo = _photos[index];
     if (photo.serverId != null) {
@@ -1042,10 +1104,14 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
                 title: const Text('Choose from Gallery'),
                 onTap: () {
                   Navigator.pop(context);
-                  _pickAndUpload(
-                    replaceIndex: replaceIndex,
-                    source: ImageSource.gallery,
-                  );
+                  if (replaceIndex != null) {
+                    _pickAndUpload(
+                      replaceIndex: replaceIndex,
+                      source: ImageSource.gallery,
+                    );
+                  } else {
+                    _pickMultiFromGallery();
+                  }
                 },
               ),
               ListTile(
