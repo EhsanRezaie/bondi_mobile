@@ -21,10 +21,11 @@ class AuthService {
   // Request verification code (login or signup)
   // POST /auth/request-code
   // ============================================================
-  static Future<Response> requestCode(String phone) async {
+  static Future<Response> requestCode(String phone, {String language = 'fa'}) async {
     try {
       return await ApiService.post('/auth/request-code', data: {
         'phone': phone,
+        'language': language,
       });
     } on DioException catch (e) {
       if (e.response != null) {

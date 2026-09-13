@@ -1,11 +1,13 @@
 // lib/providers/auth_provider.dart
 import 'package:flutter/material.dart';
 import 'package:dio/dio.dart';
+import 'package:provider/provider.dart';
 import 'package:dating_app/generated/app_localizations.dart';
 import '../services/auth_service.dart';
 import '../services/storage_service.dart';
 import '../services/push_service.dart';
 import '../models/user.dart';
+import 'language_provider.dart';
 
 class AuthProvider extends ChangeNotifier {
   bool _disposed = false;
@@ -127,13 +129,14 @@ class AuthProvider extends ChangeNotifier {
   // ============================================================
   Future<bool> requestCode(String phone, BuildContext context) async {
     final t = AppLocalizations.of(context)!;
+    final lang = context.read<LanguageProvider>().currentLanguageCode;
     _isLoading = true;
     _errorMessage = null;
     _phone = phone;
     _safeNotify();
 
     try {
-      final response = await AuthService.requestCode(phone);
+      final response = await AuthService.requestCode(phone, language: lang);
       if (response.statusCode == 200) {
         _isLoading = false;
         _safeNotify();
