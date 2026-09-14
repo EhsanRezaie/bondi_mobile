@@ -140,24 +140,30 @@ class _SplashScreenState extends State<SplashScreen>
       if (!mounted) return;
 
       Widget home;
-      if (onboarding.flowComplete) {
+      final bool profileComplete = user?.isProfileComplete ?? false;
+      if (profileComplete) {
+        // The profile is authoritative. Drop any stale/partial onboarding
+        // state so a completed user never gets sent back into the flow.
+        onboarding.clear();
+        home = const MainScreen();
+      } else if (onboarding.flowComplete) {
         home = const MainScreen();
       } else if (onboarding.hasSavedState) {
         home = _resumeScreen(onboarding.stepIndex, onboarding.selfieStage);
-      } else if ((user?.isProfileComplete ?? false)) {
-        home = const MainScreen();
       } else {
         home = const BasicInfoScreen();
       }
 
-      Navigator.pushReplacement(
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (_) => home),
+        (route) => false,
       );
     } else {
-      Navigator.pushReplacement(
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (_) => const LoginScreen()),
+        (route) => false,
       );
     }
   }

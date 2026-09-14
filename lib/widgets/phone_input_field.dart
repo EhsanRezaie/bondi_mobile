@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:country_code_picker/country_code_picker.dart';
 import '../config/app_theme.dart';
+import '../utils/phone_utils.dart';
 
 class PhoneInputField extends StatelessWidget {
   final TextEditingController controller;
@@ -14,6 +15,10 @@ class PhoneInputField extends StatelessWidget {
   final VoidCallback? onSubmitted;
   final bool Function(String value)? validator;
 
+  /// Maximum number of national digits accepted (driven by the selected
+  /// country). Falls back to 15 when not provided.
+  final int maxLength;
+
   const PhoneInputField({
     super.key,
     required this.controller,
@@ -24,6 +29,7 @@ class PhoneInputField extends StatelessWidget {
     required this.onCountryChanged,
     this.onSubmitted,
     this.validator,
+    this.maxLength = 15,
   });
 
   @override
@@ -38,6 +44,12 @@ class PhoneInputField extends StatelessWidget {
     final onSurfaceColor = colors.onSurface;
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
 
+    // Country picker dialog follows the active theme in both light and dark.
+    final dialogBackground = surfaceColor;
+    final dialogTextColor = isDark ? AppTheme.darkText : AppTheme.lightText;
+    final dialogMutedColor = textMutedColor;
+    final searchFill = isDark ? AppTheme.darkBackground : AppTheme.lightBackground;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -47,10 +59,11 @@ class PhoneInputField extends StatelessWidget {
           keyboardType: TextInputType.phone,
           textInputAction: TextInputAction.done,
           inputFormatters: [
-            FilteringTextInputFormatter.digitsOnly,
-            LengthLimitingTextInputFormatter(12),
+            const PhoneNumberInputFormatter(),
+            LengthLimitingTextInputFormatter(maxLength),
           ],
           style: AppTheme.bodyLarge.copyWith(color: onSurfaceColor),
+          onSubmitted: (_) => onSubmitted?.call(),
           decoration: InputDecoration(
             hintText: hintText,
             hintStyle: AppTheme.bodyMedium.copyWith(color: textMutedColor),
@@ -67,10 +80,43 @@ class PhoneInputField extends StatelessWidget {
                 padding: EdgeInsets.zero,
                 textStyle: AppTheme.bodyBold.copyWith(color: onSurfaceColor),
                 dialogSize: const Size(400, 480),
+                dialogBackgroundColor: dialogBackground,
+                dialogTextStyle: AppTheme.bodyLarge.copyWith(
+                  color: dialogTextColor,
+                ),
+                headerTextStyle: AppTheme.titleMedium.copyWith(
+                  color: dialogTextColor,
+                ),
+                closeIcon: Icon(
+                  Icons.close,
+                  color: dialogTextColor,
+                  size: 20,
+                ),
+                boxDecoration: BoxDecoration(
+                  color: dialogBackground,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                searchStyle: AppTheme.bodyMedium.copyWith(
+                  color: dialogTextColor,
+                ),
                 searchDecoration: InputDecoration(
                   hintText: 'Search country',
+                  hintStyle: AppTheme.bodyMedium.copyWith(
+                    color: dialogMutedColor,
+                  ),
+                  filled: true,
+                  fillColor: searchFill,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: borderColor),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: borderColor),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: primaryColor, width: 1.5),
                   ),
                 ),
                 flagDecoration: BoxDecoration(

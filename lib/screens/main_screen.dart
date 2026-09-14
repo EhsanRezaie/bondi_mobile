@@ -83,11 +83,12 @@ class _MainScreenState extends State<MainScreen> {
               onboardingProvider.phone!.isEmpty) {
             onboardingProvider.setPhone(user.phone ?? '');
           }
-          Navigator.pushReplacement(
+          Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(
               builder: (_) => const BasicInfoScreen(),
             ),
+            (route) => false,
           );
         }
         setState(() => _isChecking = false);
@@ -233,22 +234,24 @@ class _MainScreenState extends State<MainScreen> {
         if (allPhotos.length < 3) {
           final currentRoute = ModalRoute.of(context)?.settings.name;
           if (currentRoute != '/photo-upload') {
-            Navigator.pushReplacement(
+            Navigator.pushAndRemoveUntil(
               context,
               MaterialPageRoute(
                 builder: (_) => const PhotoUploadScreen(),
               ),
+              (route) => false,
             );
           }
         }
       }
     } catch (e) {
       if (mounted) {
-        Navigator.pushReplacement(
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(
             builder: (_) => const PhotoUploadScreen(),
           ),
+          (route) => false,
         );
       }
     }
@@ -278,9 +281,10 @@ class _MainScreenState extends State<MainScreen> {
 
     if (!authProvider.isAuthenticated) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        Navigator.pushReplacement(
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (_) => const LoginScreen()),
+          (route) => false,
         );
       });
       return const SizedBox.shrink();

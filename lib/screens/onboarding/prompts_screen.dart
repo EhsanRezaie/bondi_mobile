@@ -207,9 +207,10 @@ class _PromptsScreenState extends State<PromptsScreen> {
 
     if (success && mounted) {
       Provider.of<OnboardingProvider>(context, listen: false).setStepIndex(4);
-      Navigator.pushReplacement(
+      Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(builder: (_) => const PhotoUploadScreen()),
+        (route) => false,
       );
     } else if (mounted) {
       setState(() {

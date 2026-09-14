@@ -7,6 +7,7 @@ import '../../generated/app_localizations.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/language_provider.dart';
 import '../../providers/settings_provider.dart';
+import '../../utils/phone_utils.dart';
 import '../../widgets/action_toast.dart';
 import '../../widgets/phone_input_field.dart';
 import '../legal/terms_screen.dart';
@@ -44,10 +45,11 @@ class _PhoneEntryScreenState extends State<PhoneEntryScreen> {
 
   void _validatePhone(String value) {
     final t = AppLocalizations.of(context)!;
+    final national = PhoneUtils.sanitize(value);
     setState(() {
-      if (value.isEmpty) {
+      if (national.isEmpty) {
         _phoneError = t.phone_error_required;
-      } else if (value.length < 8) {
+      } else if (!_currentRule.isValid(national)) {
         _phoneError = t.phone_error_invalid;
       } else {
         _phoneError = null;
@@ -55,10 +57,11 @@ class _PhoneEntryScreenState extends State<PhoneEntryScreen> {
     });
   }
 
+  PhoneRule get _currentRule => PhoneUtils.ruleFor(_countryCode.code ?? 'IR');
+
   String _fullPhone() {
-    final digits = _phoneController.text.trim();
     final dial = _countryCode.dialCode ?? '+98';
-    return '$dial$digits';
+    return PhoneUtils.toE164(dialCode: dial, national: _phoneController.text);
   }
 
   Future<void> _handleContinue() async {
@@ -258,8 +261,11 @@ class _PhoneEntryScreenState extends State<PhoneEntryScreen> {
                     PhoneInputField(
                       controller: _phoneController,
                       focusNode: _phoneFocusNode,
-                      hintText: t.phone_hint,
+                      hintText: PhoneUtils.displayExample(
+                        _countryCode.code ?? 'IR',
+                      ),
                       errorText: _phoneError,
+                      maxLength: _currentRule.maxLength,
                       onChanged: _validatePhone,
                       onSubmitted: _handleContinue,
                       onCountryChanged: (code) {
@@ -267,6 +273,7 @@ class _PhoneEntryScreenState extends State<PhoneEntryScreen> {
                           _countryCode = code;
                           _phoneError = null;
                         });
+                        _validatePhone(_phoneController.text);
                       },
                     ),
                     const SizedBox(height: 24),

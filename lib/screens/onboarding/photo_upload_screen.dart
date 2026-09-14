@@ -383,9 +383,10 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
     await _persistOrderAndMain();
     if (!mounted) return;
     Provider.of<OnboardingProvider>(context, listen: false).markFlowComplete();
-    Navigator.pushReplacement(
+    Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (_) => const MainScreen()),
+      (route) => false,
     );
   }
 

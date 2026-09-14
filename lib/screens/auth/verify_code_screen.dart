@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pinput/pinput.dart';
 import 'package:provider/provider.dart';
 import 'package:dating_app/generated/app_localizations.dart';
 import '../../config/app_theme.dart';
 import '../../providers/auth_provider.dart';
 import '../../providers/onboarding_provider.dart';
+import '../../services/sms_consent_service.dart';
 import '../../utils/responsive.dart';
 import '../onboarding/basic_info_screen.dart';
 import '../main_screen.dart';
@@ -22,14 +24,10 @@ class VerifyCodeScreen extends StatefulWidget {
 }
 
 class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
-  final List<TextEditingController> _codeControllers = List.generate(
-    6,
-    (index) => TextEditingController(),
-  );
-  final List<FocusNode> _codeFocusNodes = List.generate(
-    6,
-    (index) => FocusNode(),
-  );
+  final TextEditingController _codeController = TextEditingController();
+  final FocusNode _codeFocusNode = FocusNode();
+
+  StreamSubscription<String>? _smsSubscription;
 
   bool _isLoading = false;
   String? _errorMessage;
@@ -43,10 +41,21 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
   void initState() {
     super.initState();
     _startResendTimer();
-    // Focus on first field after build
+    _listenForSms();
+    // Focus on the code field after build
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _codeFocusNodes[0].requestFocus();
+      if (mounted) _codeFocusNode.requestFocus();
     });
+  }
+
+  void _listenForSms() {
+    _smsSubscription = SmsConsentService().codes.listen((code) {
+      if (!mounted) return;
+      _codeController.text = code;
+      setState(() => _errorMessage = null);
+      _handleVerify();
+    });
+    SmsConsentService().startListening();
   }
 
   void _startResendTimer() {
@@ -76,34 +85,22 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
 
   @override
   void dispose() {
-    for (var controller in _codeControllers) {
-      controller.dispose();
-    }
-    for (var node in _codeFocusNodes) {
-      node.dispose();
-    }
+    _smsSubscription?.cancel();
+    SmsConsentService().stopListening();
+    _codeController.dispose();
+    _codeFocusNode.dispose();
     _resendTimer?.cancel();
     _isTimerRunning = false;
     super.dispose();
   }
 
-  void _onCodeChanged(int index, String value) {
-    // Auto-advance to next field
-    if (value.length == 1 && index < 5) {
-      _codeFocusNodes[index + 1].requestFocus();
+  void _onCodeChanged(String value) {
+    if (_errorMessage != null) {
+      setState(() => _errorMessage = null);
     }
-    // Auto-backspace to previous field
-    if (value.isEmpty && index > 0) {
-      _codeFocusNodes[index - 1].requestFocus();
-    }
-    setState(() {
-      _errorMessage = null;
-    });
   }
 
-  String _getFullCode() {
-    return _codeControllers.map((c) => c.text).join();
-  }
+  String _getFullCode() => _codeController.text;
 
   Future<void> _handleVerify() async {
     final t = AppLocalizations.of(context)!;
@@ -135,16 +132,21 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
         if (!mounted) return;
         onboardingProvider.setPhone(widget.phone);
 
-        if (authProvider.isNewUser) {
-          onboardingProvider.setStepIndex(0);
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (_) => const BasicInfoScreen()),
-          );
-        } else {
-          Navigator.pushReplacement(
+        // Route on the same predicate the splash uses (is_profile_complete) so
+        // first login and cold start agree.
+        final bool profileComplete = user?.isProfileComplete ?? false;
+        if (profileComplete) {
+          Navigator.pushAndRemoveUntil(
             context,
             MaterialPageRoute(builder: (_) => const MainScreen()),
+            (route) => false,
+          );
+        } else {
+          onboardingProvider.setStepIndex(0);
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const BasicInfoScreen()),
+            (route) => false,
           );
         }
       }
@@ -154,10 +156,8 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
           _errorMessage =
               authProvider.errorMessage ?? t.error_verification_failed;
         });
-        for (var controller in _codeControllers) {
-          controller.clear();
-        }
-        _codeFocusNodes[0].requestFocus();
+        _codeController.clear();
+        _codeFocusNode.requestFocus();
       }
     }
   }
@@ -184,10 +184,8 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
     if (success && mounted) {
       _startResendTimer();
       showActionToast(context, t.verify_resend_success);
-      for (var controller in _codeControllers) {
-        controller.clear();
-      }
-      _codeFocusNodes[0].requestFocus();
+      _codeController.clear();
+      _codeFocusNode.requestFocus();
     } else if (mounted) {
       showActionToast(
         context,
@@ -211,6 +209,26 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
         : AppTheme.lightTextMuted;
     final onSurfaceColor = colors.onSurface;
     final errorColor = AppTheme.lightError;
+    final isPersian = !Localizations.localeOf(
+      context,
+    ).languageCode.contains('en');
+    final fontFamily = AppTheme.fontFor(isPersian);
+
+    final pinTheme = PinTheme(
+      width: 48,
+      height: 56,
+      textStyle: TextStyle(
+        fontFamily: fontFamily,
+        fontSize: AppLayout.s(context, 20),
+        fontWeight: FontWeight.w600,
+        color: onSurfaceColor,
+      ),
+      decoration: BoxDecoration(
+        color: surfaceColor,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: borderColor),
+      ),
+    );
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -279,11 +297,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                               child: Text(
                                 _errorMessage!,
                                 style: TextStyle(
-                                  fontFamily: AppTheme.fontFor(
-                                    !Localizations.localeOf(
-                                      context,
-                                    ).languageCode.contains('en'),
-                                  ),
+                                  fontFamily: fontFamily,
                                   fontSize: 14,
                                   color: errorColor,
                                 ),
@@ -296,72 +310,26 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
 
                     Directionality(
                       textDirection: TextDirection.ltr,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                        children: List.generate(6, (index) {
-                          return Expanded(
-                            child: SizedBox(
-                              height: 56,
-                              child: TextFormField(
-                                controller: _codeControllers[index],
-                                focusNode: _codeFocusNodes[index],
-                                textAlign: TextAlign.center,
-                                textDirection: TextDirection.ltr,
-                                maxLength: 1,
-                                keyboardType: TextInputType.number,
-                                inputFormatters: [
-                                  FilteringTextInputFormatter.digitsOnly,
-                                ],
-                                style: TextStyle(
-                                  fontFamily: AppTheme.fontFor(
-                                    !Localizations.localeOf(
-                                      context,
-                                    ).languageCode.contains('en'),
-                                  ),
-                                  fontSize: AppLayout.s(context, 20),
-                                  fontWeight: FontWeight.w600,
-                                  color: onSurfaceColor,
-                                ),
-                                onChanged: (value) =>
-                                    _onCodeChanged(index, value),
-                                decoration: InputDecoration(
-                                  counterText: '',
-                                  hintText: '—',
-                                  hintStyle: TextStyle(
-                                    fontFamily: AppTheme.fontFor(
-                                      !Localizations.localeOf(
-                                        context,
-                                      ).languageCode.contains('en'),
-                                    ),
-                                    fontSize: AppLayout.s(context, 20),
-                                    fontWeight: FontWeight.w600,
-                                    color: textMutedColor.withValues(
-                                      alpha: 0.3,
-                                    ),
-                                  ),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(color: borderColor),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(color: borderColor),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                    borderSide: BorderSide(
-                                      color: primaryColor,
-                                      width: 2,
-                                    ),
-                                  ),
-                                  filled: true,
-                                  fillColor: surfaceColor,
-                                  contentPadding: const EdgeInsets.all(0),
-                                ),
-                              ),
-                            ),
-                          );
-                        }),
+                      child: Pinput(
+                        length: 6,
+                        controller: _codeController,
+                        focusNode: _codeFocusNode,
+                        autofocus: true,
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                        autofillHints: const [AutofillHints.oneTimeCode],
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        defaultPinTheme: pinTheme,
+                        focusedPinTheme: pinTheme.copyWith(
+                          decoration: pinTheme.decoration?.copyWith(
+                            border: Border.all(color: primaryColor, width: 2),
+                          ),
+                        ),
+                        submittedPinTheme: pinTheme,
+                        onChanged: _onCodeChanged,
+                        onCompleted: (_) => _handleVerify(),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -391,11 +359,7 @@ class _VerifyCodeScreenState extends State<VerifyCodeScreen> {
                               ? '${t.verify_resend} (${_formatTime(_resendTimerSeconds)})'
                               : t.verify_resend,
                           style: TextStyle(
-                            fontFamily: AppTheme.fontFor(
-                              !Localizations.localeOf(
-                                context,
-                              ).languageCode.contains('en'),
-                            ),
+                            fontFamily: fontFamily,
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
                           ),

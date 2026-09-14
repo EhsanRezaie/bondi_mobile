@@ -92,9 +92,10 @@ class _ChatsScreenState extends State<ChatsScreen>
     final authProvider = context.watch<AuthProvider>();
     if (!authProvider.isAuthenticated) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        Navigator.pushReplacement(
+        Navigator.pushAndRemoveUntil(
           context,
           MaterialPageRoute(builder: (_) => const LoginScreen()),
+          (route) => false,
         );
       });
       return const SizedBox.shrink();
