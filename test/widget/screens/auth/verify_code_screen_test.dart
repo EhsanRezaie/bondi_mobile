@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:pinput/pinput.dart';
 import 'package:provider/provider.dart';
 import 'package:dating_app/screens/auth/verify_code_screen.dart';
 import 'package:dating_app/providers/auth_provider.dart';
@@ -15,101 +17,85 @@ class FakeOnboardingProvider extends ChangeNotifier {
   }
 }
 
+/// Captures the code handed to [AuthProvider.verifyCode] so we can assert the
+/// full pasted/typed code reached verification.
+class RecordingAuthProvider extends AuthProvider {
+  String? lastCode;
+
+  @override
+  Future<bool> verifyCode({
+    required String code,
+    String? referralCode,
+    required BuildContext context,
+  }) async {
+    lastCode = code;
+    return false;
+  }
+}
+
 void main() {
   setUpAll(() async {
     await initTestEnvironment();
   });
 
+  Widget buildScreen(AuthProvider auth) => buildTestable(
+    const VerifyCodeScreen(phone: '+989121112233'),
+    providers: [
+      ChangeNotifierProvider<AuthProvider>.value(value: auth),
+      ChangeNotifierProvider(create: (_) => FakeOnboardingProvider()),
+      ChangeNotifierProvider(create: (_) => LanguageProvider()),
+    ],
+  );
+
   group('VerifyCodeScreen', () {
-    testWidgets('auto-advances focus to next field on digit entry', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        buildTestable(
-          const VerifyCodeScreen(phone: '+989121112233'),
-          providers: [
-            ChangeNotifierProvider(create: (_) => AuthProvider()),
-            ChangeNotifierProvider(create: (_) => FakeOnboardingProvider()),
-            ChangeNotifierProvider(create: (_) => LanguageProvider()),
-          ],
-        ),
-      );
+    testWidgets('renders a single 6-digit code field', (tester) async {
+      await tester.pumpWidget(buildScreen(AuthProvider()));
 
-      final firstField = find.byType(TextFormField).first;
-      expect(FocusScope.of(tester.element(firstField)).hasFocus, isTrue);
-
-      await tester.enterText(firstField, '1');
-      await tester.pump();
-
-      final secondField = find.byType(TextFormField).at(1);
-      expect(FocusScope.of(tester.element(secondField)).hasFocus, isTrue);
+      final pinput = tester.widget<Pinput>(find.byType(Pinput));
+      expect(pinput.length, 6);
     });
 
-    testWidgets('backspace on empty field returns focus to previous', (
+    testWidgets('accepts a pasted 6-digit code and verifies it', (
       tester,
     ) async {
-      await tester.pumpWidget(
-        buildTestable(
-          const VerifyCodeScreen(phone: '+989121112233'),
-          providers: [
-            ChangeNotifierProvider(create: (_) => AuthProvider()),
-            ChangeNotifierProvider(create: (_) => FakeOnboardingProvider()),
-            ChangeNotifierProvider(create: (_) => LanguageProvider()),
-          ],
-        ),
-      );
+      final auth = RecordingAuthProvider();
+      await tester.pumpWidget(buildScreen(auth));
 
-      await tester.enterText(find.byType(TextFormField).first, '1');
+      await tester.enterText(find.byType(EditableText), '123456');
       await tester.pump();
 
-      await tester.enterText(find.byType(TextFormField).at(1), '');
-      await tester.pump();
-
-      final firstField = find.byType(TextFormField).first;
-      expect(FocusScope.of(tester.element(firstField)).hasFocus, isTrue);
+      expect(auth.lastCode, '123456');
     });
 
-    testWidgets('entering 6 digits one at a time fills all boxes', (
+    testWidgets('autofills and verifies when the SMS consent API delivers it', (
       tester,
     ) async {
-      await tester.pumpWidget(
-        buildTestable(
-          const VerifyCodeScreen(phone: '+989121112233'),
-          providers: [
-            ChangeNotifierProvider(create: (_) => AuthProvider()),
-            ChangeNotifierProvider(create: (_) => FakeOnboardingProvider()),
-            ChangeNotifierProvider(create: (_) => LanguageProvider()),
-          ],
-        ),
-      );
+      final auth = RecordingAuthProvider();
+      await tester.pumpWidget(buildScreen(auth));
+      await tester.pump();
 
-      for (int i = 0; i < 6; i++) {
-        await tester.enterText(find.byType(TextFormField).at(i), '1');
-        await tester.pump();
-      }
+      await TestDefaultBinaryMessengerBinding
+          .instance
+          .defaultBinaryMessenger
+          .handlePlatformMessage(
+            'ir.bondi.app/sms_consent',
+            const StandardMethodCodec().encodeMethodCall(
+              const MethodCall(
+                'onSmsReceived',
+                'Bondi verification code: 445566',
+              ),
+            ),
+            (_) {},
+          );
+      await tester.pump();
 
-      for (int i = 0; i < 6; i++) {
-        final field = find.byType(TextFormField).at(i);
-        expect(
-          tester.widget<TextFormField>(field).controller?.text,
-          isNotEmpty,
-        );
-      }
+      expect(auth.lastCode, '445566');
     });
 
     testWidgets('shows error for incomplete 6-digit code', (tester) async {
-      await tester.pumpWidget(
-        buildTestable(
-          const VerifyCodeScreen(phone: '+989121112233'),
-          providers: [
-            ChangeNotifierProvider(create: (_) => AuthProvider()),
-            ChangeNotifierProvider(create: (_) => FakeOnboardingProvider()),
-            ChangeNotifierProvider(create: (_) => LanguageProvider()),
-          ],
-        ),
-      );
+      await tester.pumpWidget(buildScreen(AuthProvider()));
 
-      await tester.enterText(find.byType(TextFormField).first, '123');
+      await tester.enterText(find.byType(EditableText), '123');
       await tester.pump();
 
       await tester.tap(find.text('Verify'));
@@ -121,16 +107,7 @@ void main() {
     testWidgets('resend button is disabled while timer is running', (
       tester,
     ) async {
-      await tester.pumpWidget(
-        buildTestable(
-          const VerifyCodeScreen(phone: '+989121112233'),
-          providers: [
-            ChangeNotifierProvider(create: (_) => AuthProvider()),
-            ChangeNotifierProvider(create: (_) => FakeOnboardingProvider()),
-            ChangeNotifierProvider(create: (_) => LanguageProvider()),
-          ],
-        ),
-      );
+      await tester.pumpWidget(buildScreen(AuthProvider()));
 
       final resendButton = find.byWidgetPredicate(
         (widget) =>
