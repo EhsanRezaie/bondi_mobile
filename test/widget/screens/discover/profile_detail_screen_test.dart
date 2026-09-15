@@ -90,5 +90,45 @@ void main() {
       expect(find.byIcon(Icons.close_rounded), findsOneWidget);
       expect(find.byIcon(Icons.favorite_rounded), findsOneWidget);
     });
+
+    testWidgets('shows the report flag in the header', (tester) async {
+      await tester.pumpWidget(
+        buildTestable(
+          ProfileDetailScreen(profile: discoverProfile()),
+          providers: [
+            ChangeNotifierProvider(create: (_) => SettingsProvider()),
+          ],
+        ),
+      );
+
+      expect(find.byIcon(Icons.flag), findsOneWidget);
+    });
+
+    testWidgets('does not overflow with a very long name and city', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(360 * 3, 640 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.reset);
+
+      final profile = DiscoverProfile.fromJson({
+        ...jsonDiscoverProfile(),
+        'name': 'Alexandrina Maximiliana Constantine The Third',
+        'city': 'A Very Long City Name That Definitely Exceeds The Width',
+        'province': 'An Equally Long Province Name That Also Overflows',
+      });
+
+      await tester.pumpWidget(
+        buildTestable(
+          ProfileDetailScreen(profile: profile),
+          providers: [
+            ChangeNotifierProvider(create: (_) => SettingsProvider()),
+          ],
+        ),
+      );
+      await tester.pump();
+
+      expect(tester.takeException(), isNull);
+    });
   });
 }

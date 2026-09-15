@@ -116,4 +116,42 @@ void main() {
       await tester.pumpAndSettle();
     });
   });
+
+  group('SearchProfileDetail layout', () {
+    testWidgets('does not overflow with a very long name and city', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(360 * 3, 640 * 3);
+      tester.view.devicePixelRatio = 3.0;
+      addTearDown(tester.view.reset);
+
+      final longProfile = DiscoverProfile(
+        id: 'user-b',
+        name: 'Alexandrina Maximiliana Constantine The Third',
+        age: 28,
+        gender: 'female',
+        city: 'A Very Long City Name That Definitely Exceeds The Width',
+        province: 'An Equally Long Province Name That Also Overflows',
+      );
+
+      api.install();
+      await tester.pumpWidget(
+        buildTestable(
+          SearchProfileDetail(profile: longProfile),
+          providers: [
+            ChangeNotifierProvider<ChatProvider>.value(value: provider),
+          ],
+        ),
+      );
+      await tester.pump();
+
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('has no fullscreen hint pill', (tester) async {
+      await pumpScreen(tester);
+
+      expect(find.byIcon(Icons.fullscreen), findsNothing);
+    });
+  });
 }

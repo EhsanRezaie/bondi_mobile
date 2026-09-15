@@ -472,45 +472,52 @@ class UserCardState extends State<UserCard>
             ),
           ),
         Positioned(
-          top: AppLayout.s(context, 12),
-          right: AppLayout.s(context, 12),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-                if (profile.isPremium)
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: AppLayout.s(context, 10),
-                      vertical: AppLayout.s(context, 4),
-                    ),
-                    decoration: BoxDecoration(
-                      gradient: AppTheme.likeGradient(isDark: isDark),
-                      borderRadius: BorderRadius.circular(
-                        AppLayout.s(context, 12),
+          top: 0,
+          right: AppLayout.s(context, 16),
+          child: SafeArea(
+            bottom: false,
+            child: Padding(
+              // Sits below the revert (undo) button in the top overlay.
+              padding: EdgeInsets.only(top: AppLayout.s(context, 64)),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (profile.isPremium)
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: AppLayout.s(context, 10),
+                        vertical: AppLayout.s(context, 4),
                       ),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.workspace_premium,
-                          size: AppLayout.s(context, 12),
-                          color: Colors.white,
+                      decoration: BoxDecoration(
+                        gradient: AppTheme.likeGradient(isDark: isDark),
+                        borderRadius: BorderRadius.circular(
+                          AppLayout.s(context, 12),
                         ),
-                        SizedBox(width: AppLayout.s(context, 3)),
-                        Text(
-                          'Premium',
-                          style: TextStyle(
-                            fontFamily: font,
-                            fontSize: AppLayout.s(context, 10),
-                            fontWeight: FontWeight.w700,
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.workspace_premium,
+                            size: AppLayout.s(context, 12),
                             color: Colors.white,
                           ),
-                        ),
-                      ],
+                          SizedBox(width: AppLayout.s(context, 3)),
+                          Text(
+                            'Premium',
+                            style: TextStyle(
+                              fontFamily: font,
+                              fontSize: AppLayout.s(context, 10),
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-            ],
+                ],
+              ),
+            ),
           ),
         ),
         Positioned(
