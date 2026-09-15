@@ -51,6 +51,9 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   String? _currentUserId;
   ChatProvider? _chatProvider;
   bool _showScrollToBottom = false;
+  int _lastMessageCount = 0;
+  bool _wasTyping = false;
+  bool _didInitialScroll = false;
 
   @override
   void didChangeDependencies() {
@@ -104,6 +107,38 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         );
       }
     });
+  }
+
+  bool _isNearBottom() {
+    if (!_scrollController.hasClients) return true;
+    return _scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200;
+  }
+
+  /// Auto-scrolls to the newest content when a message arrives or the peer
+  /// starts typing. Only does so when the user is already near the bottom (or
+  /// the newest message is their own), so reading history isn't interrupted.
+  void _maybeAutoScroll(ChatProvider provider) {
+    final count = provider.messages.length;
+    final grew = count > _lastMessageCount;
+    final typingStarted = provider.isTyping && !_wasTyping;
+    final initial = !_didInitialScroll && count > 0;
+
+    _lastMessageCount = count;
+    _wasTyping = provider.isTyping;
+
+    if (!grew && !typingStarted && !initial) return;
+
+    final lastIsMine =
+        provider.messages.isNotEmpty &&
+        provider.messages.last.senderId == _currentUserId;
+
+    if (initial) {
+      _didInitialScroll = true;
+      _scrollToBottom();
+    } else if (_isNearBottom() || lastIsMine) {
+      _scrollToBottom();
+    }
   }
 
   Future<void> _attachPhoto() async {
@@ -501,6 +536,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         userName: widget.userName,
         avatarUrl: mediaUrlForDisplay(widget.avatarUrl),
         isOnline: context.watch<ChatProvider>().isOtherUserOnline,
+        isTyping: context.watch<ChatProvider>().isTyping,
         lastSeenAt:
             context
                 .watch<ChatProvider>()
@@ -535,6 +571,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                       ),
                     );
                   }
+
+                  _maybeAutoScroll(provider);
 
                   return _buildMessageList(
                     provider,

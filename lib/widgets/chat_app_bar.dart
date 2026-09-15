@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:dating_app/config/app_theme.dart';
+import 'package:dating_app/generated/app_localizations.dart';
 import 'package:dating_app/utils/responsive.dart';
 import 'package:dating_app/utils/cached_image.dart';
 import 'package:dating_app/widgets/online_indicator.dart';
@@ -8,6 +9,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String userName;
   final String? avatarUrl;
   final bool isOnline;
+  final bool isTyping;
   final String? lastSeenAt;
   final VoidCallback? onBackPressed;
   final VoidCallback? onMenuPressed;
@@ -18,6 +20,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
     required this.userName,
     this.avatarUrl,
     this.isOnline = false,
+    this.isTyping = false,
     this.lastSeenAt,
     this.onBackPressed,
     this.onMenuPressed,
@@ -32,6 +35,7 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
     final isDark = context.isDarkMode;
     final bgColor = isDark ? AppTheme.darkBackground : AppTheme.lightBackground;
     final textColor = isDark ? AppTheme.darkText : AppTheme.lightText;
+    final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
     final borderColor =
         isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
 
@@ -87,10 +91,24 @@ class ChatAppBar extends StatelessWidget implements PreferredSizeWidget {
                   ),
                   overflow: TextOverflow.ellipsis,
                 ),
-                OnlineIndicator(
-                  isOnline: isOnline,
-                  lastSeenAt: lastSeenAt,
-                ),
+                isTyping
+                    ? Text(
+                        AppLocalizations.of(context)!.chat_typing,
+                        style: TextStyle(
+                          fontFamily: AppTheme.fontFor(
+                            !Localizations.localeOf(
+                              context,
+                            ).languageCode.contains('en'),
+                          ),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: primaryColor,
+                        ),
+                      )
+                    : OnlineIndicator(
+                        isOnline: isOnline,
+                        lastSeenAt: lastSeenAt,
+                      ),
               ],
             ),
           ),

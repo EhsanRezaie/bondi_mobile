@@ -1137,7 +1137,7 @@ class ChatProvider extends ChangeNotifier {
         break;
 
       case 'typing':
-        if (_isEventForActiveChat(event, data)) {
+        if (_isEventForActiveChat(event, data) && _isFromPeer(event, data)) {
           _isTyping = true;
           _safeNotify();
           _resetTypingTimer();
@@ -1145,7 +1145,7 @@ class ChatProvider extends ChangeNotifier {
         break;
 
       case 'typing_stopped':
-        if (_isEventForActiveChat(event, data)) {
+        if (_isEventForActiveChat(event, data) && _isFromPeer(event, data)) {
           _isTyping = false;
           _safeNotify();
         }
@@ -1235,6 +1235,15 @@ class ChatProvider extends ChangeNotifier {
     // Chat-channel events always reference their chat; if present it must
     // match the open chat. (No chat id → defensive true.)
     return chatId == null || chatId == active;
+  }
+
+  /// True when the event was produced by the peer (typing/presence events carry
+  /// the actor's `user_id`). The server broadcasts to the whole chat topic, so
+  /// we must ignore our own frames.
+  bool _isFromPeer(Map<String, dynamic> event, Map<String, dynamic> data) {
+    final uid = (event['user_id'] ?? data['user_id']) as String?;
+    if (uid == null) return true;
+    return uid != _userId;
   }
 
   /// Applies a chat_updated event to the list in place (preview, unread,
@@ -1431,6 +1440,9 @@ class ChatProvider extends ChangeNotifier {
 
   @visibleForTesting
   void applyChatUpdated(Map<String, dynamic> data) => _applyChatUpdated(data);
+
+  @visibleForTesting
+  void applySocketEvent(Map<String, dynamic> event) => _handleSocketEvent(event);
 
   void _handleNewNotification(Map<String, dynamic> data) {
     debugPrint('WS new_notification: $data');

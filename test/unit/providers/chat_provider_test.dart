@@ -604,6 +604,31 @@ void main() {
 
       expect(provider.conversations.first.unreadCount, 0);
     });
+
+    test('shows typing for the peer but ignores our own typing frames', () async {
+      await seedActiveChat();
+
+      provider.applySocketEvent({
+        'type': 'typing',
+        'chat_id': 'chat-1',
+        'user_id': 'user-a', // us
+      });
+      expect(provider.isTyping, isFalse);
+
+      provider.applySocketEvent({
+        'type': 'typing',
+        'chat_id': 'chat-1',
+        'user_id': 'user-b', // peer
+      });
+      expect(provider.isTyping, isTrue);
+
+      provider.applySocketEvent({
+        'type': 'typing_stopped',
+        'chat_id': 'chat-1',
+        'user_id': 'user-b',
+      });
+      expect(provider.isTyping, isFalse);
+    });
   });
 }
 

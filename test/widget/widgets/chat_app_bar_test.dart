@@ -56,5 +56,33 @@ void main() {
       await tester.tap(find.byIcon(Icons.more_vert));
       expect(pressed, isTrue);
     });
+
+    testWidgets('shows Online when the peer is online and not typing', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        buildTestable(
+          const Scaffold(
+            appBar: ChatAppBar(userName: 'Sara', isOnline: true),
+          ),
+        ),
+      );
+
+      expect(find.text('Online'), findsOneWidget);
+      expect(find.text('Typing...'), findsNothing);
+    });
+
+    testWidgets('shows typing… instead of Online while typing', (tester) async {
+      await tester.pumpWidget(
+        buildTestable(
+          const Scaffold(
+            appBar: ChatAppBar(userName: 'Sara', isOnline: true, isTyping: true),
+          ),
+        ),
+      );
+
+      expect(find.text('Typing...'), findsOneWidget);
+      expect(find.text('Online'), findsNothing);
+    });
   });
 }
