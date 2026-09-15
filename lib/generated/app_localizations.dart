@@ -194,6 +194,24 @@ abstract class AppLocalizations {
   /// **'Cancel'**
   String get cancel;
 
+  /// No description provided for @exit_app_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit Bondi?'**
+  String get exit_app_title;
+
+  /// No description provided for @exit_app_message.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to close the app?'**
+  String get exit_app_message;
+
+  /// No description provided for @exit_app_confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Exit'**
+  String get exit_app_confirm;
+
   /// No description provided for @english.
   ///
   /// In en, this message translates to:

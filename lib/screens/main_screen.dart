@@ -1,5 +1,6 @@
 // lib/screens/main_screen.dart
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../config/app_theme.dart';
 import '../providers/auth_provider.dart';
@@ -261,6 +262,74 @@ class _MainScreenState extends State<MainScreen> {
     setState(() => _currentIndex = index);
   }
 
+  /// Confirms before leaving the app so an accidental back press doesn't
+  /// minimize it straight to the launcher.
+  Future<void> _confirmExit() async {
+    final t = AppLocalizations.of(context)!;
+    final isDark = context.isDarkMode;
+    final isPersian = !Localizations.localeOf(context).languageCode.contains(
+      'en',
+    );
+    final titleColor = isDark ? AppTheme.darkText : AppTheme.lightText;
+    final mutedColor = isDark ? AppTheme.darkTextMuted : AppTheme.lightTextMuted;
+    final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: isDark ? AppTheme.darkSurface : AppTheme.lightSurface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppTheme.radiusModule),
+        ),
+        title: Text(
+          t.exit_app_title,
+          style: TextStyle(
+            fontFamily: AppTheme.fontFor(isPersian),
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: titleColor,
+          ),
+        ),
+        content: Text(
+          t.exit_app_message,
+          style: TextStyle(
+            fontFamily: AppTheme.fontFor(isPersian),
+            fontSize: 14,
+            height: 1.5,
+            color: mutedColor,
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(
+              t.cancel,
+              style: TextStyle(
+                fontFamily: AppTheme.fontFor(isPersian),
+                color: mutedColor,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(
+              t.exit_app_confirm,
+              style: TextStyle(
+                fontFamily: AppTheme.fontFor(isPersian),
+                fontWeight: FontWeight.w700,
+                color: primaryColor,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      await SystemNavigator.pop();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final authProvider = Provider.of<AuthProvider>(context);
@@ -290,32 +359,39 @@ class _MainScreenState extends State<MainScreen> {
       return const SizedBox.shrink();
     }
 
-    return Scaffold(
-      backgroundColor: bgColor,
-      extendBody: true,
-      body: IndexedStack(
-        index: _currentIndex,
-        children: _screens,
-      ),
-      bottomNavigationBar: Consumer2<ChatProvider, NotificationsProvider>(
-        builder: (context, chatProvider, notifProvider, _) {
-          final showChatDot =
-              chatProvider.totalUnread > 0 || notifProvider.unreadCount > 0;
-          return _GradientNavBar(
-            currentIndex: _currentIndex,
-            showChatDot: showChatDot,
-            onTap: (index) {
-              setState(() {
-                _currentIndex = index;
-              });
-              if (index == 2) {
-                chatProvider.loadConversations();
-                chatProvider.loadPendingIncoming();
-                chatProvider.refreshLimits();
-              }
-            },
-          );
-        },
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        _confirmExit();
+      },
+      child: Scaffold(
+        backgroundColor: bgColor,
+        extendBody: true,
+        body: IndexedStack(
+          index: _currentIndex,
+          children: _screens,
+        ),
+        bottomNavigationBar: Consumer2<ChatProvider, NotificationsProvider>(
+          builder: (context, chatProvider, notifProvider, _) {
+            final showChatDot =
+                chatProvider.totalUnread > 0 || notifProvider.unreadCount > 0;
+            return _GradientNavBar(
+              currentIndex: _currentIndex,
+              showChatDot: showChatDot,
+              onTap: (index) {
+                setState(() {
+                  _currentIndex = index;
+                });
+                if (index == 2) {
+                  chatProvider.loadConversations();
+                  chatProvider.loadPendingIncoming();
+                  chatProvider.refreshLimits();
+                }
+              },
+            );
+          },
+        ),
       ),
     );
   }

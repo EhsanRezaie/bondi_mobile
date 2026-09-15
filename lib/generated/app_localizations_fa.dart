@@ -59,6 +59,16 @@ class AppLocalizationsFa extends AppLocalizations {
   String get cancel => 'انصراف';
 
   @override
+  String get exit_app_title => 'خروج از باندی؟';
+
+  @override
+  String get exit_app_message =>
+      'آیا مطمئن هستید که می‌خواهید برنامه را ببندید؟';
+
+  @override
+  String get exit_app_confirm => 'خروج';
+
+  @override
   String get english => 'انگلیسی';
 
   @override
