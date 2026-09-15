@@ -104,6 +104,27 @@ void main() {
       expect(find.byIcon(Icons.flag), findsOneWidget);
     });
 
+    testWidgets('shows the tap-for-fullscreen hint with multiple photos', (
+      tester,
+    ) async {
+      final profile = DiscoverProfile.fromJson({
+        ...jsonDiscoverProfile(),
+        'photos': ['https://example.com/1.jpg', 'https://example.com/2.jpg'],
+      });
+
+      await tester.pumpWidget(
+        buildTestable(
+          ProfileDetailScreen(profile: profile),
+          providers: [
+            ChangeNotifierProvider(create: (_) => SettingsProvider()),
+          ],
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('Tap photo for full screen'), findsOneWidget);
+    });
+
     testWidgets('does not overflow with a very long name and city', (
       tester,
     ) async {

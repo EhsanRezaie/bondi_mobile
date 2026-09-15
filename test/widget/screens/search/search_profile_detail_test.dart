@@ -148,9 +148,34 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('has no fullscreen hint pill', (tester) async {
-      await pumpScreen(tester);
+    testWidgets('shows the discover-style fullscreen hint with multiple photos', (
+      tester,
+    ) async {
+      final multiPhoto = DiscoverProfile(
+        id: 'user-b',
+        name: 'Bob',
+        age: 28,
+        gender: 'female',
+        mainPhotoUrl: 'https://example.com/1.jpg',
+        photos: const [
+          'https://example.com/1.jpg',
+          'https://example.com/2.jpg',
+        ],
+      );
 
+      api.install();
+      await tester.pumpWidget(
+        buildTestable(
+          SearchProfileDetail(profile: multiPhoto),
+          providers: [
+            ChangeNotifierProvider<ChatProvider>.value(value: provider),
+          ],
+        ),
+      );
+      await tester.pump();
+
+      expect(find.byIcon(Icons.touch_app), findsOneWidget);
+      expect(find.text('Tap photo for full screen'), findsOneWidget);
       expect(find.byIcon(Icons.fullscreen), findsNothing);
     });
   });
