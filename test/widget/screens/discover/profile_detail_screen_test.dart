@@ -104,12 +104,12 @@ void main() {
       expect(find.byIcon(Icons.flag), findsOneWidget);
     });
 
-    testWidgets('shows the tap-for-fullscreen hint with multiple photos', (
+    testWidgets('shows the tap-for-fullscreen hint even with a single photo', (
       tester,
     ) async {
       final profile = DiscoverProfile.fromJson({
         ...jsonDiscoverProfile(),
-        'photos': ['https://example.com/1.jpg', 'https://example.com/2.jpg'],
+        'photos': ['https://example.com/1.jpg'],
       });
 
       await tester.pumpWidget(

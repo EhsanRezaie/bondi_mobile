@@ -148,25 +148,22 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('shows the discover-style fullscreen hint with multiple photos', (
+    testWidgets('shows the fullscreen hint even with a single photo', (
       tester,
     ) async {
-      final multiPhoto = DiscoverProfile(
+      final singlePhoto = DiscoverProfile(
         id: 'user-b',
         name: 'Bob',
         age: 28,
         gender: 'female',
         mainPhotoUrl: 'https://example.com/1.jpg',
-        photos: const [
-          'https://example.com/1.jpg',
-          'https://example.com/2.jpg',
-        ],
+        photos: const ['https://example.com/1.jpg'],
       );
 
       api.install();
       await tester.pumpWidget(
         buildTestable(
-          SearchProfileDetail(profile: multiPhoto),
+          SearchProfileDetail(profile: singlePhoto),
           providers: [
             ChangeNotifierProvider<ChatProvider>.value(value: provider),
           ],

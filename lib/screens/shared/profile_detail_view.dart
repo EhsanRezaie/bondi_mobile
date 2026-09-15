@@ -293,7 +293,7 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (photos.length > 1) ...[
+                  if (photos.isNotEmpty) ...[
                     Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
