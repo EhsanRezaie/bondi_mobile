@@ -546,6 +546,65 @@ void main() {
       expect(provider.conversations.first.lastMessage!.isRead, isFalse);
     });
   });
+
+  group('open-chat read + unread handling', () {
+    Future<void> seedActiveChat() async {
+      api.onGet('/chats', body: {
+        'chats': [chatCardJson()],
+        'next_offset': null,
+      });
+      api.onGet('/chats/chat-1', body: {
+        'id': 'chat-1',
+        'status': 'accepted',
+        'initiator_id': 'user-a',
+        'user': {'id': 'user-b'},
+        'is_blocked': false,
+        'is_ended': false,
+      });
+      api.onGet('/messages/chat-1', body: {'items': []});
+      api.onPost('/messages/read', statusCode: 200, body: {'message': 'ok'});
+      api.install();
+      await provider.loadConversations();
+      await provider.loadMessages('chat-1');
+    }
+
+    test('marks a socket message read even when receiver_id is missing',
+        () async {
+      await seedActiveChat();
+
+      // Incoming message delivered over the socket has no receiver_id.
+      provider.applyNewMessage({
+        'id': 'msg-in',
+        'chat_id': 'chat-1',
+        'message_type': 'text',
+        'content': 'hi',
+        'sender_id': 'user-b',
+        'sent_at': kNowIso,
+      });
+      await pumpEventQueue();
+
+      final msg = provider.messages.firstWhere((m) => m.id == 'msg-in');
+      expect(msg.isRead, isTrue);
+    });
+
+    test('forces unread to 0 for the currently open chat', () async {
+      await seedActiveChat();
+
+      provider.applyChatUpdated({
+        'chat_id': 'chat-1',
+        'status': 'accepted',
+        'unread_count': 1,
+        'updated_at': kNowIso,
+        'last_message': {
+          'content': 'hi',
+          'message_type': 'text',
+          'sent_at': kNowIso,
+        },
+      });
+
+      expect(provider.conversations.first.unreadCount, 0);
+    });
+  });
 }
 
 Map<String, dynamic> chatCardJson({

@@ -88,8 +88,8 @@ class _EditPhotosScreenState extends State<EditPhotosScreen> {
     try {
       final XFile? image = await _picker.pickImage(
         source: source,
-        maxWidth: 1200,
-        maxHeight: 1200,
+        maxWidth: 1080,
+        maxHeight: 1080,
         imageQuality: 85,
       );
 

@@ -199,7 +199,9 @@ class ChatMessageBubble extends StatelessWidget {
   }
 
   Widget _buildPhotoContent(BuildContext context) {
-    final url = mediaUrlForDisplay(message.mediaUrl);
+    final fullUrl = mediaUrlForDisplay(message.mediaUrl);
+    final thumbUrl = mediaUrlForDisplay(message.mediaThumbUrl);
+    final displayUrl = thumbUrl.isNotEmpty ? thumbUrl : fullUrl;
     // Scale photo to the bubble's max width; never exceeds 220 on phones.
     final maxW = MediaQuery.of(context).size.width * 0.78 - 28;
     final size = AppLayout.s(context, 220).clamp(0.0, maxW);
@@ -217,19 +219,20 @@ class ChatMessageBubble extends StatelessWidget {
       child: const Icon(Icons.broken_image, size: 40),
     );
 
-    return url.isNotEmpty
+    return displayUrl.isNotEmpty
         ? CachedImage.widget(
-            url,
+            displayUrl,
             width: size,
             height: size,
             fit: BoxFit.cover,
             borderRadius: borderRadius,
             placeholder: photoPlaceholder,
             errorWidget: photoError,
+            fallbackUrl: fullUrl,
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (_) => _PhotoLightbox(imageUrl: url),
+                  builder: (_) => _PhotoLightbox(imageUrl: fullUrl),
                 ),
               );
             },

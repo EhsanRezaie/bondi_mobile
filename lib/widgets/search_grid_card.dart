@@ -19,7 +19,8 @@ class SearchGridCard extends StatelessWidget {
       context,
     ).languageCode.contains('en');
     final font = AppTheme.fontFor(isPersian);
-    final photoUrl = profile.mainPhotoUrl;
+    final photoUrl = profile.mainPhotoThumbUrl ?? profile.mainPhotoUrl;
+    final fullPhotoUrl = profile.mainPhotoUrl;
 
     return RepaintBoundary(
       child: GestureDetector(
@@ -48,6 +49,7 @@ class SearchGridCard extends StatelessWidget {
                   width: 160,
                   height: 93,
                   fit: BoxFit.cover,
+                  fallbackUrl: fullPhotoUrl,
                   placeholder: const ShimmerAvatar(),
                   errorWidget: Container(
                     color: isDark ? AppTheme.darkSecondary : Colors.grey.shade200,

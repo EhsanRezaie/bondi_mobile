@@ -135,6 +135,7 @@ class ChatListScreen extends StatelessWidget {
     final borderColor = isDark ? AppTheme.darkBorder : AppTheme.lightBorder;
     final primaryColor = isDark ? AppTheme.darkPrimary : AppTheme.lightPrimary;
     final hasUnread = chat.unreadCount > 0;
+    final avatarUrl = chat.user.mainPhotoThumbUrl ?? chat.user.mainPhotoUrl;
 
     final lastMsg = chat.lastMessage;
     String subtitle = '';
@@ -169,16 +170,14 @@ class ChatListScreen extends StatelessWidget {
                   radius: AppLayout.s(context, 28),
                   backgroundColor: borderColor,
                    backgroundImage:
-                       chat.user.mainPhotoUrl != null &&
-                           chat.user.mainPhotoUrl!.isNotEmpty
+                       avatarUrl != null && avatarUrl.isNotEmpty
                        ? CachedImage.provider(
-                           chat.user.mainPhotoUrl!,
+                           avatarUrl,
                            diameter: AppLayout.s(context, 56),
                          )
                        : null,
                   child:
-                      chat.user.mainPhotoUrl == null ||
-                          chat.user.mainPhotoUrl!.isEmpty
+                      avatarUrl == null || avatarUrl.isEmpty
                       ? Icon(
                           Icons.person,
                           size: AppLayout.s(context, 28),

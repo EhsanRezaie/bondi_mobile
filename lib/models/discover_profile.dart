@@ -28,6 +28,7 @@ class DiscoverProfile {
   final String? country;
   final double? distanceKm;
   final String? mainPhotoUrl;
+  final String? mainPhotoThumbUrl;
   final List<String> photos;
   final List<String> interests;
   final List<Map<String, dynamic>> prompts;
@@ -68,6 +69,7 @@ class DiscoverProfile {
     this.country,
     this.distanceKm,
     this.mainPhotoUrl,
+    this.mainPhotoThumbUrl,
     this.photos = const [],
     this.interests = const [],
     this.prompts = const [],
@@ -121,6 +123,7 @@ class DiscoverProfile {
       country: json['country'],
       distanceKm: json['distance_km']?.toDouble(),
       mainPhotoUrl: json['main_photo_url'],
+      mainPhotoThumbUrl: json['main_photo_thumb_url'],
       photos: json['photos'] != null ? List<String>.from(json['photos']) : [],
       interests: json['interests'] != null ? List<String>.from(json['interests']) : [],
       prompts: json['prompts'] != null ? List<Map<String, dynamic>>.from(json['prompts']) : [],
@@ -165,6 +168,7 @@ class DiscoverProfile {
     String? country,
     double? distanceKm,
     String? mainPhotoUrl,
+    String? mainPhotoThumbUrl,
     List<String>? photos,
     List<String>? interests,
     List<Map<String, dynamic>>? prompts,
@@ -204,6 +208,7 @@ class DiscoverProfile {
       country: country ?? this.country,
       distanceKm: distanceKm ?? this.distanceKm,
       mainPhotoUrl: mainPhotoUrl ?? this.mainPhotoUrl,
+      mainPhotoThumbUrl: mainPhotoThumbUrl ?? this.mainPhotoThumbUrl,
       photos: photos ?? this.photos,
       interests: interests ?? this.interests,
       prompts: prompts ?? this.prompts,

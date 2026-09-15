@@ -119,12 +119,13 @@ class _ChatInputBarState extends State<ChatInputBar> {
       if (await _recorder!.hasPermission()) {
         final dir = await getTemporaryDirectory();
         final path =
-            '${dir.path}/voice_${DateTime.now().millisecondsSinceEpoch}.aac';
+            '${dir.path}/voice_${DateTime.now().millisecondsSinceEpoch}.m4a';
         await _recorder!.start(
-          RecordConfig(
+          const RecordConfig(
             encoder: AudioEncoder.aacLc,
-            bitRate: 128000,
+            bitRate: 48000,
             sampleRate: 44100,
+            numChannels: 1,
           ),
           path: path,
         );

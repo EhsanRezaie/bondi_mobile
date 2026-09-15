@@ -111,8 +111,8 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
       final picker = ImagePicker();
       final file = await picker.pickImage(
         source: ImageSource.gallery,
-        maxWidth: 1600,
-        maxHeight: 1600,
+        maxWidth: 1080,
+        maxHeight: 1080,
         imageQuality: 85,
       );
       if (file == null || !mounted) return;

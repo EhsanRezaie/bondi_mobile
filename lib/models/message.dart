@@ -9,6 +9,7 @@ class Message {
   final MessageType messageType;
   final String? content;
   final String? mediaUrl;
+  final String? mediaThumbUrl;
   final int? mediaDuration;
   final Message? replyTo;
   final bool isSent;
@@ -31,6 +32,7 @@ class Message {
     required this.messageType,
     this.content,
     this.mediaUrl,
+    this.mediaThumbUrl,
     this.mediaDuration,
     this.replyTo,
     required this.isSent,
@@ -55,6 +57,7 @@ class Message {
       messageType: _parseMessageType(json['message_type']),
       content: json['content'],
       mediaUrl: json['media_url'],
+      mediaThumbUrl: json['media_thumb_url'],
       mediaDuration: json['media_duration'],
       replyTo: json['reply_to'] != null
           ? Message.fromJson(json['reply_to'])
@@ -88,7 +91,8 @@ class Message {
       messageType: _parseMessageType(data['message_type']),
       content: data['content'],
       mediaUrl: data['media_url'],
-      mediaDuration: data['media_duration'],
+      mediaThumbUrl: data['media_thumb_url'],
+      mediaDuration: data['media_duration'] ?? data['duration'],
       replyTo: data['reply_to'] != null
           ? Message.fromJson(data['reply_to'])
           : null,
@@ -138,6 +142,7 @@ class Message {
       'message_type': messageType.name,
       'content': content,
       'media_url': mediaUrl,
+      'media_thumb_url': mediaThumbUrl,
       'media_duration': mediaDuration,
       'reply_to': replyTo?.toJson(),
       'is_sent': isSent,
@@ -180,6 +185,7 @@ class Message {
       messageType: messageType,
       content: content ?? this.content,
       mediaUrl: mediaUrl,
+      mediaThumbUrl: mediaThumbUrl,
       mediaDuration: mediaDuration,
       replyTo: replyTo,
       isSent: isSent,

@@ -972,7 +972,7 @@ class ChatProvider extends ChangeNotifier {
 
     final newlyRead = _messages
         .where((m) =>
-            m.receiverId == userId && !m.isRead && !_sentReadIds.contains(m.id))
+            m.senderId != userId && !m.isRead && !_sentReadIds.contains(m.id))
         .toList();
     if (newlyRead.isEmpty) return;
     final ids = newlyRead.map((m) => m.id).toList();
@@ -1244,7 +1244,12 @@ class ChatProvider extends ChangeNotifier {
     if (chatId == null) return;
 
     final status = data['status'] as String?;
-    final unread = (data['unread_count'] as num?)?.toInt() ?? 0;
+    // While the user is viewing this chat, its unread badge must stay at zero
+    // even if a chat_updated arrives before the read receipt is processed.
+    final isActive = chatId == _activeMatchId;
+    final unread = isActive
+        ? 0
+        : ((data['unread_count'] as num?)?.toInt() ?? 0);
     final updatedAt = DateTime.tryParse(data['updated_at'] as String? ?? '');
 
     ChatLastMessage? lastMessage;
@@ -1254,7 +1259,7 @@ class ChatProvider extends ChangeNotifier {
         content: lm['content'] as String?,
         messageType: lm['message_type'] as String? ?? 'text',
         isSent: true,
-        isRead: false,
+        isRead: isActive,
         sentAt: DateTime.tryParse(lm['sent_at'] as String? ?? '') ?? DateTime.now(),
       );
     }
@@ -1423,6 +1428,9 @@ class ChatProvider extends ChangeNotifier {
 
   @visibleForTesting
   void applyMessagesRead(Map<String, dynamic> data) => _handleMessagesRead(data);
+
+  @visibleForTesting
+  void applyChatUpdated(Map<String, dynamic> data) => _applyChatUpdated(data);
 
   void _handleNewNotification(Map<String, dynamic> data) {
     debugPrint('WS new_notification: $data');

@@ -3,6 +3,7 @@ class ChatUser {
   final String name;
   final int age;
   final String? mainPhotoUrl;
+  final String? mainPhotoThumbUrl;
   final bool isOnline;
   final String? lastSeenAt;
 
@@ -11,6 +12,7 @@ class ChatUser {
     required this.name,
     required this.age,
     this.mainPhotoUrl,
+    this.mainPhotoThumbUrl,
     this.isOnline = false,
     this.lastSeenAt,
   });
@@ -21,6 +23,7 @@ class ChatUser {
       name: json['name'] ?? '',
       age: json['age'] ?? 0,
       mainPhotoUrl: json['main_photo_url'],
+      mainPhotoThumbUrl: json['main_photo_thumb_url'],
       isOnline: json['is_online'] ?? false,
       lastSeenAt: json['last_seen_at'],
     );
@@ -32,6 +35,7 @@ class ChatUser {
       'name': name,
       'age': age,
       'main_photo_url': mainPhotoUrl,
+      'main_photo_thumb_url': mainPhotoThumbUrl,
       'is_online': isOnline,
       'last_seen_at': lastSeenAt,
     };
@@ -41,6 +45,7 @@ class ChatUser {
     String? name,
     int? age,
     String? mainPhotoUrl,
+    String? mainPhotoThumbUrl,
     bool? isOnline,
     String? lastSeenAt,
   }) {
@@ -49,6 +54,7 @@ class ChatUser {
       name: name ?? this.name,
       age: age ?? this.age,
       mainPhotoUrl: mainPhotoUrl ?? this.mainPhotoUrl,
+      mainPhotoThumbUrl: mainPhotoThumbUrl ?? this.mainPhotoThumbUrl,
       isOnline: isOnline ?? this.isOnline,
       lastSeenAt: lastSeenAt ?? this.lastSeenAt,
     );

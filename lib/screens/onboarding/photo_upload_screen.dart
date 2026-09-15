@@ -113,8 +113,8 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
   }) async {
     final XFile? picked = await _picker.pickImage(
       source: source,
-      maxWidth: 1200,
-      maxHeight: 1200,
+      maxWidth: 1080,
+      maxHeight: 1080,
       imageQuality: 85,
     );
     if (picked == null || !mounted) return;
@@ -216,8 +216,8 @@ class _PhotoUploadScreenState extends State<PhotoUploadScreen> {
     if (remaining <= 0) return;
 
     final List<XFile> picked = await _picker.pickMultiImage(
-      maxWidth: 1200,
-      maxHeight: 1200,
+      maxWidth: 1080,
+      maxHeight: 1080,
       imageQuality: 85,
       limit: remaining,
     );

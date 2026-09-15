@@ -28,6 +28,7 @@ class CachedImage {
     Widget? placeholder,
     Widget? errorWidget,
     VoidCallback? onTap,
+    String? fallbackUrl,
   }) {
     if (imageUrl == null || imageUrl.isEmpty) {
       return _fallback(width, height, errorWidget);
@@ -35,6 +36,35 @@ class CachedImage {
 
     final pxW = _pixel(width);
     final pxH = _pixel(height);
+    final hasFallback =
+        fallbackUrl != null && fallbackUrl.isNotEmpty && fallbackUrl != imageUrl;
+
+    Widget buildError() => SizedBox(
+      width: width,
+      height: height,
+      child: hasFallback
+          ? CachedNetworkImage(
+              imageUrl: fallbackUrl,
+              fit: fit,
+              width: width,
+              height: height,
+              memCacheWidth: pxW,
+              memCacheHeight: pxH,
+              placeholder: (context, url) => SizedBox(
+                width: width,
+                height: height,
+                child: placeholder ?? const ShimmerAvatar(),
+              ),
+              errorWidget: (context, url, err) => SizedBox(
+                width: width,
+                height: height,
+                child: errorWidget ??
+                    const Icon(Icons.broken_image, size: 32, color: Colors.grey),
+              ),
+            )
+          : (errorWidget ??
+                const Icon(Icons.broken_image, size: 32, color: Colors.grey)),
+    );
 
     Widget image = CachedNetworkImage(
       imageUrl: imageUrl,
@@ -50,12 +80,7 @@ class CachedImage {
         height: height,
         child: placeholder ?? const ShimmerAvatar(),
       ),
-      errorWidget: (context, url, error) => SizedBox(
-        width: width,
-        height: height,
-        child: errorWidget ??
-            const Icon(Icons.broken_image, size: 32, color: Colors.grey),
-      ),
+      errorWidget: (context, url, err) => buildError(),
     );
 
     if (borderRadius != null) {

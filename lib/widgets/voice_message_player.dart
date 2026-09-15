@@ -25,28 +25,53 @@ class _VoiceMessagePlayerState extends State<VoiceMessagePlayer> {
   @override
   void initState() {
     super.initState();
-    if (!kIsWeb && widget.audioUrl != null) {
+    if (!kIsWeb && widget.audioUrl != null && widget.audioUrl!.isNotEmpty) {
       _initPlayer();
     }
   }
 
+  @override
+  void didUpdateWidget(covariant VoiceMessagePlayer oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // The optimistic (local) voice bubble has no URL and is replaced by the
+    // real message once the upload finishes. Reload when the URL changes so
+    // the player binds to the real audio instead of the empty source.
+    if (oldWidget.audioUrl != widget.audioUrl) {
+      _reload();
+    }
+  }
+
+  Future<void> _reload() async {
+    await _player?.dispose();
+    _player = null;
+    _isPlaying = false;
+    if (mounted) setState(() {});
+    if (!kIsWeb && widget.audioUrl != null && widget.audioUrl!.isNotEmpty) {
+      await _initPlayer();
+    }
+  }
+
   Future<void> _initPlayer() async {
-    _player = AudioPlayer();
+    final player = AudioPlayer();
+    _player = player;
     try {
-      await _player!.setUrl(widget.audioUrl!);
-      _player!.playerStateStream.listen((state) {
-        if (mounted) {
+      await player.setUrl(widget.audioUrl!);
+      if (!mounted || _player != player) {
+        await player.dispose();
+        return;
+      }
+      player.playerStateStream.listen((state) {
+        if (!mounted || _player != player) return;
+        setState(() {
+          _isPlaying = state.playing;
+        });
+        if (state.processingState == ProcessingState.completed) {
+          // Reset the cursor to the start so the next replay starts cleanly
+          // instead of resuming from the end.
+          player.seek(Duration.zero);
           setState(() {
-            _isPlaying = state.playing;
+            _isPlaying = false;
           });
-          if (state.processingState == ProcessingState.completed) {
-            // Reset the cursor to the start so the next replay starts cleanly
-            // instead of resuming from the end.
-            _player!.seek(Duration.zero);
-            setState(() {
-              _isPlaying = false;
-            });
-          }
         }
       });
     } catch (e) {
