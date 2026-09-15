@@ -148,22 +148,13 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
-    testWidgets('shows the fullscreen hint even with a single photo', (
+    testWidgets('always shows the fullscreen hint, even with no photos', (
       tester,
     ) async {
-      final singlePhoto = DiscoverProfile(
-        id: 'user-b',
-        name: 'Bob',
-        age: 28,
-        gender: 'female',
-        mainPhotoUrl: 'https://example.com/1.jpg',
-        photos: const ['https://example.com/1.jpg'],
-      );
-
       api.install();
       await tester.pumpWidget(
         buildTestable(
-          SearchProfileDetail(profile: singlePhoto),
+          SearchProfileDetail(profile: _profile()),
           providers: [
             ChangeNotifierProvider<ChatProvider>.value(value: provider),
           ],

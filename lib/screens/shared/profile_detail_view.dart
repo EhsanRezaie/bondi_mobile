@@ -293,28 +293,26 @@ class _ProfileDetailViewState extends State<ProfileDetailView> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (photos.isNotEmpty) ...[
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.touch_app,
-                          size: 14,
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.touch_app,
+                        size: 14,
+                        color: Colors.white54,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        t.photo_fullscreen_hint,
+                        style: TextStyle(
+                          fontSize: 12,
                           color: Colors.white54,
+                          fontFamily: font,
                         ),
-                        const SizedBox(width: 4),
-                        Text(
-                          t.photo_fullscreen_hint,
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.white54,
-                            fontFamily: font,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                  ],
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.baseline,
                     textBaseline: TextBaseline.alphabetic,
