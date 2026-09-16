@@ -40,7 +40,9 @@ class PushService {
 
   Future<void> _initFirebase() async {
     try {
-      await Firebase.initializeApp();
+      if (Firebase.apps.isEmpty) {
+        await Firebase.initializeApp();
+      }
     } catch (e) {
       debugPrint('Firebase initialize error: $e');
     }

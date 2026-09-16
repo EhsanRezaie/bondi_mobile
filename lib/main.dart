@@ -3,11 +3,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'generated/app_localizations.dart';
 import 'config/app_theme.dart';
 import 'services/api_service.dart';
+import 'services/local_notifications.dart';
 import 'providers/auth_provider.dart';
 import 'providers/onboarding_provider.dart';
 import 'providers/language_provider.dart';
@@ -40,6 +43,18 @@ void main() async {
   await dotenv.load();
 
   await ApiService.init();
+
+  // Push / local-notification bootstrap. Initialize Firebase and register the
+  // background message handler before the first frame so data-only pushes are
+  // rendered even when the app is backgrounded or terminated.
+  try {
+    await Firebase.initializeApp();
+    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+    await LocalNotifications.instance.init();
+    await LocalNotifications.instance.handleLaunch();
+  } catch (e) {
+    debugPrint('Push bootstrap error: $e');
+  }
 
   // When the refresh token dies (expired/revoked) the Dio interceptor clears
   // storage; make sure the user is actually taken back to login instead of

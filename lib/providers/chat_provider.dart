@@ -1156,7 +1156,7 @@ class ChatProvider extends ChangeNotifier {
         if (onlineUserId != null) {
           _applyUserPresence(onlineUserId, isOnline: true);
         }
-        if (_isEventForActiveChat(event, data)) {
+        if (_isEventForActiveChat(event, data) && _isFromPeer(event, data)) {
           _isOtherUserOnline = true;
           _safeNotify();
         }
@@ -1168,7 +1168,7 @@ class ChatProvider extends ChangeNotifier {
           final raw = (event['last_seen_at'] ?? data['last_seen_at']) as String?;
           _applyUserPresence(offlineUserId, isOnline: false, lastSeenAt: raw);
         }
-        if (_isEventForActiveChat(event, data)) {
+        if (_isEventForActiveChat(event, data) && _isFromPeer(event, data)) {
           _isOtherUserOnline = false;
           final raw = (event['last_seen_at'] ?? data['last_seen_at']) as String?;
           if (raw != null && raw.isNotEmpty) {
