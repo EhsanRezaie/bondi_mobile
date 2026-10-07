@@ -72,6 +72,14 @@ void main() {
     // storage; make sure the user is actually taken back to login instead of
     // being stranded on a dead session.
     ApiService.onSessionExpired = () {
+      // Reset provider state too — otherwise the app is half-logged-in
+      // (isAuthenticated still true) after the tokens were wiped.
+      final ctx = appNavigatorKey.currentContext;
+      if (ctx != null) {
+        try {
+          ctx.read<AuthProvider>().clearSessionLocally();
+        } catch (_) {}
+      }
       final nav = appNavigatorKey.currentState;
       if (nav == null) return;
       nav.pushAndRemoveUntil(
@@ -137,8 +145,26 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class AppView extends StatelessWidget {
+class AppView extends StatefulWidget {
   const AppView({super.key});
+
+  @override
+  State<AppView> createState() => _AppViewState();
+}
+
+class _AppViewState extends State<AppView> {
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Wire session teardown once providers exist. On logout / expiry this
+    // closes the realtime socket and detaches notification handling.
+    AuthProvider.onLogout = () async {
+      try {
+        context.read<NotificationsProvider>().detachSocket();
+        await context.read<ChatProvider>().disconnectSessionSocket();
+      } catch (_) {}
+    };
+  }
 
   @override
   Widget build(BuildContext context) {

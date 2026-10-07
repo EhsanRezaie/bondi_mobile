@@ -60,6 +60,12 @@ class SessionSocketService {
       if (token == null || token.isEmpty || _disposed) return;
       final url = '$baseUrl/ws/stream?token=$token';
 
+      // Drop any previous (closed) channel so writes never hit a dead sink.
+      try {
+        await _channel?.sink.close();
+      } catch (_) {}
+      _channel = null;
+
       _channel = channelFactory(Uri.parse(url));
 
       // Deliver any frames queued while we were disconnected (subscribe /
@@ -81,12 +87,14 @@ class SessionSocketService {
         },
         onError: (error) {
           if (!_disposed) {
+            _channel = null;
             _connectionStateController.add(false);
             _attemptReconnect();
           }
         },
         onDone: () {
           if (!_disposed) {
+            _channel = null;
             _connectionStateController.add(false);
             _attemptReconnect();
           }
@@ -160,7 +168,13 @@ class SessionSocketService {
       return;
     }
     _flushOutbox();
-    _channel!.sink.add(jsonEncode(data));
+    try {
+      _channel!.sink.add(jsonEncode(data));
+    } catch (_) {
+      // Sink is dead — drop the channel and queue for the next reconnect.
+      _channel = null;
+      _enqueue(data);
+    }
   }
 
   // ── Outbox (reliable delivery across reconnects) ─────────────────
@@ -221,6 +235,7 @@ class SessionSocketService {
     _reconnectTimer?.cancel();
     _outbox.clear();
     await _channel?.sink.close();
+    _channel = null;
     await _eventsController.close();
     await _connectionStateController.close();
   }

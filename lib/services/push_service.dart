@@ -111,12 +111,20 @@ class PushService {
 
   void _setupMessageHandlers(Function(String, Map<String, dynamic>) onNotificationTap) {
     try {
-      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      // Cancel any previous listeners so re-init after logout never stacks
+      // duplicate handlers (which double-show toasts and double-navigate).
+      _foregroundSubscription?.cancel();
+      _foregroundSubscription = FirebaseMessaging.onMessage.listen((
+        RemoteMessage message,
+      ) {
         debugPrint('FCM foreground message: ${message.messageId}');
         _handleForegroundMessage(message);
       });
 
-      FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+      _backgroundSubscription?.cancel();
+      _backgroundSubscription = FirebaseMessaging.onMessageOpenedApp.listen((
+        RemoteMessage message,
+      ) {
         debugPrint('FCM opened app from background: ${message.messageId}');
         _navigateFromMessage(message, onNotificationTap);
       });

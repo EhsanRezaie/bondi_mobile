@@ -60,6 +60,7 @@ class ChatProvider extends ChangeNotifier {
   List<Message> _messages = [];
   String? _activeMatchId;
   bool _isConnected = false;
+  int _loadRequestId = 0;
   bool _isOtherUserOnline = false;
   DateTime? _otherUserLastSeenAt;
   bool _isTyping = false;
@@ -497,12 +498,16 @@ class ChatProvider extends ChangeNotifier {
     String? initialStatus,
     String? initialInitiatorId,
   }) async {
+    // Bump a request id so a slow response from a previously-opened chat can
+    // never bleed into the currently-open chat.
+    final requestId = ++_loadRequestId;
     _isLoading = true;
     _errorMessage = null;
     _messages = [];
     _activeMatchId = identifier;
     _sentCountInNewChat = 0;
     _userId = await _storageService.getUserId();
+    if (requestId != _loadRequestId) return;
     _isChatAccepted = initialStatus == 'accepted';
     _chatStatus = initialStatus;
     _amInitiator = _userId != null && initialInitiatorId == _userId;
@@ -510,10 +515,12 @@ class ChatProvider extends ChangeNotifier {
 
     // Fetch the authoritative chat status (accepted / pending) + direction.
     // On success it overwrites the seeded values; on failure the seed stays.
-    await _loadChatDetail(identifier);
+    await _loadChatDetail(identifier, requestId);
+    if (requestId != _loadRequestId) return;
 
     try {
       final response = await ChatService.getChatHistory(identifier);
+      if (requestId != _loadRequestId) return;
       if (response.statusCode == 200) {
         final data = response.data;
         final items =
@@ -542,9 +549,11 @@ class ChatProvider extends ChangeNotifier {
         _errorMessage = 'Failed to load messages';
       }
     } catch (e) {
+      if (requestId != _loadRequestId) return;
       _errorMessage = e.toString();
     }
 
+    if (requestId != _loadRequestId) return;
     _isLoading = false;
     _safeNotify();
 
@@ -555,9 +564,10 @@ class ChatProvider extends ChangeNotifier {
 
   /// Loads the authoritative chat status + direction from `GET /chats/{id}`.
   /// Used to decide whether the user can send, must accept, or is waiting.
-  Future<void> _loadChatDetail(String chatId) async {
+  Future<void> _loadChatDetail(String chatId, [int? requestId]) async {
     try {
       final response = await ChatService.getChatDetail(chatId);
+      if (requestId != null && requestId != _loadRequestId) return;
       if (response.statusCode == 200) {
         final data = response.data;
         final status = data['status'] as String?;
@@ -581,6 +591,7 @@ class ChatProvider extends ChangeNotifier {
     } catch (e) {
       // keep seeded status
     }
+    if (requestId != null && requestId != _loadRequestId) return;
     _safeNotify();
   }
 
@@ -1115,6 +1126,20 @@ class ChatProvider extends ChangeNotifier {
     });
 
     await _socketService!.connect();
+  }
+
+  /// Tears down the session socket (logout / session expiry) so re-login starts
+  /// from a clean connection instead of reusing a closed channel.
+  Future<void> disconnectSessionSocket() async {
+    await _connectionStateSubscription?.cancel();
+    _connectionStateSubscription = null;
+    await _eventsSubscription?.cancel();
+    _eventsSubscription = null;
+    await _socketService?.dispose();
+    _socketService = null;
+    _isConnected = false;
+    _activeMatchId = null;
+    _safeNotify();
   }
 
   /// Opens a chat: subscribes the session socket to its topic and records it

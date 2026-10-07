@@ -42,7 +42,6 @@ class NotificationsProvider extends ChangeNotifier {
   };
 
   StreamSubscription? _socketSubscription;
-  bool _socketAttached = false;
 
   List<AppNotification> get notifications => _notifications;
   bool get hasMore => _hasMoreByType.values.any((v) => v);
@@ -206,8 +205,9 @@ class NotificationsProvider extends ChangeNotifier {
   }
 
   void attachSocket(ChatProvider chatProvider) {
-    if (_socketAttached) return;
-    _socketAttached = true;
+    // Always (re)bind: after a re-login the ChatProvider holds a brand-new
+    // session socket, so the previous subscription would be dead.
+    _socketSubscription?.cancel();
 
     _socketSubscription = chatProvider.socketEvents.listen((event) {
       final type = event['type'] as String?;
@@ -292,7 +292,6 @@ class NotificationsProvider extends ChangeNotifier {
   void detachSocket() {
     _socketSubscription?.cancel();
     _socketSubscription = null;
-    _socketAttached = false;
   }
 
   @override

@@ -28,6 +28,7 @@ class DiscoverProvider extends ChangeNotifier {
   List<DiscoverProfile> _profiles = [];
   bool _isLoading = true;
   bool _isLoadingMore = false;
+  int _loadRequestId = 0;
   String? _errorMessage;
   int _total = 0;
   String? _nextCursor;
@@ -124,8 +125,13 @@ class DiscoverProvider extends ChangeNotifier {
   bool _filtersLoaded = false;
 
   Future<void> loadProfiles() async {
+    // Guard against out-of-order responses when filters change quickly: only
+    // the newest load is allowed to write state.
+    final requestId = ++_loadRequestId;
+
     if (!_filtersLoaded) {
       await _loadFilters();
+      if (requestId != _loadRequestId) return;
       _filtersLoaded = true;
     }
 
@@ -146,6 +152,7 @@ class DiscoverProvider extends ChangeNotifier {
         offset: 0,
       );
 
+      if (requestId != _loadRequestId) return;
       if (response.statusCode == 200) {
         final data = response.data;
         _profiles = (data['users'] as List)
@@ -161,13 +168,16 @@ class DiscoverProvider extends ChangeNotifier {
         _errorMessage = 'Failed to load profiles';
       }
     } on DioException catch (e) {
+      if (requestId != _loadRequestId) return;
       debugPrint('DiscoverProvider.loadProfiles DioError: ${e.message} (status: ${e.response?.statusCode})');
       _errorMessage = 'Network error. Please try again.';
     } catch (e) {
+      if (requestId != _loadRequestId) return;
       debugPrint('DiscoverProvider.loadProfiles Error: $e');
       _errorMessage = 'Something went wrong';
     }
 
+    if (requestId != _loadRequestId) return;
     _isLoading = false;
     _safeNotify();
 

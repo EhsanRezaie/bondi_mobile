@@ -41,6 +41,10 @@ class AuthProvider extends ChangeNotifier {
 
   AuthProvider();
 
+  /// Wired in main.dart: tears down realtime/push state when the session ends
+  /// (logout or token expiry) so re-login starts from a clean slate.
+  static Future<void> Function()? onLogout;
+
   @override
   void dispose() {
     _disposed = true;
@@ -119,9 +123,21 @@ class AuthProvider extends ChangeNotifier {
         _user = User.fromJson(response.data);
         return true;
       }
-      return false;
+      // Only an explicit auth rejection means the token is dead.
+      return !(response.statusCode == 401 || response.statusCode == 403);
+    } on DioException catch (e) {
+      final code = e.response?.statusCode;
+      if (code == 401 || code == 403) {
+        return false;
+      }
+      // Network/timeout/5xx: do NOT force a logout on a transient error —
+      // clearing tokens here stranded users offline. Keep the session and fall
+      // back to the cached profile so the UI isn't left with a null user.
+      _user ??= await _storageService.getUser();
+      return true;
     } catch (e) {
-      return false;
+      _user ??= await _storageService.getUser();
+      return true;
     }
   }
 
@@ -358,6 +374,18 @@ class AuthProvider extends ChangeNotifier {
       } catch (e) {
         // ignore logout errors
       }
+    }
+    await clearSessionLocally();
+  }
+
+  /// Reset local auth state after the session token was cleared externally
+  /// (refresh-token expiry). No network calls; safe to call from the Dio
+  /// interceptor's session-expiry callback.
+  Future<void> clearSessionLocally() async {
+    try {
+      await onLogout?.call();
+    } catch (e) {
+      // never let teardown failures block the local reset
     }
     await _storageService.clearTokens();
     CrashReporting.setUserId(null);

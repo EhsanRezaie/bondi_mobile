@@ -1,6 +1,6 @@
 // lib/services/api_service.dart
 import 'package:dio/dio.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/foundation.dart' show kIsWeb, kDebugMode;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:dio_cache_interceptor/dio_cache_interceptor.dart';
@@ -101,16 +101,21 @@ class ApiService {
       DioCacheInterceptor(
         options: CacheOptions(
           store: _cacheStore,
-          policy: CachePolicy.request,
+          // Opt-in caching: default to no cache so stale feeds aren't served
+          // after mutations. Endpoints that want caching set CacheOptions in
+          // `options.extra`.
+          policy: CachePolicy.noCache,
           hitCacheOnErrorExcept: [401, 403],
           maxStale: const Duration(minutes: 5),
         ),
       ),
     );
 
-    _dio.interceptors.add(
-      LogInterceptor(requestBody: true, responseBody: true),
-    );
+    if (kDebugMode) {
+      _dio.interceptors.add(
+        LogInterceptor(requestBody: true, responseBody: true),
+      );
+    }
   }
 
   static Dio get dio => _dio;
@@ -135,8 +140,13 @@ class ApiService {
     if (response.statusCode == 200) {
       final newAccessToken = response.data['access_token'];
       final newRefreshToken = response.data['refresh_token'];
-      await _secureStorage.write(key: 'access_token', value: newAccessToken);
-      await _secureStorage.write(key: 'refresh_token', value: newRefreshToken);
+      // Guard against a malformed/empty refresh response wiping good tokens.
+      if (newAccessToken is String && newAccessToken.isNotEmpty) {
+        await _secureStorage.write(key: 'access_token', value: newAccessToken);
+      }
+      if (newRefreshToken is String && newRefreshToken.isNotEmpty) {
+        await _secureStorage.write(key: 'refresh_token', value: newRefreshToken);
+      }
     }
     return response;
   }

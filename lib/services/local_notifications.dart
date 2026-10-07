@@ -88,7 +88,20 @@ class LocalNotifications {
     instance._routePayload(payload);
   }
 
+  String? _pendingPayload;
+
   void _routePayload(String payload) {
+    // Terminated-state launches run this before the first frame, when the
+    // navigator key has no state yet. Defer instead of dropping the tap.
+    if (appNavigatorKey.currentState == null) {
+      _pendingPayload = payload;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        final pending = _pendingPayload;
+        _pendingPayload = null;
+        if (pending != null) _routePayload(pending);
+      });
+      return;
+    }
     try {
       final decoded = jsonDecode(payload);
       if (decoded is Map) {
