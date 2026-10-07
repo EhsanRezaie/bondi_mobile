@@ -8,6 +8,8 @@ import 'package:dating_app/utils/relative_time.dart';
 import 'package:dating_app/widgets/action_toast.dart';
 import 'package:intl/intl.dart';
 
+final DateFormat _timeFormat = DateFormat('HH:mm');
+
 class TicketDetailScreen extends StatefulWidget {
   final String ticketId;
 
@@ -392,7 +394,7 @@ class _TicketDetailScreenState extends State<TicketDetailScreen> {
             ),
             const SizedBox(height: 2),
             Text(
-              DateFormat('HH:mm').format(message.createdAt),
+              _timeFormat.format(message.createdAt),
               style: TextStyle(
                 fontFamily: AppTheme.fontFor(isPersian),
                 fontSize: 10,

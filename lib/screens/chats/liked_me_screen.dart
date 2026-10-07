@@ -102,12 +102,16 @@ class _LikedMeScreenState extends State<LikedMeScreen> {
                 ),
               );
             }
-            return _buildNotificationItem(
-              provider.likers[index],
-              isDark,
-              textColor,
-              mutedColor,
-              borderColor,
+            final liker = provider.likers[index];
+            return RepaintBoundary(
+              key: ValueKey(liker.id),
+              child: _buildNotificationItem(
+                liker,
+                isDark,
+                textColor,
+                mutedColor,
+                borderColor,
+              ),
             );
           },
         );

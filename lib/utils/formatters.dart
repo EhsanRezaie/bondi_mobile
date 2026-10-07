@@ -1,5 +1,7 @@
 import 'package:intl/intl.dart';
 
+final DateFormat _monthDayFormat = DateFormat('MMM d');
+
 /// Formats a distance in km into a short label.
 ///
 /// Mirrors the previous inline logic in `discover_screen.dart`:
@@ -20,5 +22,5 @@ String formatLastSeen(DateTime lastSeen, {DateTime? now}) {
   if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
   if (diff.inHours < 24) return '${diff.inHours}h ago';
   if (diff.inDays < 7) return '${diff.inDays}d ago';
-  return DateFormat('MMM d').format(lastSeen);
+  return _monthDayFormat.format(lastSeen);
 }

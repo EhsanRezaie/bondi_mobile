@@ -4,6 +4,7 @@ import 'package:dating_app/generated/app_localizations.dart';
 import 'package:dating_app/models/discover_profile.dart';
 import 'package:dating_app/screens/chats/chat_detail_screen.dart';
 import 'package:dating_app/screens/shared/profile_detail_view.dart';
+import 'package:dating_app/utils/cached_image.dart';
 import 'package:dating_app/widgets/action_toast.dart';
 import 'package:dating_app/widgets/discover_action_button.dart';
 
@@ -387,10 +388,11 @@ class _SearchProfileDetailState extends State<SearchProfileDetail> {
                         child: SizedBox(
                           width: 56,
                           height: 56,
-                          child: Image.network(
+                          child: CachedImage.widget(
                             profile.mainPhotoUrl!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (_, _, _) => const SizedBox.shrink(),
+                            width: 56,
+                            height: 56,
+                            errorWidget: const SizedBox.shrink(),
                           ),
                         ),
                       ),

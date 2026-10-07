@@ -189,7 +189,10 @@ class _BlockedUsersScreenState extends State<BlockedUsersScreen> {
                             ),
                             itemBuilder: (context, index) {
                               final user = _blocked[index];
-                              return _buildRow(context, user, t, isDark, onSurfaceColor, textMutedColor, borderColor, surfaceColor);
+                              return RepaintBoundary(
+                                key: ValueKey(user.id),
+                                child: _buildRow(context, user, t, isDark, onSurfaceColor, textMutedColor, borderColor, surfaceColor),
+                              );
                             },
                           ),
                   ),

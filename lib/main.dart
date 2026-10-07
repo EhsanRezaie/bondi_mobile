@@ -49,9 +49,13 @@ void main() {
   };
 
   runZonedGuarded(() async {
-    await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
-
-    await dotenv.load();
+    // Kick off independent startup work together so the native splash clears
+    // sooner; ApiService.init() needs dotenv loaded first, so it follows.
+    final prefsFuture = SharedPreferences.getInstance();
+    await Future.wait([
+      SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]),
+      dotenv.load(),
+    ]);
 
     await ApiService.init();
 
@@ -88,7 +92,7 @@ void main() {
       );
     };
 
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await prefsFuture;
     final savedLanguage = prefs.getString('selected_language') ?? 'en';
 
     runApp(

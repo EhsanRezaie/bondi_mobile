@@ -5,6 +5,8 @@ import 'package:dating_app/utils/responsive.dart';
 import 'package:dating_app/utils/cached_image.dart';
 import 'package:intl/intl.dart';
 
+final DateFormat _timeFormat = DateFormat('HH:mm');
+
 class ChatListScreen extends StatelessWidget {
   final List<ChatCard> chats;
   final bool isLoading;
@@ -116,7 +118,11 @@ class ChatListScreen extends StatelessWidget {
                 ),
               );
             }
-            return _buildChatItem(context, chats[index]);
+            final chat = chats[index];
+            return RepaintBoundary(
+              key: ValueKey(chat.id),
+              child: _buildChatItem(context, chat),
+            );
           },
         ),
       ),
@@ -140,7 +146,7 @@ class ChatListScreen extends StatelessWidget {
     final lastMsg = chat.lastMessage;
     String subtitle = '';
     if (lastMsg != null) {
-      final time = DateFormat('HH:mm').format(lastMsg.sentAt);
+      final time = _timeFormat.format(lastMsg.sentAt);
       final prefix = lastMsg.isSent ? 'You: ' : '';
       final content = lastMsg.content ?? '';
       subtitle = '$prefix$content · $time';

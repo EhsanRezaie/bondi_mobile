@@ -34,6 +34,11 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 1;
+
+  // Lazily build tabs: IndexedStack keeps state of visited tabs, but we don't
+  // want to construct every tab's providers/screens (and fire their initial
+  // network calls) until the user actually visits them.
+  final Set<int> _visitedTabs = {1};
   bool _isChecking = false;
 
   late final List<Widget> _screens;
@@ -259,7 +264,10 @@ class _MainScreenState extends State<MainScreen> {
   }
 
   void _switchToTab(int index) {
-    setState(() => _currentIndex = index);
+    setState(() {
+      _visitedTabs.add(index);
+      _currentIndex = index;
+    });
   }
 
   /// Confirms before leaving the app so an accidental back press doesn't
@@ -370,7 +378,10 @@ class _MainScreenState extends State<MainScreen> {
         extendBody: true,
         body: IndexedStack(
           index: _currentIndex,
-          children: _screens,
+          children: [
+            for (var i = 0; i < _screens.length; i++)
+              _visitedTabs.contains(i) ? _screens[i] : const SizedBox.shrink(),
+          ],
         ),
         bottomNavigationBar: Consumer2<ChatProvider, NotificationsProvider>(
           builder: (context, chatProvider, notifProvider, _) {
@@ -381,6 +392,7 @@ class _MainScreenState extends State<MainScreen> {
               showChatDot: showChatDot,
               onTap: (index) {
                 setState(() {
+                  _visitedTabs.add(index);
                   _currentIndex = index;
                 });
                 if (index == 2) {

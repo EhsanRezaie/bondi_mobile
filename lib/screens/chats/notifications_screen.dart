@@ -308,7 +308,11 @@ class _NotificationsScreenState extends State<NotificationsScreen>
                 ),
               );
             }
-            return _buildItem(items[index], sectionType);
+            final item = items[index];
+            return RepaintBoundary(
+              key: ValueKey(item.id),
+              child: _buildItem(item, sectionType),
+            );
           },
         ),
       ),

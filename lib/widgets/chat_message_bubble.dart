@@ -7,6 +7,8 @@ import 'package:dating_app/utils/cached_image.dart';
 import 'package:dating_app/widgets/voice_message_player.dart';
 import 'package:intl/intl.dart';
 
+final DateFormat _timeFormat = DateFormat('HH:mm');
+
 class ChatMessageBubble extends StatelessWidget {
   final Message message;
   final bool isMine;
@@ -254,7 +256,7 @@ class ChatMessageBubble extends StatelessWidget {
 
   Widget _buildTimestampAndStatus(
       BuildContext context, bool isDark, Color mutedColor, Color successColor) {
-    final timeStr = DateFormat('HH:mm').format(message.sentAt);
+    final timeStr = _timeFormat.format(message.sentAt);
     final inlineColor = isMine
         ? Colors.white.withValues(alpha: 0.75)
         : mutedColor;

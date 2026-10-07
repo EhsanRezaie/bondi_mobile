@@ -103,12 +103,16 @@ class _ILikedScreenState extends State<ILikedScreen> {
                 ),
               );
             }
-            return _buildNotificationItem(
-              provider.likedUsers[index],
-              isDark,
-              textColor,
-              mutedColor,
-              borderColor,
+            final liked = provider.likedUsers[index];
+            return RepaintBoundary(
+              key: ValueKey(liked.id),
+              child: _buildNotificationItem(
+                liked,
+                isDark,
+                textColor,
+                mutedColor,
+                borderColor,
+              ),
             );
           },
         );
