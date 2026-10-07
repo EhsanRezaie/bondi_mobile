@@ -122,12 +122,6 @@ abstract class AppLocalizations {
   /// **'Find your match here'**
   String get find_match_tagline;
 
-  /// No description provided for @email_label.
-  ///
-  /// In en, this message translates to:
-  /// **'Email'**
-  String get email_label;
-
   /// No description provided for @sign_in_button.
   ///
   /// In en, this message translates to:
@@ -163,12 +157,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Join a community of intentional individuals seeking meaningful relationships'**
   String get join_community_text;
-
-  /// No description provided for @enter_email_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter your email'**
-  String get enter_email_hint;
 
   /// No description provided for @enter_password_hint.
   ///
@@ -236,18 +224,6 @@ abstract class AppLocalizations {
   /// **'Sign In'**
   String get sign_in;
 
-  /// No description provided for @email_required.
-  ///
-  /// In en, this message translates to:
-  /// **'Email is required'**
-  String get email_required;
-
-  /// No description provided for @email_invalid.
-  ///
-  /// In en, this message translates to:
-  /// **'Please enter a valid email'**
-  String get email_invalid;
-
   /// No description provided for @password_required.
   ///
   /// In en, this message translates to:
@@ -314,12 +290,6 @@ abstract class AppLocalizations {
   /// **'Join us and find your match'**
   String get signup_subtitle;
 
-  /// No description provided for @signup_email_label.
-  ///
-  /// In en, this message translates to:
-  /// **'Email'**
-  String get signup_email_label;
-
   /// No description provided for @signup_password_label.
   ///
   /// In en, this message translates to:
@@ -343,18 +313,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Already have an account? '**
   String get signup_already_have_account;
-
-  /// No description provided for @signup_email_required.
-  ///
-  /// In en, this message translates to:
-  /// **'Email is required'**
-  String get signup_email_required;
-
-  /// No description provided for @signup_email_invalid.
-  ///
-  /// In en, this message translates to:
-  /// **'Please enter a valid email'**
-  String get signup_email_invalid;
 
   /// No description provided for @signup_password_required.
   ///
@@ -385,12 +343,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sign In'**
   String get signin_button;
-
-  /// No description provided for @signup_email_hint.
-  ///
-  /// In en, this message translates to:
-  /// **'Enter your email'**
-  String get signup_email_hint;
 
   /// No description provided for @signup_password_hint.
   ///
@@ -451,18 +403,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Referral code must be exactly 8 characters'**
   String get verify_referral_invalid;
-
-  /// No description provided for @login_email_required.
-  ///
-  /// In en, this message translates to:
-  /// **'Email is required'**
-  String get login_email_required;
-
-  /// No description provided for @login_email_invalid.
-  ///
-  /// In en, this message translates to:
-  /// **'Please enter a valid email'**
-  String get login_email_invalid;
 
   /// No description provided for @login_password_required.
   ///
@@ -998,18 +938,6 @@ abstract class AppLocalizations {
   /// **'Close'**
   String get notifications_close;
 
-  /// No description provided for @error_email_exists.
-  ///
-  /// In en, this message translates to:
-  /// **'This email is already registered'**
-  String get error_email_exists;
-
-  /// No description provided for @error_email_invalid_format.
-  ///
-  /// In en, this message translates to:
-  /// **'Invalid email format'**
-  String get error_email_invalid_format;
-
   /// No description provided for @error_too_many_attempts.
   ///
   /// In en, this message translates to:
@@ -1027,12 +955,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Something went wrong. Please try again'**
   String get error_something_wrong;
-
-  /// No description provided for @error_email_not_found.
-  ///
-  /// In en, this message translates to:
-  /// **'Email not found. Please start over'**
-  String get error_email_not_found;
 
   /// No description provided for @error_verification_failed.
   ///

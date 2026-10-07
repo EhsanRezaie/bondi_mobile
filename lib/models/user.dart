@@ -49,7 +49,6 @@ class UserSettings {
 
 class User {
   final String id;
-  final String? email;
   final String? phone;
   final String? name;
   final int? age;
@@ -98,7 +97,6 @@ class User {
 
   User({
     required this.id,
-    this.email,
     this.phone,
     this.name,
     this.age,
@@ -159,7 +157,6 @@ class User {
 
     return User(
       id: json['id'],
-      email: json['email'],
       phone: json['phone'],
       name: json['name'],
       age: json['age'],
@@ -215,7 +212,6 @@ class User {
   Map<String, dynamic> toJson() {
     return {
       'id': id,
-      'email': email,
       'phone': phone,
       'name': name,
       'age': age,

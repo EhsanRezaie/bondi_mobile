@@ -2,27 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:dating_app/utils/validators.dart';
 
 void main() {
-  group('validateEmail', () {
-    test('accepts well-formed emails', () {
-      expect(Validators.validateEmail('a@b.co'), isNull);
-      expect(Validators.validateEmail('name@domain.com'), isNull);
-      expect(Validators.validateEmail('x@y.io'), isNull);
-      expect(Validators.validateEmail('first.last@sub.domain.org'), isNull);
-    });
-
-    test('rejects empty', () {
-      expect(Validators.validateEmail(null), isNotNull);
-      expect(Validators.validateEmail(''), isNotNull);
-    });
-
-    test('rejects malformed emails', () {
-      expect(Validators.validateEmail('a@'), isNotNull);
-      expect(Validators.validateEmail('a@b'), isNotNull);
-      expect(Validators.validateEmail('no-at-sign'), isNotNull);
-      expect(Validators.validateEmail('has space@x.com'), isNotNull);
-    });
-  });
-
   group('validatePassword', () {
     test('rejects empty', () {
       expect(Validators.validatePassword(null), isNotNull);

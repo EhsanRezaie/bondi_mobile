@@ -179,7 +179,7 @@ class AuthProvider extends ChangeNotifier {
   }) async {
     final t = AppLocalizations.of(context)!;
     if (_phone == null) {
-      _errorMessage = t.error_email_not_found;
+      _errorMessage = t.error_something_wrong;
       _safeNotify();
       return false;
     }

@@ -21,9 +21,6 @@ class AppLocalizationsFa extends AppLocalizations {
   String get find_match_tagline => 'جفتت رو همینجا پیدا کن';
 
   @override
-  String get email_label => 'ایمیل';
-
-  @override
   String get sign_in_button => 'ورود';
 
   @override
@@ -41,9 +38,6 @@ class AppLocalizationsFa extends AppLocalizations {
   @override
   String get join_community_text =>
       'به جامعه ای از افراد هدفمند که به دنبال روابط معنادار هستند ملحق شو';
-
-  @override
-  String get enter_email_hint => 'ایمیل خود را وارد کنید';
 
   @override
   String get enter_password_hint => 'رمز عبور خود را وارد کنید';
@@ -81,12 +75,6 @@ class AppLocalizationsFa extends AppLocalizations {
   String get sign_in => 'ورود';
 
   @override
-  String get email_required => 'ایمیل الزامی است';
-
-  @override
-  String get email_invalid => 'لطفاً یک ایمیل معتبر وارد کنید';
-
-  @override
   String get password_required => 'رمز عبور الزامی است';
 
   @override
@@ -121,9 +109,6 @@ class AppLocalizationsFa extends AppLocalizations {
   String get signup_subtitle => 'به ما ملحق شو و همتای خودت رو پیدا کن';
 
   @override
-  String get signup_email_label => 'ایمیل';
-
-  @override
   String get signup_password_label => 'رمز عبور';
 
   @override
@@ -134,12 +119,6 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get signup_already_have_account => 'حساب کاربری دارید؟ ';
-
-  @override
-  String get signup_email_required => 'ایمیل الزامی است';
-
-  @override
-  String get signup_email_invalid => 'لطفاً یک ایمیل معتبر وارد کنید';
 
   @override
   String get signup_password_required => 'رمز عبور الزامی است';
@@ -155,9 +134,6 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get signin_button => 'ورود';
-
-  @override
-  String get signup_email_hint => 'ایمیل خود را وارد کنید';
 
   @override
   String get signup_password_hint => 'رمز عبور خود را وارد کنید';
@@ -189,12 +165,6 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get verify_referral_invalid => 'کد دعوت باید دقیقاً ۸ کاراکتر باشد';
-
-  @override
-  String get login_email_required => 'ایمیل الزامی است';
-
-  @override
-  String get login_email_invalid => 'لطفاً یک ایمیل معتبر وارد کنید';
 
   @override
   String get login_password_required => 'رمز عبور الزامی است';
@@ -487,12 +457,6 @@ class AppLocalizationsFa extends AppLocalizations {
   String get notifications_close => 'بستن';
 
   @override
-  String get error_email_exists => 'این ایمیل قبلاً ثبت نام کرده است';
-
-  @override
-  String get error_email_invalid_format => 'فرمت ایمیل نامعتبر است';
-
-  @override
   String get error_too_many_attempts =>
       'تعداد تلاش‌ها بیش از حد است. لطفاً کمی صبر کنید';
 
@@ -502,9 +466,6 @@ class AppLocalizationsFa extends AppLocalizations {
 
   @override
   String get error_something_wrong => 'خطایی رخ داد. لطفاً دوباره تلاش کنید';
-
-  @override
-  String get error_email_not_found => 'ایمیل پیدا نشد. لطفاً از اول شروع کنید';
 
   @override
   String get error_verification_failed => 'تایید کد انجام نشد';

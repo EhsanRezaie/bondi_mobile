@@ -7,7 +7,6 @@ void main() {
     test('parses a basic user', () {
       final u = User.fromJson(jsonUser());
       expect(u.id, 'user-a');
-      expect(u.email, 'a@example.com');
       expect(u.name, 'Ali');
       expect(u.age, 30);
       expect(u.createdAt, kNow);
@@ -78,7 +77,6 @@ void main() {
       final original = User.fromJson(jsonUser());
       final round = User.fromJson(original.toJson());
       expect(round.id, original.id);
-      expect(round.email, original.email);
       expect(round.createdAt, original.createdAt);
     });
   });

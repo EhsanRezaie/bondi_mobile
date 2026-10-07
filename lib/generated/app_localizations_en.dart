@@ -21,9 +21,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get find_match_tagline => 'Find your match here';
 
   @override
-  String get email_label => 'Email';
-
-  @override
   String get sign_in_button => 'Sign In';
 
   @override
@@ -41,9 +38,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get join_community_text =>
       'Join a community of intentional individuals seeking meaningful relationships';
-
-  @override
-  String get enter_email_hint => 'Enter your email';
 
   @override
   String get enter_password_hint => 'Enter your password';
@@ -80,12 +74,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get sign_in => 'Sign In';
 
   @override
-  String get email_required => 'Email is required';
-
-  @override
-  String get email_invalid => 'Please enter a valid email';
-
-  @override
   String get password_required => 'Password is required';
 
   @override
@@ -120,9 +108,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signup_subtitle => 'Join us and find your match';
 
   @override
-  String get signup_email_label => 'Email';
-
-  @override
   String get signup_password_label => 'Password';
 
   @override
@@ -133,12 +118,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get signup_already_have_account => 'Already have an account? ';
-
-  @override
-  String get signup_email_required => 'Email is required';
-
-  @override
-  String get signup_email_invalid => 'Please enter a valid email';
 
   @override
   String get signup_password_required => 'Password is required';
@@ -155,9 +134,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get signin_button => 'Sign In';
-
-  @override
-  String get signup_email_hint => 'Enter your email';
 
   @override
   String get signup_password_hint => 'Enter your password';
@@ -190,12 +166,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get verify_referral_invalid =>
       'Referral code must be exactly 8 characters';
-
-  @override
-  String get login_email_required => 'Email is required';
-
-  @override
-  String get login_email_invalid => 'Please enter a valid email';
 
   @override
   String get login_password_required => 'Password is required';
@@ -489,12 +459,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get notifications_close => 'Close';
 
   @override
-  String get error_email_exists => 'This email is already registered';
-
-  @override
-  String get error_email_invalid_format => 'Invalid email format';
-
-  @override
   String get error_too_many_attempts =>
       'Too many attempts. Please wait a moment';
 
@@ -503,9 +467,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get error_something_wrong => 'Something went wrong. Please try again';
-
-  @override
-  String get error_email_not_found => 'Email not found. Please start over';
 
   @override
   String get error_verification_failed => 'Verification failed';
