@@ -1,4 +1,6 @@
 // lib/main.dart
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'generated/app_localizations.dart';
 import 'config/app_theme.dart';
 import 'services/api_service.dart';
+import 'services/crash_reporting.dart';
 import 'services/local_notifications.dart';
 import 'providers/auth_provider.dart';
 import 'providers/onboarding_provider.dart';
@@ -23,9 +26,8 @@ import 'screens/login_screen.dart';
 import 'utils/global_navigator.dart';
 import 'widgets/action_toast.dart';
 
-void main() async {
+void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
   FlutterError.onError = (details) {
     debugPrint('========== DIAGNOSTIC: FlutterError ==========');
@@ -38,60 +40,73 @@ void main() async {
     }
     debugPrint('========== END DIAGNOSTIC ==========');
     FlutterError.presentError(details);
+    CrashReporting.recordFlutterError(details);
   };
-  
-  await dotenv.load();
 
-  await ApiService.init();
+  PlatformDispatcher.instance.onError = (error, stack) {
+    CrashReporting.recordError(error, stack, fatal: true);
+    return true;
+  };
 
-  // Push / local-notification bootstrap. Initialize Firebase and register the
-  // background message handler before the first frame so data-only pushes are
-  // rendered even when the app is backgrounded or terminated.
-  try {
-    await Firebase.initializeApp();
-    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-    await LocalNotifications.instance.init();
-    await LocalNotifications.instance.handleLaunch();
-  } catch (e) {
-    debugPrint('Push bootstrap error: $e');
-  }
+  runZonedGuarded(() async {
+    await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
 
-  // When the refresh token dies (expired/revoked) the Dio interceptor clears
-  // storage; make sure the user is actually taken back to login instead of
-  // being stranded on a dead session.
-  ApiService.onSessionExpired = () {
-    final nav = appNavigatorKey.currentState;
-    if (nav == null) return;
-    nav.pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const LoginScreen()),
-      (route) => false,
+    await dotenv.load();
+
+    await ApiService.init();
+
+    // Push / local-notification bootstrap. Initialize Firebase and register the
+    // background message handler before the first frame so data-only pushes are
+    // rendered even when the app is backgrounded or terminated.
+    try {
+      await Firebase.initializeApp();
+      FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+      await LocalNotifications.instance.init();
+      await LocalNotifications.instance.handleLaunch();
+      await CrashReporting.init();
+    } catch (e) {
+      debugPrint('Push bootstrap error: $e');
+    }
+
+    // When the refresh token dies (expired/revoked) the Dio interceptor clears
+    // storage; make sure the user is actually taken back to login instead of
+    // being stranded on a dead session.
+    ApiService.onSessionExpired = () {
+      final nav = appNavigatorKey.currentState;
+      if (nav == null) return;
+      nav.pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const LoginScreen()),
+        (route) => false,
+      );
+    };
+
+    final prefs = await SharedPreferences.getInstance();
+    final savedLanguage = prefs.getString('selected_language') ?? 'en';
+
+    runApp(
+      MyApp(
+        initialLanguage: savedLanguage,
+      ),
     );
-  };
 
-  final prefs = await SharedPreferences.getInstance();
-  final savedLanguage = prefs.getString('selected_language') ?? 'en';
-
-  runApp(
-    MyApp(
-      initialLanguage: savedLanguage,
-    ),
-  );
-
-  WidgetsBinding.instance.addPostFrameCallback((_) async {
-    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
-      final alreadyShown =
-          prefs.getBool('screenshot_notice_shown') ?? false;
-      if (!alreadyShown) {
-        await prefs.setBool('screenshot_notice_shown', true);
-        final context = appNavigatorKey.currentContext;
-        if (context != null && context.mounted) {
-          showActionToast(
-            context,
-            AppLocalizations.of(context)!.screenshot_disabled_notice,
-          );
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+        final alreadyShown =
+            prefs.getBool('screenshot_notice_shown') ?? false;
+        if (!alreadyShown) {
+          await prefs.setBool('screenshot_notice_shown', true);
+          final context = appNavigatorKey.currentContext;
+          if (context != null && context.mounted) {
+            showActionToast(
+              context,
+              AppLocalizations.of(context)!.screenshot_disabled_notice,
+            );
+          }
         }
       }
-    }
+    });
+  }, (error, stack) {
+    CrashReporting.recordError(error, stack, fatal: true);
   });
 }
 
@@ -132,6 +147,7 @@ class AppView extends StatelessWidget {
 
     return MaterialApp(
       navigatorKey: appNavigatorKey,
+      navigatorObservers: [CrashReporting.observer],
       title: 'AURA',
       theme: AppTheme.themeFor(
         brightness: Brightness.light,

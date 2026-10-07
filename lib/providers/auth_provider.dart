@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:provider/provider.dart';
 import 'package:dating_app/generated/app_localizations.dart';
 import '../services/auth_service.dart';
+import '../services/crash_reporting.dart';
 import '../services/storage_service.dart';
 import '../services/push_service.dart';
 import '../models/user.dart';
@@ -96,6 +97,7 @@ class AuthProvider extends ChangeNotifier {
     }
 
     _isAuthenticated = true;
+    CrashReporting.setUserId(_user?.id);
     _isLoading = false;
     _safeNotify();
     return true;
@@ -207,6 +209,7 @@ class AuthProvider extends ChangeNotifier {
         );
 
         _user = User.fromJson(userData);
+        CrashReporting.setUserId(userData['id']);
         _isAuthenticated = true;
         _isLoading = false;
         _safeNotify();
@@ -310,6 +313,7 @@ class AuthProvider extends ChangeNotifier {
         );
 
         _user = User.fromJson(userData);
+        CrashReporting.setUserId(userData['id']);
         _isAuthenticated = true;
         _isNewUser = false;
         _isLoading = false;
@@ -356,6 +360,7 @@ class AuthProvider extends ChangeNotifier {
       }
     }
     await _storageService.clearTokens();
+    CrashReporting.setUserId(null);
     _user = null;
     _phone = null;
     _isAuthenticated = false;
@@ -415,6 +420,7 @@ class AuthProvider extends ChangeNotifier {
       if (response.statusCode == 200) {
         _deletionScheduledFor = response.data?['deletion_scheduled_for'] as String?;
         await _storageService.clearTokens();
+        CrashReporting.setUserId(null);
         await PushService().logout();
         _user = null;
         _phone = null;
