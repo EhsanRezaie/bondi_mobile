@@ -27,6 +27,7 @@ class NotificationsProvider extends ChangeNotifier {
   /// Per-type pagination state. Each tab pages its own type from the API so a
   /// tab never shows a "more" spinner for items that belong to another type.
   final Map<String, int> _offsetByType = {for (final t in _types) t: 0};
+  final Map<String, String?> _cursorByType = {for (final t in _types) t: null};
   final Map<String, bool> _hasMoreByType = {for (final t in _types) t: true};
   final Map<String, bool> _isLoadingMoreByType = {
     for (final t in _types) t: false,
@@ -64,6 +65,7 @@ class NotificationsProvider extends ChangeNotifier {
     _notifications = [];
     for (final t in _types) {
       _offsetByType[t] = 0;
+      _cursorByType[t] = null;
       _hasMoreByType[t] = true;
       _isLoadingMoreByType[t] = false;
     }
@@ -86,7 +88,11 @@ class NotificationsProvider extends ChangeNotifier {
             items.map((j) => AppNotification.fromJson(j)),
           );
           _offsetByType[_types[i]] = items.length;
-          _hasMoreByType[_types[i]] = data['next_offset'] != null;
+          final next = data['next_cursor'] as String?;
+          _cursorByType[_types[i]] =
+              (next != null && next.isNotEmpty) ? next : null;
+          _hasMoreByType[_types[i]] = _cursorByType[_types[i]] != null ||
+              data['next_offset'] != null;
         }
       }
       if (!anyOk) {
@@ -114,6 +120,7 @@ class NotificationsProvider extends ChangeNotifier {
         type: type,
         limit: _pageSize,
         offset: _offsetByType[type] ?? 0,
+        cursor: _cursorByType[type],
       );
       if (response.statusCode == 200) {
         final data = response.data;
@@ -123,7 +130,10 @@ class NotificationsProvider extends ChangeNotifier {
             items.map((j) => AppNotification.fromJson(j)).toList();
         _notifications.addAll(newItems);
         _offsetByType[type] = (_offsetByType[type] ?? 0) + newItems.length;
-        _hasMoreByType[type] = data['next_offset'] != null;
+        final next = data['next_cursor'] as String?;
+        _cursorByType[type] = (next != null && next.isNotEmpty) ? next : null;
+        _hasMoreByType[type] =
+            _cursorByType[type] != null || data['next_offset'] != null;
       }
     } catch (e) {
       // silent

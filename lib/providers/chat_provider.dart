@@ -86,6 +86,9 @@ class ChatProvider extends ChangeNotifier {
   int _matchesOffset = 0;
   String? _conversationsNextCursor;
   String? _pendingNextCursor;
+  String? _matchesNextCursor;
+  String? _likersNextCursor;
+  String? _likedNextCursor;
   int _likersOffset = 0;
   int _likedOffset = 0;
   final Set<String> _seenConversationIds = {};
@@ -175,6 +178,7 @@ class ChatProvider extends ChangeNotifier {
     _isLoading = true;
     _errorMessage = null;
     _matchesOffset = 0;
+    _matchesNextCursor = null;
     _hasMoreMatches = true;
     _safeNotify();
 
@@ -188,7 +192,11 @@ class ChatProvider extends ChangeNotifier {
         final items = (data['items'] ?? data['matches'] ?? data ?? []) as List;
         _matches = items.map((j) => Match.fromJson(j)).toList();
         _matchesOffset = _matches.length;
-        _hasMoreMatches = items.length >= _pageSize;
+        final next = data['next_cursor'] as String?;
+        _matchesNextCursor = (next != null && next.isNotEmpty) ? next : null;
+        _hasMoreMatches = _matchesNextCursor != null ||
+            data['next_offset'] != null ||
+            items.length >= _pageSize;
       } else {
         _errorMessage = 'Failed to load matches';
       }
@@ -209,6 +217,7 @@ class ChatProvider extends ChangeNotifier {
       final response = await ChatService.getMatches(
         limit: _pageSize,
         offset: _matchesOffset,
+        cursor: _matchesNextCursor,
       );
       if (response.statusCode == 200) {
         final data = response.data;
@@ -216,7 +225,11 @@ class ChatProvider extends ChangeNotifier {
         final newMatches = items.map((j) => Match.fromJson(j)).toList();
         _matches.addAll(newMatches);
         _matchesOffset += newMatches.length;
-        _hasMoreMatches = items.length >= _pageSize;
+        final next = data['next_cursor'] as String?;
+        _matchesNextCursor = (next != null && next.isNotEmpty) ? next : null;
+        _hasMoreMatches = _matchesNextCursor != null ||
+            data['next_offset'] != null ||
+            items.length >= _pageSize;
       }
     } catch (e) {
       // silent
@@ -385,6 +398,7 @@ class ChatProvider extends ChangeNotifier {
     _isLoading = true;
     _errorMessage = null;
     _likersOffset = 0;
+    _likersNextCursor = null;
     _hasMoreLikers = true;
     _safeNotify();
 
@@ -398,7 +412,11 @@ class ChatProvider extends ChangeNotifier {
         final items = (data['items'] ?? data['users'] ?? data ?? []) as List;
         _likers = items.map((j) => SwipeUser.fromJson(j)).toList();
         _likersOffset = _likers.length;
-        _hasMoreLikers = items.length >= _pageSize;
+        final next = data['next_cursor'] as String?;
+        _likersNextCursor = (next != null && next.isNotEmpty) ? next : null;
+        _hasMoreLikers = _likersNextCursor != null ||
+            data['next_offset'] != null ||
+            items.length >= _pageSize;
       } else {
         _errorMessage = 'Failed to load likers';
       }
@@ -419,6 +437,7 @@ class ChatProvider extends ChangeNotifier {
       final response = await ChatService.getLikers(
         limit: _pageSize,
         offset: _likersOffset,
+        cursor: _likersNextCursor,
       );
       if (response.statusCode == 200) {
         final data = response.data;
@@ -426,7 +445,11 @@ class ChatProvider extends ChangeNotifier {
         final newLikers = items.map((j) => SwipeUser.fromJson(j)).toList();
         _likers.addAll(newLikers);
         _likersOffset += newLikers.length;
-        _hasMoreLikers = items.length >= _pageSize;
+        final next = data['next_cursor'] as String?;
+        _likersNextCursor = (next != null && next.isNotEmpty) ? next : null;
+        _hasMoreLikers = _likersNextCursor != null ||
+            data['next_offset'] != null ||
+            items.length >= _pageSize;
       }
     } catch (e) {
       // silent
@@ -441,6 +464,7 @@ class ChatProvider extends ChangeNotifier {
     _isLoading = true;
     _errorMessage = null;
     _likedOffset = 0;
+    _likedNextCursor = null;
     _hasMoreLiked = true;
     _safeNotify();
 
@@ -454,7 +478,11 @@ class ChatProvider extends ChangeNotifier {
         final items = (data['items'] ?? data['users'] ?? data ?? []) as List;
         _likedUsers = items.map((j) => SwipeUser.fromJson(j)).toList();
         _likedOffset = _likedUsers.length;
-        _hasMoreLiked = items.length >= _pageSize;
+        final next = data['next_cursor'] as String?;
+        _likedNextCursor = (next != null && next.isNotEmpty) ? next : null;
+        _hasMoreLiked = _likedNextCursor != null ||
+            data['next_offset'] != null ||
+            items.length >= _pageSize;
       } else {
         _errorMessage = 'Failed to load liked users';
       }
@@ -475,6 +503,7 @@ class ChatProvider extends ChangeNotifier {
       final response = await ChatService.getLikedUsers(
         limit: _pageSize,
         offset: _likedOffset,
+        cursor: _likedNextCursor,
       );
       if (response.statusCode == 200) {
         final data = response.data;
@@ -482,7 +511,11 @@ class ChatProvider extends ChangeNotifier {
         final newLiked = items.map((j) => SwipeUser.fromJson(j)).toList();
         _likedUsers.addAll(newLiked);
         _likedOffset += newLiked.length;
-        _hasMoreLiked = items.length >= _pageSize;
+        final next = data['next_cursor'] as String?;
+        _likedNextCursor = (next != null && next.isNotEmpty) ? next : null;
+        _hasMoreLiked = _likedNextCursor != null ||
+            data['next_offset'] != null ||
+            items.length >= _pageSize;
       }
     } catch (e) {
       // silent

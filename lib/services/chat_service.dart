@@ -5,11 +5,17 @@ import 'package:dating_app/services/api_service.dart';
 class ChatService {
   ChatService._();
 
-  static Future<Response> getMatches({int limit = 20, int offset = 0}) async {
+  static Future<Response> getMatches({
+    int limit = 20,
+    int offset = 0,
+    String? cursor,
+  }) async {
     try {
+      final params = <String, dynamic>{'limit': limit, 'offset': offset};
+      if (cursor != null && cursor.isNotEmpty) params['cursor'] = cursor;
       return await ApiService.get(
         '/matches',
-        queryParams: {'limit': limit, 'offset': offset},
+        queryParams: params,
         cacheOptions: ApiService.noCache,
       );
     } on DioException catch (e) {
@@ -72,11 +78,17 @@ class ChatService {
     }
   }
 
-  static Future<Response> getLikers({int limit = 20, int offset = 0}) async {
+  static Future<Response> getLikers({
+    int limit = 20,
+    int offset = 0,
+    String? cursor,
+  }) async {
     try {
+      final params = <String, dynamic>{'limit': limit, 'offset': offset};
+      if (cursor != null && cursor.isNotEmpty) params['cursor'] = cursor;
       return await ApiService.get(
         '/swipes/likers',
-        queryParams: {'limit': limit, 'offset': offset},
+        queryParams: params,
         cacheOptions: ApiService.noCache,
       );
     } on DioException catch (e) {
@@ -88,11 +100,14 @@ class ChatService {
   static Future<Response> getLikedUsers({
     int limit = 20,
     int offset = 0,
+    String? cursor,
   }) async {
     try {
+      final params = <String, dynamic>{'limit': limit, 'offset': offset};
+      if (cursor != null && cursor.isNotEmpty) params['cursor'] = cursor;
       return await ApiService.get(
         '/swipes/liked',
-        queryParams: {'limit': limit, 'offset': offset},
+        queryParams: params,
         cacheOptions: ApiService.noCache,
       );
     } on DioException catch (e) {
@@ -368,6 +383,7 @@ class ChatService {
     int limit = 20,
     int offset = 0,
     String? type,
+    String? cursor,
   }) async {
     try {
       return await ApiService.get(
@@ -376,6 +392,7 @@ class ChatService {
           'limit': limit,
           'offset': offset,
           if (type != null) ...{'type': type},
+          if (cursor != null && cursor.isNotEmpty) ...{'cursor': cursor},
         },
         cacheOptions: ApiService.noCache,
       );
