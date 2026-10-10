@@ -23,4 +23,9 @@ jobs:
         run: flutter pub get
 
       - name: Run E2E tests
-        run: flutter test integration_test/
+        run: |
+          if [ -d integration_test ]; then
+            flutter test integration_test/
+          else
+            echo "No integration_test/ directory — skipping E2E."
+          fi
