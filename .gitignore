@@ -87,6 +87,7 @@ app.*.map.json
 
 # Plan
 plan/
+opencode.json
 
 # Coverage reports
 coverage/
